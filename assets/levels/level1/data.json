@@ -1,0 +1,17 @@
+{
+    "obstacles": [],
+    "players": [
+        {
+            "x": 2500,
+            "y": 2500,
+            "angle": 0,
+            "loadout": {
+                "guns": [
+                    "Dual M9"
+                ],
+                "activeIndex": 0
+            },
+            "health": 100
+        }
+    ]
+}
