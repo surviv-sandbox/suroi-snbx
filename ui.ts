@@ -1,0 +1,121 @@
+function createUI() {
+    const p = gamespace.player;
+
+    if (!p) { return; }
+
+    const container = makeElement("div", "ui-container", "ui");
+
+    document.body.appendChild(container);
+
+    // Ammo
+    {
+        const cont = makeElement("div", "ui-ammo-cont", "ui ammo"),
+            ammo = makeElement("div", "ui-ammo-counter-main", "ui ammo"),
+            resAmmo = makeElement("div", "ui-ammo-counter-res", "ui ammo");
+
+        container.appendChild(cont).append(ammo, resAmmo);
+    }
+
+    // HP
+    {
+        const doc = new DocumentFragment(),
+            cont = makeElement("div", "ui-hp-cont", "hud hp"),
+            innerCont = makeElement("div", "ui-hp-inner-cont", "hud hp"),
+            bar = makeElement("div", "ui-hp-bar", "hud hp"),
+            lag = makeElement("div", "ui-hp-bar-lag", "hud hp");
+
+        doc.appendChild(cont).appendChild(innerCont).appendChild(bar);
+        innerCont.appendChild(lag);
+        container.appendChild(doc);
+    }
+}
+
+function drawUI() {
+    const p = gamespace.player,
+        i = p?.inventory?.activeItem;
+
+    if (!p) { return; }
+
+    // Ammo
+    {
+        const ammo = $("ui-ammo-counter-main"),
+            resAmmo = $("ui-ammo-counter-res");
+
+        if (!i) {
+            ammo.style.display = resAmmo.style.display = "none";
+        } else {
+            ammo.style.display = resAmmo.style.display = "";
+            ammo.style.color = i.ammo ? "" : "red";
+
+            ammo.textContent = `${Number.isFinite(i.ammo) ? i.ammo : "∞"}`;
+            resAmmo.textContent = "∞";
+        }
+    }
+
+    // Reloading
+    {
+        if (p.state.reloading) {
+            if (!$("ui-reload-cont")) {
+                const cont = makeElement("div", "ui-reload-cont", "ui reload"),
+                    canvas = makeElement("canvas", "ui-reload-spin", "ui reload"),
+                    text = makeElement("div", "ui-reload-text", "ui reload");
+
+                canvas.width = canvas.height = 850;
+
+                text.textContent = "Reloading";
+
+                $("ui-container").appendChild(cont).append(canvas, text);
+            }
+
+            const can = $("ui-reload-spin") as HTMLCanvasElement,
+                ctx = can.getContext("2d");
+
+            ctx.clearRect(0, 0, 850, 850);
+
+            ctx.beginPath();
+            ctx.fillStyle = "#0004";
+            ctx.arc(425, 425, 400, 0, 2 * Math.PI);
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.lineWidth = 50;
+            ctx.strokeStyle = "#FFF";
+            ctx.arc(425, 425, 400, -Math.PI / 2, ((gamespace._currentUpdate - p.state.reloading as number) / i.proto[i.proto.altReload && !i.ammo ? "altReload" : "reload"].duration) * 2 * Math.PI - Math.PI / 2);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.lineWidth = 30;
+            ctx.font = "bold 300px roboto";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "bottom";
+            ctx.strokeStyle = "#000";
+            ctx.fillStyle = "#FFF";
+
+            const t = Math.round((gamespace._currentUpdate - p.state.reloading) / 100) / 10,
+                s = t % 1 ? `${t}` : `${t}.0`;
+            ctx.strokeText(s, 425, 600);
+            ctx.fillText(s, 425, 600);
+        } else {
+            $("ui-reload-cont")?.remove?.();
+        }
+    }
+
+    // HP
+    const lag = $("ui-hp-bar-lag"),
+        bar = $("ui-hp-bar"),
+        percent = Math.max(0, 100 * gamespace.player.health / gamespace.player.maxHealth);
+
+    lag.style.width = bar.style.width = `${percent}%`;
+
+    bar.style.animation = "";
+    if (percent == 100) {
+        bar.style.backgroundColor = "";
+    } else if (percent <= 24) {
+        bar.style.backgroundColor = "#F00";
+        bar.style.animation = "HP-critical 0.5s ease-out alternate infinite";
+    } else if (percent <= 75) {
+        bar.style.backgroundColor = `rgb(255, ${255 * (percent - 24) / 51}, ${255 * (percent - 24) / 51})`;
+    } else {
+        bar.style.backgroundColor = "#FFF";
+    }
+}

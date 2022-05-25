@@ -1,0 +1,329 @@
+/* GENERAL STYLES */
+
+.hidden {
+  display: none;
+}
+
+canvas,
+p,
+button,
+textarea,
+input,
+label {
+  position: absolute;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+canvas {
+  display: block;
+  top: 0;
+  left: 0;
+}
+
+/* MAIN MENU STYLING */
+
+h1#title {
+  position: absolute;
+  vertical-align: middle;
+  font-size: calc(25vw / 6);
+  font-family: "jura", monospace;
+  text-align: center;
+  color: white;
+  width: 45%;
+  left: 5%;
+  top: 5%;
+  border-color: white;
+  border-style: solid;
+  border-width: calc(7vh / 9) calc(35vw / 72);
+}
+
+button.surviv-purple-button {
+  background-color: #874c90;
+  border-radius: calc(25vw / 72);
+  border: none;
+  border-bottom-width: calc(4vh / 9);
+  border-bottom-style: solid;
+  border-bottom-color: #664053;
+  font-family: "roboto", "Helvetica", monospace;
+  font-size: calc(25vw / 12);
+  font-weight: bolder;
+  color: white;
+}
+
+button.surviv-purple-button:hover {
+  background-color: #7d4686;
+  transition-duration: 200ms;
+  cursor: pointer;
+}
+
+button.surviv-purple-button:active {
+  background-color: #5E3564;
+  border-bottom-width: calc(4vh / 9);
+  border-bottom-style: solid;
+  border-bottom-color: #5E3564;
+  transition-duration: 100ms;
+}
+
+button.surviv-grey-button {
+  background-color: #7A7A7A;
+  border-radius: calc(25vw / 72);
+  border: none;
+  border-bottom-width: calc(4vh / 9);
+  border-bottom-style: solid;
+  border-bottom-color: #626262;
+  font-family: "roboto", "Helvetica", monospace;
+  font-size: calc(25vw / 12);
+  font-weight: bolder;
+  color: white;
+}
+
+button.surviv-grey-button:hover {
+  background-color: #737373;
+  transition-duration: 200ms;
+  cursor: pointer;
+}
+
+button.surviv-grey-button:active {
+  background-color: #666;
+  border-bottom-width: calc(4vh / 9);
+  border-bottom-style: solid;
+  border-bottom-color: #666;
+  transition-duration: 100ms;
+}
+
+button.surviv-outline-button {
+  background-color: #0008;
+  color: white;
+  font-family: roboto;
+  font-size: calc(14vh / 9);
+  border-width: calc(5vw / 72);
+  border-radius: calc(25vw / 72);
+  border-style: solid;
+  border-color: white;
+}
+
+button.surviv-outline-button:hover {
+  background-color: #000A;
+  border-color: #EEE;
+  cursor: pointer;
+}
+
+button.main-menu-button {
+  width: 15%;
+  height: 7%;
+  left: 5%;
+}
+
+div#menu-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+button#play {
+  position: absolute;
+  top: 42.5%;
+}
+
+button#settings {
+  position: absolute;
+  top: 52.5%;
+}
+
+button#changelog {
+  position: absolute;
+  top: 62.5%;
+}
+
+p#loading {
+  font-family: "roboto";
+  font-size: larger;
+  font-weight: bold;
+  left: 50%;
+  top: 50%;
+  color: white;
+  transform: translate(-50%, -50%);
+}
+
+p#version {
+  left: 0.25%;
+  bottom: 0%;
+  font-family: monospace;
+  font-size: calc(65vw / 72);
+}
+
+div#settings-cont {
+  position: absolute;
+  top: 52.5%;
+  left: 21%;
+  width: 35%;
+  height: 7%;
+  background-color: #0008;
+  border-radius: calc(25vw / 72);
+}
+
+div#settings-cont::after {
+  content: " ";
+  position: absolute;
+  top: 50%;
+  transform: translate(0, -50%);
+  right: 100%;
+  margin-top: calc(-5vh / 9);
+  border-width: calc(25vw / 72);
+  border-style: solid;
+  border-color: #0000 #0008 #0000 #0000;
+}
+
+button.setting-switch {
+  position: relative;
+  margin: 2.5% 0 0 2.5%;
+  width: 30%;
+}
+
+
+/* UI ELEMENT STYLING */
+
+.ui {
+  user-select: none;
+}
+
+div#ui-container {
+  z-index: 100;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+}
+
+div.ammo:not([id="ui-ammo-cont"]) {
+  position: absolute;
+  bottom: 8.9%;
+  background-color: #0006;
+  border-radius: calc(25vw / 72);
+  color: white;
+  text-align: center;
+  font-weight: bold;
+  font-family: roboto, Arial, sans-serif;
+  text-shadow: calc(5vw / 36) calc(2vh / 9) 0 #000;
+  pointer-events: none;
+}
+
+div#ui-ammo-counter-main {
+  left: 50%;
+  transform: translate(-50%, 0);
+  width: 6.95%;
+  height: 5.55%;
+  font-size: calc(55vw / 18);
+}
+
+div#ui-ammo-counter-res {
+  left: 53.9%;
+  width: 4.53%;
+  height: 3.6%;
+  font-size: calc(120vw / 72);
+}
+
+div#ui-reload-text {
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, 0);
+  top: 37%;
+  width: 10.65%;
+  height: 4%;
+  font-size: calc(7vw / 4);
+  border-radius: calc(25vw / 72);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #0006;
+  font-family: roboto, Arial, sans-serif;
+  pointer-events: none;
+}
+
+canvas#ui-reload-spin {
+  position: absolute;
+  aspect-ratio: 1;
+  left: 50%;
+  transform: translate(-50%, 0);
+  height: 8.5%;
+  top: 25%;
+}
+
+div.hp {
+  border-radius: calc(25vw / 72);
+}
+
+div#ui-hp-cont {
+  position: absolute;
+  background-color: #0006;
+  left: 50%;
+  bottom: 1.5%;
+  width: 28.6%;
+  height: 4.9%;
+  transform: translate(-50%, 0);
+}
+
+div#ui-hp-inner-cont {
+  position: absolute;
+  left: 1.45%;
+  top: 50%;
+  width: 97.1%;
+  height: 72%;
+  transform: translate(0, -50%);
+}
+
+div#ui-hp-bar {
+  position: absolute;
+  background-color: #B3B3B3;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+}
+
+div#ui-hp-bar-lag {
+  position: absolute;
+  background-color: #929292;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  transition: width 1.0s ease-out;
+  z-index: 1;
+}
+
+/* CUSTOM FONTS */
+
+@font-face {
+  font-family: roboto;
+  src: url("./assets/fonts/roboto-condensed.woff2");
+}
+
+@font-face {
+  font-family: jura;
+  src: url("./assets/fonts/Jura-Bold.ttf");
+}
+
+/* ANIMATIONS */
+@keyframes HP-critical {
+  0% {
+    background-color: rgba(0, 0, 0, 0.8);
+  }
+
+  50% {
+    background-color: rgba(255, 0, 0, 0.8);
+  }
+
+  100% {
+    background-color: rgba(0, 0, 0, 0.8);
+  }
+}
