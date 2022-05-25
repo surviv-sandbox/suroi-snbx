@@ -1,0 +1,61 @@
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+    background-color: #1e1e1e;
+    overflow: scroll;
+}
+
+button {
+    position: absolute;
+}
+
+button#back {
+    font-weight: bolder;
+    z-index: 1;
+    background-color: #50AFAB;
+    color: white;
+    border: none;
+    border-bottom-style: solid;
+    border-bottom-color: #387C79;
+    border-bottom-width: calc(4% / 9);
+    border-radius: calc(25vw / 72);
+    font-family: "roboto", "Helvetica", monospace;
+    font-size: calc(35vw / 36);
+    width: 5%;
+    height: 5%;
+    left: 2.5%;
+    top: 3%;
+}
+
+button#back:hover {
+    background-color: #408C88;
+    transition-duration: 200ms;
+    cursor: pointer;
+}
+
+button#back:active {
+    background-color: #387A77;
+    transition-duration: 100ms;
+}
+
+p#main {
+    position: absolute;
+    color: white;
+    font-family: jura;
+    font-size: calc(10vw / 9);
+    width: 87.5%;
+    margin: 0 2.5% 0 10%;
+    top: 10%;
+}
+
+@font-face {
+    font-family: roboto;
+    src: url("../assets/fonts/roboto-condensed.woff2");
+}
+
+@font-face {
+    font-family: jura;
+    src: url("../assets/fonts/Jura-Bold.ttf");
+}
