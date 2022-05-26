@@ -1,0 +1,93 @@
+body {
+    background-color: #222;
+    color: white;
+    font-family: "jura", "Menlo", monospace;
+}
+
+table {
+    position: relative;
+    top: 7vh;
+    width: 100%;
+}
+
+th {
+    font-weight: bolder;
+}
+
+h1 {
+    text-align: center;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    font-size: calc(20vw / 9);
+}
+
+span.category {
+    font-family: "roboto", "Helvetica", monospace;
+    font-size: calc(25vw / 18);
+}
+
+a {
+    color: rgb(117, 165, 255);
+}
+
+a:hover {
+    color: hsl(356, 100%, 73%);
+}
+
+a:visited {
+    color: hsl(309, 100%, 73%);
+}
+
+button#back {
+    position: absolute;
+    background-color: #50AFAB;
+    color: white;
+    border: none;
+    border-bottom-style: solid;
+    border-bottom-color: #387C79;
+    border-bottom-width: calc(5vw / 18);
+    border-radius: calc(25vw / 72);
+    font-family: "roboto", "Helvetica", monospace;
+    font-size: calc(35vw / 36);
+    width: 5%;
+    height: 5%;
+    left: 0.5%;
+    top: 2%;
+    z-index: 1;
+    padding: 0;
+}
+
+button#back:hover {
+    background-color: #408C88;
+    transition-duration: 200ms;
+    cursor: pointer;
+}
+
+button#back:active {
+    background-color: #387A77;
+    transition-duration: 100ms;
+}
+
+p#attr {
+    font-size: calc(10vw / 9);
+    position: relative;
+    top: 7vh;
+}
+
+table,
+tr,
+td {
+    border: 1px solid #888;
+}
+
+@font-face {
+    font-family: roboto;
+    src: url("../assets/fonts/roboto-condensed.woff2");
+}
+
+@font-face {
+    font-family: jura;
+    src: url("../assets/fonts/Jura-Bold.ttf");
+}

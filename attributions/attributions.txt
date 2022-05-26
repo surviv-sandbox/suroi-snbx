@@ -1,0 +1,21 @@
+"Jura bold" taken from [Google Fonts](https://fonts.google.com/specimen/Jura).
+"Roboto Condensed" taken from [Google Fonts](https://fonts.google.com/specimen/Roboto+Condensed).
+"shell-9mm.png" taken from [Creator Kit](https://drive.google.com/drive/folders/1qhaDdNCsisBu_7gvMNmyn_zkG4kyAZix).
+"shell-12gauge.png" taken from [Creator Kit](https://drive.google.com/drive/folders/1qhaDdNCsisBu_7gvMNmyn_zkG4kyAZix).
+"shell-556mm.png" taken from [Creator Kit](https://drive.google.com/drive/folders/1qhaDdNCsisBu_7gvMNmyn_zkG4kyAZix).
+"shell-762mm.png" taken from [Creator Kit](https://drive.google.com/drive/folders/1qhaDdNCsisBu_7gvMNmyn_zkG4kyAZix).
+"gun-short.png" taken from [Creator Kit](https://drive.google.com/drive/folders/1qhaDdNCsisBu_7gvMNmyn_zkG4kyAZix).
+"gun-med.png" taken from [Creator Kit](https://drive.google.com/drive/folders/1qhaDdNCsisBu_7gvMNmyn_zkG4kyAZix).
+"gun-long.png" taken from [Creator Kit](https://drive.google.com/drive/folders/1qhaDdNCsisBu_7gvMNmyn_zkG4kyAZix).
+"pkp.png" taken and adapted from [Creator Kit](https://drive.google.com/drive/folders/1qhaDdNCsisBu_7gvMNmyn_zkG4kyAZix).
+"m4a1s.png" taken from [Creator Kit](https://drive.google.com/drive/folders/1qhaDdNCsisBu_7gvMNmyn_zkG4kyAZix).
+
+- Sources
+[surviv.io wiki](https://survivio.fandom.com/wiki/Surviv.io_Wiki).
+[Eyyy's weapon stats spreadsheet](https://docs.google.com/spreadsheets/d/1dbShn7L_RjX34mmiwP6W7at5XH8IXszsAgnJshx-cj8/edit).
+[This mini-paper about quickswitch and switch delays](https://github.com/surviv-underclock/docs).
+[surviv.io Official Creator Kit](https://drive.google.com/drive/folders/1qhaDdNCsisBu_7gvMNmyn_zkG4kyAZix).
+
+- Special thanks
+Justin, Nick and Kongregate for creating and maintaining surviv.io.
+Everyone in the surviv sandbox server for putting up with me messing up this project like thrice.
