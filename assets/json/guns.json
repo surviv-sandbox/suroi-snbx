@@ -55,6 +55,16 @@
                 "value": 7.5
             }
         },
+        "moveSpeedPenalties": {
+            "active": {
+                "givenIn": "scale",
+                "value": 0
+            },
+            "firing": {
+                "givenIn": "scale",
+                "value": 0
+            }
+        },
         "imageOffset": {
             "perp": {
                 "givenIn": "scale",
@@ -255,6 +265,16 @@
                 "value": 4
             }
         },
+        "moveSpeedPenalties": {
+            "active": {
+                "givenIn": "scale",
+                "value": 0
+            },
+            "firing": {
+                "givenIn": "scale",
+                "value": 0
+            }
+        },
         "imageOffset": {
             "perp": {
                 "givenIn": "scale",
@@ -373,8 +393,8 @@
             },
             "spawnOn": "fire",
             "spawnDelay": {
-                "givenIn": "ms",
-                "value": 500
+                "givenIn": "s",
+                "value": 1
             }
         },
         "recoilImpulse": {
@@ -461,6 +481,16 @@
             "moving": {
                 "givenIn": "degrees",
                 "value": 12
+            }
+        },
+        "moveSpeedPenalties": {
+            "active": {
+                "givenIn": "scale",
+                "value": 0
+            },
+            "firing": {
+                "givenIn": "scale",
+                "value": 0
             }
         },
         "imageOffset": {
@@ -574,7 +604,7 @@
             "spawnOn": "fire",
             "spawnDelay": {
                 "givenIn": "ms",
-                "value": 200
+                "value": 900
             }
         },
         "recoilImpulse": {
@@ -661,6 +691,16 @@
             "moving": {
                 "givenIn": "degrees",
                 "value": 7.5
+            }
+        },
+        "moveSpeedPenalties": {
+            "active": {
+                "givenIn": "scale",
+                "value": 0
+            },
+            "firing": {
+                "givenIn": "scale",
+                "value": 0
             }
         },
         "imageOffset": {
@@ -863,6 +903,16 @@
                 "value": 4
             }
         },
+        "moveSpeedPenalties": {
+            "active": {
+                "givenIn": "scale",
+                "value": 0
+            },
+            "firing": {
+                "givenIn": "scale",
+                "value": 0
+            }
+        },
         "imageOffset": {
             "perp": {
                 "givenIn": "scale",
@@ -1063,6 +1113,16 @@
                 "value": 8
             }
         },
+        "moveSpeedPenalties": {
+            "active": {
+                "givenIn": "scale",
+                "value": 0
+            },
+            "firing": {
+                "givenIn": "scale",
+                "value": 0
+            }
+        },
         "imageOffset": {
             "perp": {
                 "givenIn": "scale",
@@ -1251,6 +1311,16 @@
             "moving": {
                 "givenIn": "degrees",
                 "value": 9
+            }
+        },
+        "moveSpeedPenalties": {
+            "active": {
+                "givenIn": "scale",
+                "value": 0
+            },
+            "firing": {
+                "givenIn": "scale",
+                "value": 0
             }
         },
         "imageOffset": {

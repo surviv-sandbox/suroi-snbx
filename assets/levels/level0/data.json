@@ -7,6 +7,7 @@
             "angle": 0,
             "loadout": {
                 "guns": [
+                    "AK-47",
                     "AK-47"
                 ],
                 "activeIndex": 0
@@ -19,6 +20,7 @@
             "angle": 0,
             "loadout": {
                 "guns": [
+                    "AK-47",
                     "AK-47"
                 ],
                 "activeIndex": 0

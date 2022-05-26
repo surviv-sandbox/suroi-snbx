@@ -71,7 +71,9 @@ export const level = await (async () => {
 
                         gamespace.player.angle = Math.PI / 2 + Math.atan2(p5.mouseY - p5.height / 2, p5.mouseX - p5.width / 2);
 
-                        w = gamespace.objects.players.map(p => p.inventory.activeItem.proto.name);
+                        w = gamespace.objects.players.map(p => [p.inventory.slot0, p.inventory.slot1].map(g => (g as gun).proto.name));
+
+                        doAI = localStorage.getItem("sriv_sndbx_level0: bot-ai") === "true";
 
                         createUI();
                     };
@@ -153,16 +155,16 @@ export const level = await (async () => {
                         }
                     }
 
-                    let done = false;
-
-                    let w: string[];
+                    let done = false,
+                        w: string[][],
+                        doAI = true;
 
                     p5.draw = function () {
                         gamespace.update(p5);
                         if (!done) {
                             gamespace.objects.players.forEach(p => {
                                 if (p.body.id != gamespace.player.body.id) {
-                                    AIupdate(p);
+                                    doAI && AIupdate(p);
                                 }
                             });
 
@@ -174,6 +176,7 @@ export const level = await (async () => {
 
                                 winBanner.style.font = "calc(250vw / 72) roboto";
                                 winBanner.style.color = "#FF0";
+                                winBanner.style.width = "100%";
                                 winBanner.style.left = "50%";
                                 winBanner.style.top = "20%";
                                 winBanner.style.position = "absolute";
@@ -183,10 +186,10 @@ export const level = await (async () => {
                                 winBanner.style.userSelect = "none";
                                 winBanner.style.textAlign = "center";
 
-                                winBanner.innerHTML = `You ${gamespace.player.body.circleRadius /* identify the rendering hack */ ? "win!" : "lose."} Remaining HP: ${gamespace.objects.players[0].health}<br><span style="font-size: calc(225vw / 72)">${w[0]} vs ${w[1]}</span>`;
+                                winBanner.innerHTML = `You ${gamespace.player.body.circleRadius /* identify the rendering hack */ ? "win!" : "lose."} Remaining HP: ${gamespace.objects.players[0].health}<br><span style="font-size: calc(200vw / 72)">${w[0][0]}/${w[0][1]} vs ${w[1][0]}/${w[0][1]}</span>`;
 
                                 setTimeout(() => {
-                                    winBanner.innerHTML += `<br><span style="font-size: calc(200vw / 72)">Press Escape to restart.</span>`;
+                                    winBanner.innerHTML += `<br><span style="font-size: calc(180vw / 72)">Press Escape to restart.</span>`;
                                     document.addEventListener("keydown", e => e.key == "Escape" && (e.preventDefault(), window.location.reload()));
                                 }, 250);
 
@@ -242,70 +245,78 @@ export const level = await (async () => {
                     otx.textBaseline = "middle";
                     otx.fillText("VS", 500, 500);
 
-                    const buttons: [HTMLButtonElement[], HTMLButtonElement[]] = [[], []],
+                    const buttons: [HTMLButtonElement[], HTMLButtonElement[], HTMLButtonElement[], HTMLButtonElement[]] = [[], [], [], []],
                         inputs: HTMLInputElement[] = [];
 
                     for (let i = 0; i <= 1; i++) {
-                        const entity = levelData.players[1 - i],
-                            s = localStorage.getItem(`sriv_sndbx_level0: ${i ? "player" : "bot"}-weapon-preset`);
+                        const entity = levelData.players[1 - i];
 
-                        entity.inventory.guns = gamespace.guns.map(g => new gun(g));
+                        for (let h = 0; h <= 1; h++) {
+                            const hCopy = h,
+                                s = localStorage.getItem(`sriv_sndbx_level0: ${i ? "player" : "bot"}-weapon-preset-${h}`);
 
-                        if (s) {
-                            entity.inventory.activeIndex = s == "Random" ? Math.floor(Math.random() * entity.inventory.guns.length) : entity.inventory.guns.findIndex(gu => gu.proto.name == s);
-                        }
-
-                        otx.textBaseline = "bottom";
-                        otx.font = "calc(180vw / 72) roboto";
-                        otx.fillText("Weapon", i ? 250 : 750, 150);
-
-                        gamespace.guns.concat({ name: "Random" } as any).forEach((g, j) => {
-                            const b = makeElement("button", `gun-${i ? "player" : "bot"}-${g.name}`, "surviv-outline-button"),
-                                currentlySelected = entity.inventory.activeItem.proto.name == g.name && s != "Random",
-                                iCopy = i; // I love closures
-
-                            if (currentlySelected) {
-                                localStorage.setItem(`sriv_sndbx_level0: ${i ? "player" : "bot"}-weapon-preset`, g.name);
+                            if (s) {
+                                entity.inventory[`slot${h}`] = new gun(s == "Random"
+                                    ? gamespace.guns[Math.floor(Math.random() * gamespace.guns.length)]
+                                    : gamespace.guns.find(gu => gu.name == s));
                             }
 
-                            b.textContent = g.name;
+                            otx.textBaseline = "bottom";
+                            otx.font = "calc(180vw / 72) roboto";
+                            otx.fillText(`${h ? "Secondary" : "Primary"} Weapon`, i ? 250 : 750, 150 + h * 350);
 
-                            b.style.borderColor = (currentlySelected || (s + g.name) == "RandomRandom") ? "#0F0" : "";
-                            b.style.backgroundColor = (currentlySelected || (s + g.name) == "RandomRandom") ? "#0108" : "";
-                            b.style.position = "absolute";
-                            b.style[i ? "right" : "left"] = `${53 + (j % 4) * 12}%`;
-                            b.style.width = "10%";
-                            b.style.height = "7.5%";
-                            b.style.top = `${8.5 * Math.floor(j / 4) + 18}%`;
+                            gamespace.guns.concat({ name: "Random" } as any).forEach((g, j) => {
+                                const b = makeElement("button", `gun-${i ? "player" : "bot"}-${g.name}-${h}`, "surviv-outline-button"),
+                                    currentlySelected = entity.inventory[`slot${hCopy}`].proto.name == g.name && s != "Random",
+                                    iCopy = i; // I love closures
 
-                            b.addEventListener("click", e => (!e.button && (() => {
-                                if (entity.inventory.activeItem.proto.name == g.name) { return; }
+                                if (currentlySelected && !s) {
+                                    localStorage.setItem(`sriv_sndbx_level0: ${i ? "player" : "bot"}-weapon-preset-${hCopy}`, g.name);
+                                }
 
-                                entity.inventory.activeIndex = g instanceof gunPrototype ? entity.inventory.guns.findIndex(gu => gu.proto.name == g.name) : Math.floor(Math.random() * entity.inventory.guns.length);
-                                localStorage.setItem(`sriv_sndbx_level0: ${i ? "player" : "bot"}-weapon-preset`, g.name);
+                                b.textContent = g.name;
 
-                                buttons[iCopy].forEach(b => b.style.borderColor = b.style.backgroundColor = "");
+                                b.style.borderColor = (currentlySelected || (s + g.name) == "RandomRandom") ? "#0F0" : "";
+                                b.style.backgroundColor = (currentlySelected || (s + g.name) == "RandomRandom") ? "#0108" : "";
+                                b.style.position = "absolute";
+                                b.style[i ? "right" : "left"] = `${53 + (j % 4) * 12}%`;
+                                b.style.width = "10%";
+                                b.style.height = `7.5%`;
+                                b.style.top = `${8.5 * Math.floor(j / 4) + 35 * h + 18}%`;
 
-                                b.style.borderColor = "#0F0";
-                                b.style.backgroundColor = "#0108";
-                            })()));
+                                b.addEventListener("click", e => (!e.button && (() => {
+                                    if (entity.inventory[`slot${hCopy}`].name == g.name) { return; }
 
-                            buttons[i].push(b);
-                        });
+                                    entity.inventory[`slot${hCopy}`] = new gun(g.name == "Random"
+                                        ? gamespace.guns[Math.floor(Math.random() * gamespace.guns.length)]
+                                        : gamespace.guns.find(gu => gu.name == g.name));
 
-                        otx.fillText("Health", i ? 250 : 750, 500);
+                                    localStorage.setItem(`sriv_sndbx_level0: ${i ? "player" : "bot"}-weapon-preset-${hCopy}`, g.name);
 
-                        const input = makeElement("input", `healh-${i ? "player" : "bot"}`);
+                                    buttons[iCopy + 2 * hCopy].forEach(b => b.style.borderColor = b.style.backgroundColor = "");
+
+                                    b.style.borderColor = "#0F0";
+                                    b.style.backgroundColor = "#0108";
+                                })()));
+
+                                buttons[i + 2 * h].push(b);
+                            });
+                        }
+
+                        otx.fillText("Health", i ? 250 : 750, 750);
+
+                        const input = makeElement("input", `health-${i ? "player" : "bot"}`),
+                            h = localStorage.getItem(`sriv_sndbx_level0: ${i ? "player" : "bot"}-health-preset`);
 
                         input.type = "number";
                         input.min = "1";
                         input.max = "Infinity";
-                        input.value = `${entity.health}`;
+                        input.value = `${h ?? entity.health}`;
 
                         input.style.position = "absolute";
                         input.style.left = i ? "25%" : "75%";
                         input.style.transform = "translate(-50%, 0)";
-                        input.style.top = "50%";
+                        input.style.top = "75%";
                         input.style.backgroundColor = "#0008";
                         input.style.color = "white";
                         input.style.font = "calc(14vh / 9) roboto";
@@ -320,8 +331,31 @@ export const level = await (async () => {
                                 input.value = `${clamp(v, 1)}`;
                             }
 
+                            localStorage.setItem(`sriv_sndbx_level0: ${i ? "player" : "bot"}-health-preset`, input.value);
                             entity.maxHealth = Math.max(100, entity.health = v);
                         });
+
+                        if (!i) {
+                            const disable = makeElement("input", "ai-disable"),
+                                d = localStorage.getItem("sriv_sndbx_level0: bot-ai") !== "true";
+
+                            otx.fillText("Disable AI", 750, 840);
+
+                            disable.type = "checkbox";
+                            disable.checked = d;
+
+                            disable.style.aspectRatio = "1";
+                            disable.style.width = "5%";
+                            disable.style.top = "85%";
+                            disable.style.left = "75%";
+                            disable.style.transform = "translate(-50%, 0)";
+
+                            disable.addEventListener("change", () => {
+                                localStorage.setItem("sriv_sndbx_level0: bot-ai", `${!disable.checked}`);
+                            });
+
+                            inputs.push(disable);
+                        }
 
                         inputs.push(input);
                     }

@@ -28,8 +28,8 @@
             "chambered": "#FF0000"
         },
         "spawnVar": {
-            "mean": 25,
-            "variation": 5,
+            "mean": 0,
+            "variation": 50,
             "plusOrMinus": true
         },
         "casing": {
