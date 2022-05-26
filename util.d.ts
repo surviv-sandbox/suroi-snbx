@@ -159,6 +159,10 @@ declare type JSONGun = {
         default: angleModes;
         moving: angleModes;
     };
+    moveSpeedPenalties: {
+        active: scaleOrAbsolute;
+        firing: scaleOrAbsolute;
+    };
     imageOffset: offsetData;
     dimensions: {
         width: scaleOrAbsolute;

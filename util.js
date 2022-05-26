@@ -161,7 +161,7 @@ function parseGunData(gunData) {
             duration: toMS(g.reload.duration),
             ammoReloaded: g.reload.ammoReloaded,
             chain: g.reload.chain
-        }, g.magazineCapacity, (() => {
+        }, g.magazineCapacity, toMS(g.switchDelay), (() => {
             const c = g.casings, sO = c.spawnOffset, sOpe = sO.perp, sOpa = sO.parr, v = c.velocity, vPe = v.perp, vPeV = v.perp.variation, vPa = v.parr, vPaV = v.parr.variation, vA = c.velocity.angular, vAv = vA.variation;
             return {
                 spawnOffset: {
@@ -194,7 +194,10 @@ function parseGunData(gunData) {
                 spawnDelay: toMS(c.spawnDelay),
                 spawnOn: c.spawnOn
             };
-        })(), g.altReload && {
+        })(), {
+            active: g.moveSpeedPenalties.active.givenIn == "absolute" ? g.moveSpeedPenalties.active.value / playerSize : g.moveSpeedPenalties.active.value,
+            firing: g.moveSpeedPenalties.firing.givenIn == "absolute" ? g.moveSpeedPenalties.firing.value / playerSize : g.moveSpeedPenalties.firing.value
+        }, g.altReload && {
             duration: toMS(g.altReload?.duration),
             ammoReloaded: g.altReload?.ammoReloaded,
             chain: g.altReload?.chain
@@ -262,7 +265,9 @@ function normalizeAngle(a, options = { useNativeMath: true, normalizeTo: "radian
     return options.useNativeMath ? +a - Math.floor(+a / fullTurn) * fullTurn : Decimal.sub(a, Decimal.div(a, fullTurn).floor().mul(fullTurn));
 }
 function meanDevPM_random(mean, deviation, plusOrMinus) {
-    return mean + (deviation && deviation * (plusOrMinus ? 2 * (Math.random() - 0.5) : Math.random()));
+    return deviation
+        ? mean + deviation * (plusOrMinus ? 2 * (Math.random() - 0.5) : Math.random())
+        : mean;
 }
 (() => {
     Math.cmp = function (a, b) {

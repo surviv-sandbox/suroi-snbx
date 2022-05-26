@@ -143,6 +143,11 @@ button#changelog {
   top: 62.5%;
 }
 
+button#attributions {
+  position: absolute;
+  top: 72.5%;
+}
+
 p#loading {
   font-family: "roboto";
   font-size: larger;

@@ -38,14 +38,23 @@ declare class playerLike {
     };
     state: {
         attacking: boolean;
-        firing: boolean;
-        lastShot: number;
+        eSwitchDelay: number;
         fired: number;
-        lastBurst: number;
+        firing: boolean;
+        lastShot: [number, number, number, number];
+        lastFreeSwitch: number;
+        lastSwitch: number;
         moving: boolean;
+        noSlow: boolean;
         reloading: false | number;
         custom: {
             [key: string]: any;
+        };
+    };
+    timers: {
+        reloading: {
+            timer: false | number;
+            all: boolean;
         };
     };
     speed: {
@@ -68,11 +77,12 @@ declare class playerLike {
 declare class inventory {
     #private;
     get parent(): playerLike;
-    guns: gun[];
-    get activeIndex(): number;
-    set activeIndex(v: number);
+    get activeIndex(): 0 | 1;
+    set activeIndex(v: 0 | 1);
+    slot0: gun | void;
+    slot1: gun | void;
     get activeItem(): gun;
-    constructor(parent: playerLike, ...items: gunPrototype[]);
+    constructor(parent: playerLike);
 }
 declare class gunPrototype {
     name: string;
@@ -107,6 +117,7 @@ declare class gunPrototype {
     };
     width: number;
     height: number;
+    switchDelay: number;
     hands: {
         lefthand: {
             x: number;
@@ -178,6 +189,10 @@ declare class gunPrototype {
         normal: number;
         firepower: number;
     };
+    moveSpeedPenalties: {
+        active: number;
+        firing: number;
+    };
     constructor(name: string, dual: boolean, images: {
         loot: import("p5").Image;
         held: import("p5").Image;
@@ -229,7 +244,10 @@ declare class gunPrototype {
     }, capacity: {
         normal: number;
         firepower: number;
-    }, casing: typeof gunPrototype.prototype.casing, altReload?: {
+    }, switchDelay: number, casing: typeof gunPrototype.prototype.casing, moveSpeedPenalties: {
+        active: number;
+        firing: number;
+    }, altReload?: {
         duration: number;
         ammoReloaded: number | "all";
         chain: boolean;
@@ -247,6 +265,7 @@ declare class gun {
     constructor(proto: gunPrototype);
     primary(shooter: playerLike): void;
     reload(shooter: playerLike): void;
+    stopReload(shooter: playerLike): void;
 }
 declare class bullet {
     #private;

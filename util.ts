@@ -222,6 +222,10 @@ type JSONGun = {
         default: angleModes,
         moving: angleModes;
     },
+    moveSpeedPenalties: {
+        active: scaleOrAbsolute,
+        firing: scaleOrAbsolute;
+    },
     imageOffset: offsetData,
     dimensions: {
         width: scaleOrAbsolute,
@@ -385,6 +389,7 @@ function parseGunData(gunData: JSONGun[]) {
                 chain: g.reload.chain
             },
             g.magazineCapacity,
+            toMS(g.switchDelay),
             (() => {
                 const c = g.casings,
                     sO = c.spawnOffset,
@@ -430,6 +435,10 @@ function parseGunData(gunData: JSONGun[]) {
                     spawnOn: c.spawnOn
                 };
             })(),
+            {
+                active: g.moveSpeedPenalties.active.givenIn == "absolute" ? g.moveSpeedPenalties.active.value / playerSize : g.moveSpeedPenalties.active.value,
+                firing: g.moveSpeedPenalties.firing.givenIn == "absolute" ? g.moveSpeedPenalties.firing.value / playerSize : g.moveSpeedPenalties.firing.value
+            },
             g.altReload && {
                 duration: toMS(g.altReload?.duration),
                 ammoReloaded: g.altReload?.ammoReloaded,
@@ -530,7 +539,9 @@ function normalizeAngle(a: Decimal.Value, options: { useNativeMath?: boolean, no
 }
 
 function meanDevPM_random(mean: number, deviation: number, plusOrMinus: boolean) {
-    return mean + (deviation && deviation * (plusOrMinus ? 2 * (Math.random() - 0.5) : Math.random()));
+    return deviation
+        ? mean + deviation * (plusOrMinus ? 2 * (Math.random() - 0.5) : Math.random())
+        : mean;
 }
 
 (() => {

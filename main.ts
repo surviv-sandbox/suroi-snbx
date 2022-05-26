@@ -1,10 +1,11 @@
 (function makeMenu() {
-    if (localStorage.getItem("sawPopup") == "true" || window.confirm("This build of surviv.io sandbox could stop existing at any given moment and should therefore be considered volatile.\n\nBy pressing \"OK\", you're accepting the very real possibility of being let down once again.")) {
+    if (localStorage.getItem("sawPopup") == "true" || window.confirm("This build of surviv.io sandbox is an alpha build, and may therefore be unstable. No garantees about this build's quality or fitness for any given purpose are given.")) {
         localStorage.setItem("sawPopup", "true");
         const container = makeElement("div", "menu-container"),
             play = makeElement("button", "play", "main-menu-button surviv-purple-button"),
             settings = makeElement("button", "settings", "main-menu-button surviv-purple-button"),
             changelog = makeElement("button", "changelog", "main-menu-button surviv-grey-button"),
+            attributions = makeElement("button", "attributions", "main-menu-button surviv-grey-button"),
             ver = makeElement("p", "version"),
             title = makeElement("h1", "title");
 
@@ -13,6 +14,7 @@
         play.textContent = "Play";
         settings.textContent = "Settings";
         changelog.textContent = "Changelog";
+        attributions.textContent = "Attributions";
 
         ver.innerHTML = `SURVIV.IO sandbox v${gamespace.version}`;
 
@@ -21,6 +23,7 @@
             play,
             settings,
             changelog,
+            attributions,
             ver
         );
 
@@ -61,7 +64,9 @@
             document.body.appendChild(doc);
         })()));
 
-        changelog.addEventListener("click", e => void (!e.button && window.open("./changelog/changelog.html", "_self")));
+        changelog.addEventListener("click", e => void (!e.button && window.open("./changelog/", "_self")));
+
+        attributions.addEventListener("click", e => void (!e.button && window.open("./attributions/", "_self")));
 
         function startGame() {
             $("settings-cont")?.remove();

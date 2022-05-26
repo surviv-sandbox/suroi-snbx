@@ -91,7 +91,9 @@ function drawUI() {
             ctx.strokeStyle = "#000";
             ctx.fillStyle = "#FFF";
 
-            const t = Math.round((gamespace._currentUpdate - p.state.reloading) / 100) / 10,
+
+            const a = gamespace.player.inventory.activeItem,
+                t = Math.round((a.proto[`${a.proto.altReload && !a.ammo ? "altR" : "r"}eload`].duration - (gamespace._currentUpdate - p.state.reloading)) / 100) / 10,
                 s = t % 1 ? `${t}` : `${t}.0`;
             ctx.strokeText(s, 425, 600);
             ctx.fillText(s, 425, 600);
