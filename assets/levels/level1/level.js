@@ -1,15 +1,17 @@
+import AI from "../../scripts/std_ai.js";
 export const level = await (async () => {
     const json = await (await fetch("assets/levels/level1/data.json")).json();
-    const levelData = parseLevelData(json), level = {
-        name: "temp",
-        description: "",
+    const levelData = parseLevelData(json), name = "Bot War", path = ["levels", `level-${name}`], level = {
+        name: name,
+        description: "100 bots. 1 winner. And you as a spectator.",
         levelData: levelData,
         world: {
-            width: 5000,
-            height: 5000,
-            colour: "#80AF49",
+            width: 10000,
+            height: 10000,
+            color: "#80AF49",
             gridColor: "#00000028",
         },
+        color: "#0080FF",
         initializer: () => {
             const s = (p5) => {
                 //@ts-ignore
@@ -28,7 +30,7 @@ export const level = await (async () => {
                     gamespace.lastUpdate = gamespace._currentUpdate = Date.now();
                     p5.imageMode(p5.CENTER);
                     p5.angleMode(p5.RADIANS);
-                    p5.textFont(p5.loadFont("assets/fonts/Jura-Bold.ttf"), 80);
+                    p5.textFont(p5.loadFont("assets/fonts/RobotoCondensed-Bold.ttf"), 80);
                     {
                         function makeBound(x, y, w, h) {
                             //@ts-ignore
@@ -36,28 +38,77 @@ export const level = await (async () => {
                         }
                         const w = level.world.width, h = level.world.height;
                         levelData.obstacles.concat(levelData.players, ...[
-                            [-50, h / 2, 100, h],
-                            [w + 50, h / 2, 100, h],
-                            [w / 2, -50, w, 100],
-                            [w / 2, h + 50, w, 100]
+                            [-500, h / 2, 1000, h + 1000],
+                            [w + 500, h / 2, 1000, h + 1000],
+                            [w / 2, -500, w + 1000, 1000],
+                            [w / 2, h + 500, w + 1000, 1000]
                         ].map(v => makeBound(...v))
                         //@ts-ignore
                         ).forEach(ob => void Matter.World.add(world, ob.body));
                         gamespace.objects.obstacles = levelData.obstacles;
                         gamespace.objects.players = levelData.players;
+                        gamespace.objects.players.slice(1).forEach(p => {
+                            //@ts-ignore
+                            Matter.Body.setPosition(p.body, {
+                                x: Math.random() * level.world.width,
+                                y: Math.random() * level.world.height
+                            });
+                            p.angle = Math.random() * Math.PI * 2;
+                        });
                     }
                     p5.cursor("crosshair");
-                    $("menu-container").remove();
                     $("defaultCanvas0").style.display = "";
-                    document.addEventListener("resize", () => void p5.resizeCanvas(p5.windowWidth, p5.windowHeight));
+                    window.addEventListener("resize", () => void p5.resizeCanvas(p5.windowWidth, p5.windowHeight));
                     p5.pixelDensity(gamespace.settings.graphicsQuality);
                     p5.textAlign(p5.CENTER, p5.CENTER);
                     gamespace.player = gamespace.objects.players[0];
+                    gamespace.player.name = gamespace.settings.name;
                     gamespace.player.angle = Math.PI / 2 + Math.atan2(p5.mouseY - p5.height / 2, p5.mouseX - p5.width / 2);
+                    gamespace.bots = gamespace.objects.players.map(p => new AI(p));
+                    const r = () => new gun(gamespace.guns[Math.floor(Math.random() * gamespace.guns.length)]);
+                    ;
+                    gamespace.objects.players.slice(1).forEach(p => {
+                        p.name = `BOT ${p.name}`;
+                        p.inventory.slot0 = r();
+                        p.inventory.slot1 = r();
+                    });
+                    gamespace.player.aiIgnore = true;
                     createUI();
                 };
+                let done = false;
                 p5.draw = function () {
                     gamespace.update(p5);
+                    if (!done) {
+                        if (gamespace.objects.players.length == 2) {
+                            done = true;
+                            gamespace.freeze();
+                            const winBanner = makeElement("p", "winner-text");
+                            winBanner.style.font = "calc(250vw / 72) roboto";
+                            winBanner.style.color = "#FF0";
+                            winBanner.style.width = "100%";
+                            winBanner.style.left = "50%";
+                            winBanner.style.top = "20%";
+                            winBanner.style.position = "absolute";
+                            winBanner.style.transform = "translate(-50%, 0)";
+                            winBanner.style.textShadow = "calc(10vw / 72) calc(2vh / 9) black";
+                            winBanner.style.pointerEvents = "none";
+                            winBanner.style.userSelect = "none";
+                            winBanner.style.textAlign = "center";
+                            winBanner.innerHTML = `${gamespace.objects.players[1].name} wins!</span>`;
+                            setTimeout(() => {
+                                winBanner.innerHTML += `<br><span style="font-size: calc(180vw / 72)">Press Escape to restart.</span>`;
+                                document.addEventListener("keydown", e => e.key == "Escape" && (e.preventDefault(), window.location.reload()));
+                            }, 250);
+                            document.body.appendChild(winBanner);
+                            return;
+                        }
+                        gamespace.bots.forEach(b => {
+                            if (b.player.body !== void 0 && b.player.body.id != gamespace.player.body.id) {
+                                // b.debug();
+                                b.update();
+                            }
+                        });
+                    }
                 };
             };
             new p5(s, void 0);

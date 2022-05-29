@@ -1,10 +1,26 @@
 [
     {
         "name": "AK-47",
+        "summary": {
+            "class": "assault_rifle",
+            "engagementDistance": {
+                "min": {
+                    "givenIn": "absolute",
+                    "value": 400
+                },
+                "max": {
+                    "givenIn": "absolute",
+                    "value": 2000
+                }
+            },
+            "shouldNoslow": false,
+            "role": "primary"
+        },
         "dual": false,
         "images": {
-            "loot": false,
-            "held": "assets/items/firearms/shared/gun-long.png"
+            "loot": "assets/items/firearms/AK-47/loot-weapon-ak.svg",
+            "held": "assets/items/firearms/shared/gun-long.png",
+            "silhouette": "assets/items/firearms/AK-47/ak-silhouette.png"
         },
         "tint": "#622A12",
         "ballistics": {
@@ -211,10 +227,26 @@
     },
     {
         "name": "Mosin-Nagant",
+        "summary": {
+            "class": "sniper_rifle",
+            "engagementDistance": {
+                "min": {
+                    "givenIn": "absolute",
+                    "value": 750
+                },
+                "max": {
+                    "givenIn": "absolute",
+                    "value": 5000
+                }
+            },
+            "shouldNoslow": true,
+            "role": "primary"
+        },
         "dual": false,
         "images": {
-            "loot": false,
-            "held": "assets/items/firearms/shared/gun-long.png"
+            "loot": "assets/items/firearms/Mosin-Nagant/loot-weapon-mosin.svg",
+            "held": "assets/items/firearms/shared/gun-long.png",
+            "silhouette": "assets/items/firearms/Mosin-Nagant/mosin-silhouette.png"
         },
         "tint": "#331A00",
         "ballistics": {
@@ -429,10 +461,26 @@
     },
     {
         "name": "M870",
+        "summary": {
+            "class": "shotgun",
+            "engagementDistance": {
+                "min": {
+                    "givenIn": "absolute",
+                    "value": 300
+                },
+                "max": {
+                    "givenIn": "absolute",
+                    "value": 1000
+                }
+            },
+            "shouldNoslow": true,
+            "role": "primary"
+        },
         "dual": false,
         "images": {
-            "loot": false,
-            "held": "assets/items/firearms/shared/gun-long.png"
+            "loot": "assets/items/firearms/M870/loot-weapon-m870.svg",
+            "held": "assets/items/firearms/shared/gun-long.png",
+            "silhouette": "assets/items/firearms/M870/m870-silhouette.png"
         },
         "tint": "#331A00",
         "ballistics": {
@@ -639,10 +687,26 @@
     },
     {
         "name": "PKP Pecheneg",
+        "summary": {
+            "class": "LMG",
+            "engagementDistance": {
+                "min": {
+                    "givenIn": "absolute",
+                    "value": 500
+                },
+                "max": {
+                    "givenIn": "absolute",
+                    "value": 4000
+                }
+            },
+            "shouldNoslow": false,
+            "role": "primary"
+        },
         "dual": false,
         "images": {
-            "loot": false,
-            "held": "assets/items/firearms/PKP Pecheneg/pkp.png"
+            "loot": "assets/items/firearms/PKP Pecheneg/loot-weapon-pkp.svg",
+            "held": "assets/items/firearms/PKP Pecheneg/pkp.png",
+            "silhouette": "assets/items/firearms/PKP Pecheneg/pkp-silhouette.png"
         },
         "tint": "#FFFFFF",
         "ballistics": {
@@ -849,10 +913,26 @@
     },
     {
         "name": "M4A1-S",
+        "summary": {
+            "class": "assault_rifle",
+            "engagementDistance": {
+                "min": {
+                    "givenIn": "absolute",
+                    "value": 200
+                },
+                "max": {
+                    "givenIn": "absolute",
+                    "value": 2500
+                }
+            },
+            "shouldNoslow": false,
+            "role": "primary"
+        },
         "dual": false,
         "images": {
-            "loot": false,
-            "held": "assets/items/firearms/M4A1-S/m4a1s.png"
+            "loot": "assets/items/firearms/M4A1-S/loot-weapon-m4a1.svg",
+            "held": "assets/items/firearms/M4A1-S/m4a1s.png",
+            "silhouette": "assets/items/firearms/M4A1-S/m4a1-silhouette.png"
         },
         "tint": "#FFFFFF",
         "ballistics": {
@@ -1059,10 +1139,26 @@
     },
     {
         "name": "M9",
+        "summary": {
+            "class": "semi_pistol",
+            "engagementDistance": {
+                "min": {
+                    "givenIn": "absolute",
+                    "value": 200
+                },
+                "max": {
+                    "givenIn": "absolute",
+                    "value": 1500
+                }
+            },
+            "shouldNoslow": false,
+            "role": "secondary"
+        },
         "dual": false,
         "images": {
-            "loot": false,
-            "held": "assets/items/firearms/shared/gun-short.png"
+            "loot": "assets/items/firearms/M9/loot-weapon-m9.svg",
+            "held": "assets/items/firearms/shared/gun-short.png",
+            "silhouette": "assets/items/firearms/M9/m9-silhouette.png"
         },
         "tint": "#1E1E1E",
         "ballistics": {
@@ -1259,10 +1355,26 @@
     },
     {
         "name": "Dual M9",
+        "summary": {
+            "class": "dual_semi_pistol",
+            "engagementDistance": {
+                "min": {
+                    "givenIn": "absolute",
+                    "value": 250
+                },
+                "max": {
+                    "givenIn": "absolute",
+                    "value": 1000
+                }
+            },
+            "shouldNoslow": false,
+            "role": "secondary"
+        },
         "dual": true,
         "images": {
-            "loot": false,
-            "held": "assets/items/firearms/shared/gun-short.png"
+            "loot": "assets/items/firearms/Dual M9/loot-weapon-m9-dual.svg",
+            "held": "assets/items/firearms/shared/gun-short.png",
+            "silhouette": "assets/items/firearms/Dual M9/m9-dual-silhouette.png"
         },
         "tint": "#1E1E1E",
         "ballistics": {

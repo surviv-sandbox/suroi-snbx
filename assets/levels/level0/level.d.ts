@@ -8,8 +8,9 @@ export declare const level: {
     world: {
         width: number;
         height: number;
-        colour: string;
+        color: string;
         gridColor: string;
     };
+    color: string;
     initializer: () => void;
 };

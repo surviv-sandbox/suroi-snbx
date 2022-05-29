@@ -1,17 +1,21 @@
+import AI from "../../scripts/std_ai.js";
 export const level = await (async () => {
     const json: JSONLevel = await (await fetch("assets/levels/level0/data.json")).json();
 
     const levelData = parseLevelData(json),
+        name = "Bot 1v1",
+        path = ["levels", `level-${name}`],
         level = {
-            name: "bot 1v1",
-            description: "aa",
+            name: name,
+            description: "Fight a very advanced and totally state-of-the art bot.",
             levelData: levelData,
             world: {
                 width: 5000,
                 height: 5000,
-                colour: "#80AF49",
+                color: "#80AF49",
                 gridColor: "#00000028",
             },
+            color: "#FF8000",
             initializer: () => {
                 const s = (p5: import("p5")) => {
                     //@ts-ignore
@@ -36,7 +40,7 @@ export const level = await (async () => {
 
                         p5.imageMode(p5.CENTER);
                         p5.angleMode(p5.RADIANS);
-                        p5.textFont(p5.loadFont("assets/fonts/Jura-Bold.ttf"), 80);
+                        p5.textFont(p5.loadFont("assets/fonts/RobotoCondensed-Bold.ttf"), 80);
 
                         {
                             function makeBound(x: number, y: number, w: number, h: number): obstacle {
@@ -49,111 +53,42 @@ export const level = await (async () => {
 
                             levelData.obstacles.concat(levelData.players as any,
                                 ...[
-                                    [-50, h / 2, 100, h],
-                                    [w + 50, h / 2, 100, h],
-                                    [w / 2, -50, w, 100],
-                                    [w / 2, h + 50, w, 100]
+                                    [-500, h / 2, 1000, h + 1000],
+                                    [w + 500, h / 2, 1000, h + 1000],
+                                    [w / 2, -500, w + 1000, 1000],
+                                    [w / 2, h + 500, w + 1000, 1000]
                                 ].map(v => makeBound(...v as [number, number, number, number]))
                                 //@ts-ignore
                             ).forEach(ob => void Matter.World.add(world, ob.body));
 
                             gamespace.objects.obstacles = levelData.obstacles;
                             gamespace.objects.players = levelData.players;
+
+                            //@ts-ignore
+                            Matter.Body.setPosition(gamespace.objects.players[1].body, {
+                                x: Math.random() * level.world.width,
+                                y: Math.random() * level.world.height
+                            });
                         }
 
                         p5.cursor("crosshair");
                         $("defaultCanvas0").style.display = "";
-                        document.addEventListener("resize", () => void p5.resizeCanvas(p5.windowWidth, p5.windowHeight));
+                        window.addEventListener("resize", () => void p5.resizeCanvas(p5.windowWidth, p5.windowHeight));
                         p5.pixelDensity(gamespace.settings.graphicsQuality);
                         p5.textAlign(p5.CENTER, p5.CENTER);
 
                         gamespace.player = gamespace.objects.players[0];
-
+                        gamespace.player.name = gamespace.settings.name;
                         gamespace.player.angle = Math.PI / 2 + Math.atan2(p5.mouseY - p5.height / 2, p5.mouseX - p5.width / 2);
 
-                        w = gamespace.objects.players.map(p => [p.inventory.slot0, p.inventory.slot1].map(g => (g as gun).proto.name));
+                        gamespace.bots = gamespace.objects.players.slice(1).map(p => (p.name = `BOT ${p.name}`, new AI(p)));
 
-                        doAI = localStorage.getItem("sriv_sndbx_level0: bot-ai") === "true";
+                        w = gamespace.objects.players.map(p => [p.inventory.slot0, p.inventory.slot1].map(g => (g as gun).proto.name));
+                        doAI = !memoryManager.getItem([...path, "ai-disable"], "boolean");
+                        gamespace.player.aiIgnore = memoryManager.getItem([...path, "ai-ignore"], "boolean");
 
                         createUI();
                     };
-
-                    // Don't do AI like this, it's stupid
-                    function AIupdate(bot: playerLike) {
-                        const dy = bot.body.position.y - gamespace.player.body.position.y,
-                            dx = bot.body.position.x - gamespace.player.body.position.x,
-                            f = (weight?: number) => weight ? Math.random() > weight : !!Math.round(Math.random()),
-                            custom = bot.state.custom;
-
-                        custom.strafe ??= {
-                            val: true,
-                            dir: [f(), f(), f(), f()],
-                            timestamp: gamespace._currentUpdate
-                        };
-
-                        if (bot.state.reloading) {
-                            custom.intent = "reloading";
-                        } else {
-                            if (!custom.intent || custom.intent == "reloading") {
-                                custom.intent = custom.strafe.val ? "moving" : "shooting";
-                            }
-                        }
-
-                        bot.angle = 3 * Math.PI / 2 + Math.atan2(dy, dx);
-                        const d = sqauredDist(bot.body.position, gamespace.player.body.position),
-                            r = bot.inventory.activeItem.proto.ballistics.range ** 2;
-
-                        if (custom.intent == "approaching") {
-                            if (d < Math.min(r, (1900 + Math.random() * 200) ** 2)) {
-                                custom.intent = custom.strafe.val ? "moving" : "shooting";
-                            }
-                        } else if (d > (2900 + Math.random() * 200) ** 2 && !bot.state.reloading) {
-                            custom.intent = "approaching";
-                        }
-
-                        switch (custom.intent) {
-                            case "shooting":
-                            case "moving": {
-                                if (custom.strafe.val) {
-                                    custom.action = "moving";
-                                    bot.state.attacking = false;
-                                    bot.move(...custom.strafe.dir as [boolean, boolean, boolean, boolean]);
-                                } else {
-                                    custom.action = "shooting";
-
-                                    if (r < d) {
-                                        custom.action = "approaching";
-                                        bot.move(Math.sign(dy) == 1, Math.sign(dx) == 1, Math.sign(dy) == -1, Math.sign(dx) == -1);
-                                    }
-                                    bot.state.attacking = true;
-                                    !bot.state.firing && bot.inventory.activeItem.primary(bot);
-                                }
-
-                                if (gamespace._currentUpdate - custom.strafe.timestamp >= Math.random() * 1000 + 250) {
-                                    custom.strafe = {
-                                        val: !custom.strafe.val,
-                                        dir: [f(), f(), f(), f()],
-                                        timestamp: gamespace._currentUpdate
-                                    };
-                                }
-                                break;
-                            }
-                            case "reloading": {
-                                const away = d < (Math.random() * 1000 + 1000) ** 2;
-
-                                bot.move(away ? Math.sign(dy) == -1 : custom.strafe.dir[0],
-                                    away ? Math.sign(dx) == -1 : custom.strafe.dir[1],
-                                    away ? Math.sign(dy) == 1 : custom.strafe.dir[2],
-                                    away ? Math.sign(dx) == 1 : custom.strafe.dir[3]
-                                );
-                                break;
-                            }
-                            case "approaching": {
-                                bot.move(Math.sign(dy) == 1, Math.sign(dx) == 1, Math.sign(dy) == -1, Math.sign(dx) == -1);
-                                break;
-                            }
-                        }
-                    }
 
                     let done = false,
                         w: string[][],
@@ -162,12 +97,6 @@ export const level = await (async () => {
                     p5.draw = function () {
                         gamespace.update(p5);
                         if (!done) {
-                            gamespace.objects.players.forEach(p => {
-                                if (p.body.id != gamespace.player.body.id) {
-                                    doAI && AIupdate(p);
-                                }
-                            });
-
                             if (gamespace.objects.players.length == 1) {
                                 done = true;
                                 gamespace.freeze();
@@ -186,7 +115,7 @@ export const level = await (async () => {
                                 winBanner.style.userSelect = "none";
                                 winBanner.style.textAlign = "center";
 
-                                winBanner.innerHTML = `You ${gamespace.player.body.circleRadius /* identify the rendering hack */ ? "win!" : "lose."} Remaining HP: ${gamespace.objects.players[0].health}<br><span style="font-size: calc(200vw / 72)">${w[0][0]}/${w[0][1]} vs ${w[1][0]}/${w[0][1]}</span>`;
+                                winBanner.innerHTML = `You ${gamespace.player.body.circleRadius /* identify the rendering hack */ ? "win!" : "lose."} Remaining HP: ${gamespace.objects.players[0].health}<br><span style="font-size: calc(200vw / 72)">${w[0][0]}/${w[0][1]} vs ${w[1][0]}/${w[1][1]}</span>`;
 
                                 setTimeout(() => {
                                     winBanner.innerHTML += `<br><span style="font-size: calc(180vw / 72)">Press Escape to restart.</span>`;
@@ -195,13 +124,20 @@ export const level = await (async () => {
 
 
                                 document.body.appendChild(winBanner);
+                                return;
                             }
+
+                            gamespace.bots.forEach(b => {
+                                if (b.player.body !== void 0 && b.player.body.id != gamespace.player.body.id && doAI) {
+                                    gamespace.settings.bonus_features.bot_debug && b.debug();
+                                    b.update();
+                                }
+                            });
                         }
                     };
                 };
 
                 (() => { // Terrible, awful UI code, don't write this either
-                    $("menu-container").remove();
                     const doc = new DocumentFragment(),
                         cont = makeElement("div", "game-start-cont"),
                         overlay = makeElement("canvas", "gme-start-overlay");
@@ -253,7 +189,7 @@ export const level = await (async () => {
 
                         for (let h = 0; h <= 1; h++) {
                             const hCopy = h,
-                                s = localStorage.getItem(`sriv_sndbx_level0: ${i ? "player" : "bot"}-weapon-preset-${h}`);
+                                s = memoryManager.getItem([...path, "weapon-presets", i ? "player" : "bot", `${h}`]);
 
                             if (s) {
                                 entity.inventory[`slot${h}`] = new gun(s == "Random"
@@ -271,7 +207,7 @@ export const level = await (async () => {
                                     iCopy = i; // I love closures
 
                                 if (currentlySelected && !s) {
-                                    localStorage.setItem(`sriv_sndbx_level0: ${i ? "player" : "bot"}-weapon-preset-${hCopy}`, g.name);
+                                    memoryManager.setItem([...path, "weapon-presets", i ? "player" : "bot", `${h}`], g.name, true);
                                 }
 
                                 b.textContent = g.name;
@@ -291,7 +227,7 @@ export const level = await (async () => {
                                         ? gamespace.guns[Math.floor(Math.random() * gamespace.guns.length)]
                                         : gamespace.guns.find(gu => gu.name == g.name));
 
-                                    localStorage.setItem(`sriv_sndbx_level0: ${i ? "player" : "bot"}-weapon-preset-${hCopy}`, g.name);
+                                    memoryManager.setItem([...path, "weapon-presets", i ? "player" : "bot", `${hCopy}`], g.name, true);
 
                                     buttons[iCopy + 2 * hCopy].forEach(b => b.style.borderColor = b.style.backgroundColor = "");
 
@@ -306,7 +242,7 @@ export const level = await (async () => {
                         otx.fillText("Health", i ? 250 : 750, 750);
 
                         const input = makeElement("input", `health-${i ? "player" : "bot"}`),
-                            h = localStorage.getItem(`sriv_sndbx_level0: ${i ? "player" : "bot"}-health-preset`);
+                            h = memoryManager.getItem([...path, `health-${i ? "player" : "bot"}-preset`]);
 
                         input.type = "number";
                         input.min = "1";
@@ -324,6 +260,8 @@ export const level = await (async () => {
                         input.style.borderRadius = "calc(25vw / 72)";
                         input.style.outline = "none";
 
+                        entity.maxHealth = Math.max(100, entity.health = +input.value);
+
                         input.addEventListener("input", () => {
                             const v = +input.value;
 
@@ -331,13 +269,13 @@ export const level = await (async () => {
                                 input.value = `${clamp(v, 1)}`;
                             }
 
-                            localStorage.setItem(`sriv_sndbx_level0: ${i ? "player" : "bot"}-health-preset`, input.value);
+                            memoryManager.setItem([...path, `health-${i ? "player" : "bot"}-preset`], input.value, true);
                             entity.maxHealth = Math.max(100, entity.health = v);
                         });
 
                         if (!i) {
                             const disable = makeElement("input", "ai-disable"),
-                                d = localStorage.getItem("sriv_sndbx_level0: bot-ai") !== "true";
+                                d = memoryManager.getItem([...path, "ai-disable"], "boolean");
 
                             otx.fillText("Disable AI", 750, 840);
 
@@ -350,11 +288,27 @@ export const level = await (async () => {
                             disable.style.left = "75%";
                             disable.style.transform = "translate(-50%, 0)";
 
-                            disable.addEventListener("change", () => {
-                                localStorage.setItem("sriv_sndbx_level0: bot-ai", `${!disable.checked}`);
-                            });
+                            disable.addEventListener("change", () => void memoryManager.setItem([...path, "ai-disable"], disable.checked, true));
 
                             inputs.push(disable);
+                        } else {
+                            const ignore = makeElement("input", "ai-ignore"),
+                                d = memoryManager.getItem([...path, "ai-ignore"], "boolean");
+
+                            otx.fillText("Ignored by AI", 250, 840);
+
+                            ignore.type = "checkbox";
+                            ignore.checked = d;
+
+                            ignore.style.aspectRatio = "1";
+                            ignore.style.width = "5%";
+                            ignore.style.top = "85%";
+                            ignore.style.left = "25%";
+                            ignore.style.transform = "translate(-50%, 0)";
+
+                            ignore.addEventListener("change", () => void memoryManager.setItem([...path, "ai-ignore"], ignore.checked, true));
+
+                            inputs.push(ignore);
                         }
 
                         inputs.push(input);

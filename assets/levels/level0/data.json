@@ -12,7 +12,8 @@
                 ],
                 "activeIndex": 0
             },
-            "health": 100
+            "health": 100,
+            "scope": 1
         },
         {
             "x": 2500,
@@ -25,7 +26,8 @@
                 ],
                 "activeIndex": 0
             },
-            "health": 100
+            "health": 100,
+            "scope": 1
         }
     ]
 }
