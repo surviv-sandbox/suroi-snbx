@@ -1,8 +1,15 @@
-<h2>v0.0.1 (build 05-24-2022)</h2>
-<h3>May 24<sup>rd</sup> 2022</h3>
+<h2>v0.0.1 (build 05-29-2022)</h2>
+<h3>May 29<sup>th</sup> 2022</h3>
 
 <ul>
-<li> Changelog created
+<li> Total bot AI overhaul
+<li> Added better system to interact with localStorage
+<li> Added option to hide UI (bound to p)
+<li> More settings are modifiable
+<li> Added second level
+<li> Added level select screen
+<li> Temporarily disabled distance-based rendering optimization
+<li> Added support for mouse wheel key binds
 </ul>
 
 <h2>v0.0.1 (build 05-25-2022)</h2>
@@ -22,4 +29,11 @@
 <li> Added an attributions page
 <li> Game remebers health presets
 <li> Option to disable AI added
+</ul>
+
+<h2>v0.0.1 (build 05-24-2022)</h2>
+<h3>May 24<sup>rd</sup> 2022</h3>
+
+<ul>
+<li> Changelog created
 </ul>

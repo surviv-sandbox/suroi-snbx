@@ -1,8 +1,11 @@
 /// <reference types="p5" />
 declare type TOrArrayT<T> = T | T[];
+declare type JSONValue = string | number | boolean | null;
 declare type JSONObject = {
-    [key: string]: TOrArrayT<string | number | boolean | JSONObject | null>;
+    [key: string]: JSONContent;
 };
+declare type JSONArray = JSONObject["string"][];
+declare type JSONContent = JSONValue | JSONObject | JSONArray;
 declare type JSONLevel = {
     obstacles: (({
         type: "rectangle";
@@ -64,7 +67,7 @@ declare type JSONLevel = {
             activeIndex: number;
         };
         health: number;
-        view: number;
+        scope: number;
     }[];
 };
 interface Math {
@@ -76,6 +79,7 @@ interface Math {
     acsc: (x: number) => number;
     acot: (x: number) => number;
 }
+declare const generateId: Generator<number, never, unknown>;
 declare function loadImg(path: string): import("p5").Image;
 declare function loadFnt(path: string): import("p5").Font;
 declare function makeElement<K extends keyof HTMLElementTagNameMap>(tag: K, id?: string, className?: string): HTMLElementTagNameMap[K];
@@ -85,15 +89,21 @@ declare function sqauredDist(ptA: {
 }, ptB: {
     x: number;
     y: number;
-}): number;
+}, options?: {
+    useNativeMath: boolean;
+}): number | import("./libraries/decimaljs/decimal.global").default;
 declare function distance(ptA: {
     x: number;
     y: number;
 }, ptB: {
     x: number;
     y: number;
-}): number;
-declare function RPMToMSDelay(rpm: number): number;
+}, options?: {
+    useNativeMath: boolean;
+}): number | import("./libraries/decimaljs/decimal.global").default;
+declare function RPMToMSDelay(rpm: number, options?: {
+    useNativeMath: boolean;
+}): number | import("./libraries/decimaljs/decimal.global").default;
 declare function parseLevelData(data: JSONLevel): {
     obstacles: obstacle[];
     players: playerLike[];
@@ -129,10 +139,20 @@ declare type offsetDataVariation = offsetData & {
 };
 declare type JSONGun = {
     name: string;
+    summary: {
+        class: string;
+        engagementDistance: {
+            min: scaleOrAbsolute;
+            max: scaleOrAbsolute;
+        };
+        shouldNoslow: boolean;
+        role: "primary" | "secondary";
+    };
     dual: boolean;
     images: {
         loot: false | string;
         held: false | string;
+        silhouette: false | string;
     };
     tint: string;
     ballistics: {
@@ -256,8 +276,12 @@ declare function parseAmmoData(data: {
     };
 };
 declare function $(ele: string): HTMLElement | null;
-declare function average(...args: number[]): number;
-declare function stdDev(...arr: number[]): number;
+declare function average(options: {
+    useNativeMath: boolean;
+}, ...args: Decimal.Value[]): number | import("./libraries/decimaljs/decimal.global").default;
+declare function stdDev(options: {
+    useNativeMath: boolean;
+}, ...arr: Decimal.Value[]): number | import("./libraries/decimaljs/decimal.global").default;
 declare function checkBounds(value: Decimal | number, lowerBound: Decimal | number | "-inf" | "inf", upperBound: Decimal | number | "-inf" | "inf", options?: {
     inclusion?: {
         lower?: boolean;
@@ -272,4 +296,7 @@ declare function normalizeAngle(a: Decimal.Value, options?: {
     useNativeMath?: boolean;
     normalizeTo?: "degrees" | "radians" | "π" | "gradians";
 }): number | import("./libraries/decimaljs/decimal.global").default;
-declare function meanDevPM_random(mean: number, deviation: number, plusOrMinus: boolean): number;
+declare function meanDevPM_random(mean: Decimal.Value, deviation: Decimal.Value, plusOrMinus: boolean, options?: {
+    useNativeMath: boolean;
+}): string | number | import("./libraries/decimaljs/decimal.global").default;
+declare function clone<T extends JSONContent>(object: T): T;

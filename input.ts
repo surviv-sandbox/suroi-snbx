@@ -4,28 +4,6 @@ const keyBindings: {
         callback: Function;
     };
 } = (() => {
-    const invSlotCommon = () => {
-        const p = gamespace.player,
-            i = p.inventory,
-            ip = i.activeItem.proto,
-            f = gamespace._currentUpdate - p.state.lastFreeSwitch >= 1000;
-
-        i.activeItem.stopReload(p);
-        p.state.attacking = false;
-        p.state.noSlow = true;
-        p.state.eSwitchDelay = ip.switchDelay;
-
-        if (f && (gamespace._currentUpdate - p.state.lastShot[p.inventory.activeIndex]) < ip.delay) {
-            p.state.eSwitchDelay = 250;
-        }
-
-        if (f) {
-            p.state.lastFreeSwitch = gamespace._currentUpdate;
-        }
-
-        p.state.lastSwitch = gamespace._currentUpdate;
-    };
-
     return {
         "forward": {
             key: "w",
@@ -64,14 +42,7 @@ const keyBindings: {
             key: "1",
             callback: (type: `${string}${"down" | "up"}`) => {
                 if (type.endsWith("down") && gamespace.player !== void 0) {
-                    const p = gamespace.player,
-                        i = p.inventory;
-
-                    invSlotCommon();
-                    i.activeIndex = 0;
-                    if (!i.activeItem.ammo) {
-                        i.activeItem.reload(p);
-                    }
+                    gamespace.player.switchSlots(0);
                 };
             }
         },
@@ -79,14 +50,7 @@ const keyBindings: {
             key: "2",
             callback: (type: `${string}${"down" | "up"}`) => {
                 if (type.endsWith("down") && gamespace.player !== void 0) {
-                    const p = gamespace.player,
-                        i = p.inventory;
-
-                    invSlotCommon();
-                    i.activeIndex = 1;
-                    if (!i.activeItem.ammo) {
-                        i.activeItem.reload(p);
-                    }
+                    gamespace.player.switchSlots(1);
                 };
             }
         },
@@ -102,44 +66,23 @@ const keyBindings: {
             key: "q",
             callback: (type: `${string}${"down" | "up"}`) => {
                 if (type.endsWith("down") && gamespace.player !== void 0) {
-                    const p = gamespace.player,
-                        i = p.inventory;
-
-                    invSlotCommon();
-                    i.activeIndex = (1 - i.activeIndex) as 0 | 1;
-                    if (!i.activeItem.ammo) {
-                        i.activeItem.reload(p);
-                    }
+                    gamespace.player.switchSlots((1 - gamespace.player.inventory.activeIndex) as 0 | 1);
                 };
             }
         },
         "next_item": {
             key: "mwheelup",
-            callback: (type: `${string}${"down" | "up"}`) => {
-                if (type.endsWith("down") && gamespace.player !== void 0) {
-                    const p = gamespace.player,
-                        i = p.inventory;
-
-                    invSlotCommon();
-                    i.activeIndex = (i.activeIndex + 1) % 2 as 0 | 1;
-                    if (!i.activeItem.ammo) {
-                        i.activeItem.reload(p);
-                    }
+            callback: () => {
+                if (gamespace.player !== void 0) {
+                    gamespace.player.switchSlots((gamespace.player.inventory.activeIndex + 1) % 2 as 0 | 1);
                 };
             }
         },
         "prev_item": {
             key: "mwheeldown",
-            callback: (type: `${string}${"down" | "up"}`) => {
-                if (type.endsWith("down") && gamespace.player !== void 0) {
-                    const p = gamespace.player,
-                        i = p.inventory;
-
-                    invSlotCommon();
-                    i.activeIndex = (i.activeIndex - 1) % 2 as 0 | 1;
-                    if (!i.activeItem.ammo) {
-                        i.activeItem.reload(p);
-                    }
+            callback: () => {
+                if (gamespace.player !== void 0) {
+                    gamespace.player.switchSlots((gamespace.player.inventory.activeIndex - 1) % 2 as 0 | 1);
                 };
             }
         },
@@ -169,7 +112,13 @@ const keyBindings: {
         },
         "hide_ui": {
             key: "p",
-            callback: () => { }
+            callback: (type: `${string}${"down" | "up"}`) => {
+                if (type.endsWith("down")) {
+                    gamespace.settings.ui = !gamespace.settings.ui;
+
+                    document.querySelectorAll(".ui").forEach(e => e.classList[gamespace.settings.ui ? "remove" : "add"]("hidden"));
+                }
+            }
         },
     };
 })();
@@ -178,8 +127,9 @@ document.addEventListener("keydown", registerInput);
 document.addEventListener("keyup", registerInput);
 document.addEventListener("mousedown", registerInput);
 document.addEventListener("mouseup", registerInput);
+document.addEventListener("wheel", registerInput);
 
-function registerInput(event: KeyboardEvent | MouseEvent) {
+function registerInput(event: KeyboardEvent | MouseEvent | WheelEvent) {
     if (event.ctrlKey && (event as KeyboardEvent).key == "Control" &&
         event.altKey && (event as KeyboardEvent).key == "Alt" &&
         event.shiftKey && (event as KeyboardEvent).key == "Shift" &&
@@ -193,11 +143,34 @@ function registerInput(event: KeyboardEvent | MouseEvent) {
             }
         }
     }
-    else if (event instanceof MouseEvent) {
+    else if (event instanceof MouseEvent && !(event instanceof WheelEvent)) {
         gamespace.keys[`mouse${event.button}`] = event.type == "mousedown";
         for (const action in keyBindings) {
             if (keyBindings[action].key == `mouse${event.button}`) {
                 keyBindings[action].callback(event.type);
+            }
+        }
+    }
+    else {
+        const m = (function cleanUpMWheelName(event: WheelEvent) {
+            return `mwheel${(() => {
+                if (event.deltaY > 0) { return "down"; }
+                else if (event.deltaY < 0) { return "up"; }
+                else if (event.deltaX > 0) { return "left"; }
+                else if (event.deltaX < 0) { return "right"; }
+                else if (event.deltaZ > 0) { return "backwards"; }
+                else if (event.deltaZ < 0) { return "forwards"; }
+            })()}`;
+        })(event);
+
+        gamespace.keys[m] = true;
+        for (const action in keyBindings) {
+            if (keyBindings[action].key == m) {
+                if (m == "mwheelright" || m == "mwheelleft") {
+                    event.preventDefault();
+                }
+
+                keyBindings[action].callback();
             }
         }
     }
@@ -209,4 +182,5 @@ function freezeAllInputs() {
     document.removeEventListener("keyup", registerInput);
     document.removeEventListener("mousedown", registerInput);
     document.removeEventListener("mouseup", registerInput);
+    document.removeEventListener("wheel", registerInput);
 }

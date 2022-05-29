@@ -4,5 +4,5 @@ declare const keyBindings: {
         callback: Function;
     };
 };
-declare function registerInput(event: KeyboardEvent | MouseEvent): void;
+declare function registerInput(event: KeyboardEvent | MouseEvent | WheelEvent): void;
 declare function freezeAllInputs(): void;

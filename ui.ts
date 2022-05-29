@@ -3,15 +3,15 @@ function createUI() {
 
     if (!p) { return; }
 
-    const container = makeElement("div", "ui-container", "ui");
+    const container = makeElement("div", "ui-container", `ui ${gamespace.settings.ui ? "" : "hidden"}`);
 
     document.body.appendChild(container);
 
     // Ammo
     {
-        const cont = makeElement("div", "ui-ammo-cont", "ui ammo"),
-            ammo = makeElement("div", "ui-ammo-counter-main", "ui ammo"),
-            resAmmo = makeElement("div", "ui-ammo-counter-res", "ui ammo");
+        const cont = makeElement("div", "ui-ammo-cont", `ui ammo`),
+            ammo = makeElement("div", "ui-ammo-counter-main", `ui ammo`),
+            resAmmo = makeElement("div", "ui-ammo-counter-res", `ui ammo`);
 
         container.appendChild(cont).append(ammo, resAmmo);
     }
@@ -19,10 +19,10 @@ function createUI() {
     // HP
     {
         const doc = new DocumentFragment(),
-            cont = makeElement("div", "ui-hp-cont", "hud hp"),
-            innerCont = makeElement("div", "ui-hp-inner-cont", "hud hp"),
-            bar = makeElement("div", "ui-hp-bar", "hud hp"),
-            lag = makeElement("div", "ui-hp-bar-lag", "hud hp");
+            cont = makeElement("div", "ui-hp-cont", `hud hp`),
+            innerCont = makeElement("div", "ui-hp-inner-cont", `hud hp`),
+            bar = makeElement("div", "ui-hp-bar", `hud hp`),
+            lag = makeElement("div", "ui-hp-bar-lag", `hud hp`);
 
         doc.appendChild(cont).appendChild(innerCont).appendChild(bar);
         innerCont.appendChild(lag);
@@ -56,9 +56,9 @@ function drawUI() {
     {
         if (p.state.reloading) {
             if (!$("ui-reload-cont")) {
-                const cont = makeElement("div", "ui-reload-cont", "ui reload"),
-                    canvas = makeElement("canvas", "ui-reload-spin", "ui reload"),
-                    text = makeElement("div", "ui-reload-text", "ui reload");
+                const cont = makeElement("div", "ui-reload-cont", `ui reload`),
+                    canvas = makeElement("canvas", "ui-reload-spin", `ui reload`),
+                    text = makeElement("div", "ui-reload-text", `ui reload`);
 
                 canvas.width = canvas.height = 850;
 
@@ -78,9 +78,9 @@ function drawUI() {
             ctx.fill();
 
             ctx.beginPath();
-            ctx.lineWidth = 50;
+            ctx.lineWidth = 70;
             ctx.strokeStyle = "#FFF";
-            ctx.arc(425, 425, 400, -Math.PI / 2, ((gamespace._currentUpdate - p.state.reloading as number) / i.proto[i.proto.altReload && !i.ammo ? "altReload" : "reload"].duration) * 2 * Math.PI - Math.PI / 2);
+            ctx.arc(425, 425, 390, -Math.PI / 2, ((gamespace._currentUpdate - p.state.reloading as number) / i.proto[i.proto.altReload && !i.ammo ? "altReload" : "reload"].duration) * 2 * Math.PI - Math.PI / 2);
             ctx.stroke();
 
             ctx.beginPath();
@@ -103,21 +103,67 @@ function drawUI() {
     }
 
     // HP
-    const lag = $("ui-hp-bar-lag"),
-        bar = $("ui-hp-bar"),
-        percent = Math.max(0, 100 * gamespace.player.health / gamespace.player.maxHealth);
+    {
+        const lag = $("ui-hp-bar-lag"),
+            bar = $("ui-hp-bar"),
+            percent = gamespace.player.health == Infinity ? 100 : Math.max(0, 100 * gamespace.player.health / gamespace.player.maxHealth);
 
-    lag.style.width = bar.style.width = `${percent}%`;
+        lag.style.width = bar.style.width = `${percent}%`;
 
-    bar.style.animation = "";
-    if (percent == 100) {
-        bar.style.backgroundColor = "";
-    } else if (percent <= 24) {
-        bar.style.backgroundColor = "#F00";
-        bar.style.animation = "HP-critical 0.5s ease-out alternate infinite";
-    } else if (percent <= 75) {
-        bar.style.backgroundColor = `rgb(255, ${255 * (percent - 24) / 51}, ${255 * (percent - 24) / 51})`;
-    } else {
-        bar.style.backgroundColor = "#FFF";
+        bar.style.animation = "";
+        if (percent == 100) {
+            bar.style.backgroundColor = "";
+        } else if (percent <= 24) {
+            bar.style.backgroundColor = "#F00";
+            bar.style.animation = "HP-critical 0.5s ease-out alternate infinite";
+        } else if (percent <= 75) {
+            bar.style.backgroundColor = `rgb(255, ${255 * (percent - 24) / 51}, ${255 * (percent - 24) / 51})`;
+        } else {
+            bar.style.backgroundColor = "#FFF";
+        }
+    }
+
+    // Killfeed
+    {
+
+        if (gamespace.kills.length) {
+            if (!$("killfeed-container")) {
+                const cont = makeElement("div", "killfeed-container");
+
+                $("ui-container").appendChild(cont);
+            }
+
+            gamespace.kills.filter(k => gamespace._currentUpdate - k.timestamp > 2000).forEach(k => $(`killfeed-kill-${k.id}`)?.remove?.());
+
+            gamespace.kills = gamespace.kills.filter(k => gamespace._currentUpdate - k.timestamp <= 2000);
+
+            const doc = new DocumentFragment();
+
+            gamespace.kills.forEach((k, i) => {
+                const p = ($(`killfeed-kill-${k.id}`) ?? makeElement("div", `killfeed-kill-${k.id}`, "killfeed-entry")) as HTMLParagraphElement;
+
+                if (!$(`killfeed-kill-${k.id}`)) {
+                    if (gamespace.settings.bonus_features.csgo_style_killfeed) {
+                        p.innerHTML = `${k.killer}&nbsp;&nbsp;&nbsp;<img src="${gamespace.guns.find(g => g.name == k.weapon).images.silhouette.src}" class="killfeed-image"/>&nbsp;&nbsp;&nbsp;${k.killed}`;
+
+                        p.style.backgroundColor = k.killed == gamespace.settings.name ? "#8008" : "";
+                        p.style.outline = k.killer == gamespace.settings.name ? "calc(2vh / 9) solid #C00" : "";
+                    } else {
+                        const involved = k.killer == gamespace.player.name || k.killed == gamespace.player.name;
+
+                        p.innerHTML = `${involved ? `<span style="color: ${k.killer == gamespace.player.name ? "#03BEFF" : "#D1777C"}">` : ""}${k.killer} killed ${k.killed} with ${k.weapon}${involved ? "</span>" : ""}`;
+                    }
+
+                    doc.appendChild(p);
+                }
+
+                p.style.top = `${3.9 * i + 5}%`;
+                p.style.opacity = `${gamespace._currentUpdate - k.timestamp >= 1250 ? 1 - (((gamespace._currentUpdate - k.timestamp) - 1250) / 750) : 1}`;
+            });
+
+            $("killfeed-container").appendChild(doc);
+        } else {
+            $("killfeed-container")?.remove?.();
+        }
     }
 }

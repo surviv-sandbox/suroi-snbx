@@ -26,8 +26,10 @@ declare class obstacle {
 declare class playerLike {
     #private;
     get body(): Matter.Body;
+    aiIgnore: boolean;
     angle: number;
     health: number;
+    name: string;
     maxHealth: number;
     inventory: inventory;
     options: {
@@ -69,10 +71,11 @@ declare class playerLike {
         restitution: number;
         inertia?: number;
         density: number;
-    }, view: number);
+    }, view: number, name: string);
     draw(p5: import("p5")): void;
     destroy(): void;
     move(w: boolean, a: boolean, s: boolean, d: boolean): void;
+    switchSlots(index: 0 | 1): void;
 }
 declare class inventory {
     #private;
@@ -86,10 +89,29 @@ declare class inventory {
 }
 declare class gunPrototype {
     name: string;
+    summary: {
+        class: string;
+        engagementDistance: {
+            min: number;
+            max: number;
+        };
+        shouldNoslow: boolean;
+        role: "primary" | "secondary";
+    };
     dual: boolean;
     images: {
-        loot: import("p5").Image;
-        held: import("p5").Image;
+        loot: {
+            img: import("p5").Image;
+            src: string | false;
+        };
+        held: {
+            img: import("p5").Image;
+            src: string | false;
+        };
+        silhouette: {
+            img: import("p5").Image;
+            src: string | false;
+        };
     };
     ballistics: {
         damage: number;
@@ -193,9 +215,27 @@ declare class gunPrototype {
         active: number;
         firing: number;
     };
-    constructor(name: string, dual: boolean, images: {
-        loot: import("p5").Image;
-        held: import("p5").Image;
+    constructor(name: string, summary: {
+        class: string;
+        engagementDistance: {
+            min: number;
+            max: number;
+        };
+        shouldNoslow: boolean;
+        role: "primary" | "secondary";
+    }, dual: boolean, images: {
+        loot: {
+            img: import("p5").Image;
+            src: string | false;
+        };
+        held: {
+            img: import("p5").Image;
+            src: string | false;
+        };
+        silhouette: {
+            img: import("p5").Image;
+            src: string | false;
+        };
     }, tint: string, ballistics: {
         damage: number;
         velocity: number;
@@ -319,6 +359,7 @@ declare class casing {
 }
 declare const gamespace: {
     readonly version: string;
+    bots: InstanceType<typeof import("./assets/scripts/std_ai").default>[];
     bulletInfo: {
         [key: string]: {
             tints: {
@@ -345,10 +386,13 @@ declare const gamespace: {
     };
     _currentLevel: {
         name: string;
+        description: string;
+        color?: string;
+        thumbnail?: string;
         world: {
             width: number;
             height: number;
-            colour: string;
+            color: string;
             gridColor: `#${string}`;
         };
         initializer: () => void;
@@ -370,13 +414,23 @@ declare const gamespace: {
     keys: {
         [key: number]: boolean;
     };
+    kills: {
+        killed: string;
+        killer: string;
+        timestamp: number;
+        weapon: string;
+        id: number;
+    }[];
     lastUpdate: number;
     levels: {
         name: string;
+        description: string;
+        color?: string;
+        thumbnail?: string;
         world: {
             width: number;
             height: number;
-            colour: string;
+            color: string;
             gridColor: `#${string}`;
         };
         initializer: () => void;
@@ -406,11 +460,16 @@ declare const gamespace: {
     settings: {
         graphicsQuality: number;
         debug: boolean;
+        useNativeMath: boolean;
+        name: string;
         bonus_features: {
+            bot_debug: boolean;
+            csgo_style_killfeed: boolean;
+            damage_numbers_stack: boolean;
             headshots_use_saturated_tracers: boolean;
             show_damage_numbers: boolean;
-            damage_numbers_stack: boolean;
         };
+        ui: boolean;
     };
     update: (p5: import("p5")) => void;
     world: Matter.Composite;

@@ -26,6 +26,13 @@ canvas {
   left: 0;
 }
 
+p.debug {
+  margin: 0;
+  color: #C7C770;
+  text-shadow: calc(-5vw / 72) calc(-1vh / 9) 0 #000, calc(5vw / 72) calc(-1vh / 9) 0 #000, calc(-5vw / 72) calc(1vh / 9) 0 #000, calc(5vw / 72) calc(1vh / 9) 0 #000;
+  font: 1.6vmin monospace;
+}
+
 /* MAIN MENU STYLING */
 
 h1#title {
@@ -43,7 +50,7 @@ h1#title {
   border-width: calc(7vh / 9) calc(35vw / 72);
 }
 
-button.surviv-purple-button {
+.surviv-purple-button {
   background-color: #874c90;
   border-radius: calc(25vw / 72);
   border: none;
@@ -56,13 +63,13 @@ button.surviv-purple-button {
   color: white;
 }
 
-button.surviv-purple-button:hover {
+.surviv-purple-button:hover {
   background-color: #7d4686;
   transition-duration: 200ms;
   cursor: pointer;
 }
 
-button.surviv-purple-button:active {
+.surviv-purple-button:active {
   background-color: #5E3564;
   border-bottom-width: calc(4vh / 9);
   border-bottom-style: solid;
@@ -70,7 +77,32 @@ button.surviv-purple-button:active {
   transition-duration: 100ms;
 }
 
-button.surviv-grey-button {
+.surviv-blue-button {
+  background-color: #50AFAB;
+  border-radius: calc(25vw / 72);
+  border: none;
+  border-bottom-width: calc(4% / 9);
+  border-bottom-style: solid;
+  border-bottom-color: #387C79;
+  font-family: "roboto", "Helvetica", monospace;
+  font-size: calc(35vw / 36);
+}
+
+.surviv-blue-button:hover {
+  background-color: #408C88;
+  transition-duration: 200ms;
+  cursor: pointer;
+}
+
+.surviv-blue-button:active {
+  background-color: #387A77;
+  border-bottom-width: calc(4vh / 9);
+  border-bottom-style: solid;
+  border-bottom-color: #387A77;
+  transition-duration: 100ms;
+}
+
+.surviv-grey-button {
   background-color: #7A7A7A;
   border-radius: calc(25vw / 72);
   border: none;
@@ -83,13 +115,13 @@ button.surviv-grey-button {
   color: white;
 }
 
-button.surviv-grey-button:hover {
+.surviv-grey-button:hover {
   background-color: #737373;
   transition-duration: 200ms;
   cursor: pointer;
 }
 
-button.surviv-grey-button:active {
+.surviv-grey-button:active {
   background-color: #666;
   border-bottom-width: calc(4vh / 9);
   border-bottom-style: solid;
@@ -97,7 +129,7 @@ button.surviv-grey-button:active {
   transition-duration: 100ms;
 }
 
-button.surviv-outline-button {
+.surviv-outline-button {
   background-color: #0008;
   color: white;
   font-family: roboto;
@@ -108,13 +140,13 @@ button.surviv-outline-button {
   border-color: white;
 }
 
-button.surviv-outline-button:hover {
+.surviv-outline-button:hover {
   background-color: #000A;
   border-color: #EEE;
   cursor: pointer;
 }
 
-button.main-menu-button {
+.main-menu-button {
   width: 15%;
   height: 7%;
   left: 5%;
@@ -165,12 +197,35 @@ p#version {
   font-size: calc(65vw / 72);
 }
 
+div#name-field {
+  font-family: "roboto", "Menlo", monospace;
+  font-size: calc(100vw / 72);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  left: unset;
+  right: 2%;
+  top: 2%;
+  width: 10%;
+  height: 5%;
+  outline: none;
+}
+
+div#name-field:hover {
+  cursor: text;
+}
+
+div#name-field:focus {
+  background-color: #000B;
+}
+
 div#settings-cont {
   position: absolute;
   top: 52.5%;
   left: 21%;
   width: 35%;
-  height: 7%;
+  height: 14%;
   background-color: #0008;
   border-radius: calc(25vw / 72);
 }
@@ -178,7 +233,7 @@ div#settings-cont {
 div#settings-cont::after {
   content: " ";
   position: absolute;
-  top: 50%;
+  top: 30%;
   transform: translate(0, -50%);
   right: 100%;
   margin-top: calc(-5vh / 9);
@@ -193,6 +248,62 @@ button.setting-switch {
   width: 30%;
 }
 
+button#back {
+  font-weight: bolder;
+  z-index: 1;
+  color: white;
+  width: 5%;
+  height: 5%;
+  left: 2.5%;
+  top: 3%;
+}
+
+button.level-card {
+  font-family: "roboto", "Menlo", monospace;
+  font-size: calc(5vw / 6);
+  z-index: 2;
+  border-style: solid;
+  border-color: #547033;
+  border-radius: calc(25vw / 72);
+  border-width: calc(1vh / 9) calc(5vw / 72);
+  width: 15%;
+  height: 20%;
+}
+
+button.level-card:hover {
+  border-radius: calc(25vw / 72);
+  border-color: #4E6930;
+  border-width: calc(2vh / 9) calc(5vw / 36);
+  cursor: pointer;
+}
+
+button.level-card:active {
+  border-radius: calc(25vw / 72);
+  border-color: #344620;
+  border-width: calc(2vh / 9) calc(5vw / 36);
+}
+
+p.level-title {
+  text-align: center;
+  font-family: "roboto", "Menlo", monospace;
+  font-size: calc(10vw / 9);
+  color: white;
+  width: 100%;
+  left: 0;
+  top: 0;
+  text-shadow: calc(-5vw / 72) calc(-1vh / 9) 0 #000, calc(5vw / 72) calc(-1vh / 9) 0 #000, calc(-5vw / 72) calc(1vh / 9) 0 #000, calc(5vw / 72) calc(1vh / 9) 0 #000;
+}
+
+p.level-desc {
+  text-align: center;
+  left: 0;
+  top: 25%;
+  width: 100%;
+  font-family: monospace;
+  font-size: calc(5vw / 6);
+  color: #DDDDDD;
+  text-shadow: calc(-5vw / 72) calc(-1vh / 9) 0 #000, calc(5vw / 72) calc(-1vh / 9) 0 #000, calc(-5vw / 72) calc(1vh / 9) 0 #000, calc(5vw / 72) calc(1vh / 9) 0 #000;
+}
 
 /* UI ELEMENT STYLING */
 
@@ -306,11 +417,39 @@ div#ui-hp-bar-lag {
   z-index: 1;
 }
 
+div.killfeed-entry {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  font-family: "roboto bold", "Menlo", monospace;
+  font-size: calc(9vw / 9);
+  font-weight: bold;
+  border-radius: calc(15vw / 72);
+  background-color: #0006;
+  color: white;
+  padding: 0 0.5%;
+  margin: 1% 0;
+  width: max-content;
+  height: 3.3%;
+  right: 7.8%;
+}
+
+img.killfeed-image {
+  aspect-ratio: auto;
+  height: 1em;
+  transform: translate(0, 15%);
+}
+
 /* CUSTOM FONTS */
 
 @font-face {
   font-family: roboto;
-  src: url("./assets/fonts/roboto-condensed.woff2");
+  src: url("./assets/fonts/RobotoCondensed-Regular.ttf");
+}
+
+@font-face {
+  font-family: "roboto bold";
+  src: url("./assets/fonts/RobotoCondensed-Bold.ttf");
 }
 
 @font-face {

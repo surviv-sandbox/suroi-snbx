@@ -122,12 +122,12 @@ const perf: {
                 const crt = +(perf._data.ticks < perf.config.critical_tickrate),
                     crf = +(perf._data.frames < perf.config.critical_framerate),
                     tickrate = `<span style="background-color: #00F2">TPS: ${crt ? `<span class="critical">` : ""}${perf._data.ticks}${crt ? "</span>" : ""}`,
-                    aT = +average(...perf._data.tps),
-                    sT = +stdDev(...perf._data.tps),
+                    aT = +average(void 0, ...perf._data.tps),
+                    sT = +stdDev(void 0, ...perf._data.tps),
                     avgT = `AVG: ${Math.round(100 * aT) / 100} ± ${Math.round(100 * sT) / 100}</span>`,
                     framerate = `<span style="background-color: #FF02">FPS: ${crf ? `<span class="critical">` : ""}${perf._data.frames}${crf ? "</span>" : ""}`,
-                    aF = +average(...perf._data.fps),
-                    sF = +stdDev(...perf._data.fps),
+                    aF = +average(void 0, ...perf._data.fps),
+                    sF = +stdDev(void 0, ...perf._data.fps),
                     avgF = `AVG: ${Math.round(100 * aF) / 100} ± ${Math.round(100 * sF) / 100}</span>`;
 
                 logging.innerHTML = `${`${tickrate}<br>${avgT}`.repeat(+!!perf.mode.tps)}${"<br>".repeat(2 * +!!(perf.mode.tps * perf.mode.fps))}${`${framerate}<br>${avgF}`.repeat(+!!perf.mode.fps)}`;

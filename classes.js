@@ -31,10 +31,10 @@ class obstacle {
         p5.translate(b.position.x, b.position.y);
         p5.rotate(this.#body.angle + this.offset.angle);
         p5.translate(this.offset.x, this.offset.y);
-        if (this.image && sqauredDist(b.position, gamespace.player.body.position) < (p5.width + p5.height) ** 2) {
-            p5.tint(this.tint);
-            p5.image(this.image, 0, 0, this.imageWidth, this.imageHeight);
-        }
+        // if (this.image && sqauredDist(b.position, gamespace.player.body.position) < (p5.width + p5.height) ** 2) {
+        p5.tint(this.tint);
+        p5.image(this.image, 0, 0, this.imageWidth, this.imageHeight);
+        // }
         p5.noTint();
         p5.pop();
         if (gamespace.settings.debug) {
@@ -50,8 +50,10 @@ class obstacle {
 class playerLike {
     #body;
     get body() { return this.#body; }
+    aiIgnore = false;
     angle;
     health;
+    name;
     maxHealth;
     inventory;
     options;
@@ -78,12 +80,13 @@ class playerLike {
         base: 12
     };
     view;
-    constructor(body, angle, health, loadout, options, view) {
+    constructor(body, angle, health, loadout, options, view, name) {
         this.#body = body;
         this.#body.angle = angle;
         this.angle = angle;
         this.options = options;
         this.view = view;
+        this.name = name;
         this.inventory = new inventory(this);
         this.inventory.slot0 = new gun(gamespace.guns.find(g => g.name == loadout.guns[0]));
         loadout.guns[1] && (this.inventory.slot1 = new gun(gamespace.guns.find(g => g.name == loadout.guns[1])));
@@ -99,9 +102,9 @@ class playerLike {
         const ac = this.inventory.activeItem, item = ac.proto, radius = 50, d = Math.min(item?.recoilImpulse?.duration ?? 0, gamespace.lastUpdate - this.state.lastShot[this.inventory.activeIndex]);
         if (item) {
             p5.tint(item.tint ?? "#FFFFFF");
-            p5.image(item.images.held, (item.offset.x + (ac.recoilImpulseParity == 1 ? item.recoilImpulse.x * (1 - (d / item.recoilImpulse.duration)) : 0)) * radius, (item.offset.y - (ac.recoilImpulseParity == 1 ? item.recoilImpulse.y * (1 - (d / item.recoilImpulse.duration)) : 0)) * radius, item.width * radius, item.height * radius);
+            p5.image(item.images.held.img, (item.offset.x + (ac.recoilImpulseParity == 1 ? item.recoilImpulse.x * (1 - (d / item.recoilImpulse.duration)) : 0)) * radius, (item.offset.y - (ac.recoilImpulseParity == 1 ? item.recoilImpulse.y * (1 - (d / item.recoilImpulse.duration)) : 0)) * radius, item.width * radius, item.height * radius);
             if (item.dual) {
-                p5.image(item.images.held, -(item.offset.x + (ac.recoilImpulseParity == -1 ? item.recoilImpulse.x * (1 - (d / item.recoilImpulse.duration)) : 0)) * radius, (item.offset.y - (ac.recoilImpulseParity == -1 ? item.recoilImpulse.y * (1 - (d / item.recoilImpulse.duration)) : 0)) * radius, item.width * radius, item.height * radius);
+                p5.image(item.images.held.img, -(item.offset.x + (ac.recoilImpulseParity == -1 ? item.recoilImpulse.x * (1 - (d / item.recoilImpulse.duration)) : 0)) * radius, (item.offset.y - (ac.recoilImpulseParity == -1 ? item.recoilImpulse.y * (1 - (d / item.recoilImpulse.duration)) : 0)) * radius, item.width * radius, item.height * radius);
             }
             p5.tint("#FFFFFF");
         }
@@ -132,6 +135,24 @@ class playerLike {
         Matter.Body.applyForce(pb, pb.position, f);
         this.state.moving = !!(f.x || f.y);
     }
+    switchSlots(index) {
+        const i = this.inventory, ip = i.activeItem.proto, f = gamespace._currentUpdate - this.state.lastFreeSwitch >= 1000;
+        i.activeItem.stopReload(this);
+        this.state.attacking = false;
+        this.state.noSlow = true;
+        this.state.eSwitchDelay = ip.switchDelay;
+        if (f && (gamespace._currentUpdate - this.state.lastShot[this.inventory.activeIndex]) < ip.delay) {
+            this.state.eSwitchDelay = 250;
+        }
+        if (f) {
+            this.state.lastFreeSwitch = gamespace._currentUpdate;
+        }
+        this.state.lastSwitch = gamespace._currentUpdate;
+        this.inventory.activeIndex = index;
+        if (!i.activeItem.ammo) {
+            i.activeItem.reload(this);
+        }
+    }
     #determineMoveSpeed() {
         if (this.state.firing || gamespace._currentUpdate - this.state.lastShot[this.inventory.activeIndex] < this.inventory.activeItem.proto.delay && !this.state.noSlow) {
             return (this.speed.base + this.inventory.activeItem.proto.moveSpeedPenalties.firing) / 2;
@@ -160,10 +181,12 @@ class inventory {
 }
 class gunPrototype {
     name;
+    summary;
     dual;
     images = {
         loot: void 0,
-        held: void 0
+        held: void 0,
+        silhouette: void 0
     };
     ballistics;
     caliber;
@@ -194,8 +217,9 @@ class gunPrototype {
     altReload;
     magazineCapacity;
     moveSpeedPenalties;
-    constructor(name, dual, images, tint, ballistics, caliber, delay, accuracy, offset, dimensions, hands, spawnOffset, suppressed, recoilImpulse, fireMode, burstProps, reload, capacity, switchDelay, casing, moveSpeedPenalties, altReload) {
+    constructor(name, summary, dual, images, tint, ballistics, caliber, delay, accuracy, offset, dimensions, hands, spawnOffset, suppressed, recoilImpulse, fireMode, burstProps, reload, capacity, switchDelay, casing, moveSpeedPenalties, altReload) {
         this.name = name;
+        this.summary = summary;
         this.dual = dual;
         this.tint = tint;
         this.images = images;
@@ -245,6 +269,7 @@ class gun {
     primary(shooter) {
         const p = shooter, b = p.body, ip = this.#proto, fire = this.activeFireMode, burst = fire.startsWith("burst-");
         if ((gamespace._currentUpdate - p.state.lastShot[p.inventory.activeIndex]) >= (burst ? (ip.burstProps.burstDelay ?? ip.delay) : ip.delay) && this.#ammo) {
+            p.state.fired = 0;
             const timer = setTimeout(function a(weapon) {
                 if (!gamespace.objects.players.find(p => p.body.id == b.id) ||
                     (p.state.reloading && p.timers.reloading.all) ||
@@ -253,7 +278,9 @@ class gun {
                     (!weapon.#ammo) ||
                     (gamespace._currentUpdate - p.state.lastSwitch < p.state.eSwitchDelay)) {
                     p.state.firing = false;
-                    return clearTimeout(timer);
+                    p.state.fired = 0;
+                    clearTimeout(timer);
+                    return;
                 }
                 p.state.reloading && weapon.stopReload(p);
                 p.state.noSlow = false;
@@ -266,7 +293,7 @@ class gun {
                 }
                 const pr = weapon.#proto.ballistics.projectiles;
                 for (let i = 0; i < pr; i++) {
-                    const a = (p.state.lastShot[p.inventory.activeIndex] - gamespace._currentUpdate) > weapon.#proto.ballistics.fsaCooldown ? 0 : ip.accuracy.default + (p.state.moving && ip.accuracy.moving), s = gamespace.bulletInfo[weapon.#proto.caliber].spawnVar, spawnOffset = () => meanDevPM_random(s.mean, s.variation, s.plusOrMinus), start = {
+                    const a = (p.state.lastShot[p.inventory.activeIndex] - gamespace._currentUpdate) > weapon.#proto.ballistics.fsaCooldown ? 0 : ip.accuracy.default + (p.state.moving && ip.accuracy.moving), s = gamespace.bulletInfo[weapon.#proto.caliber].spawnVar, spawnOffset = () => +meanDevPM_random(s.mean, s.variation, s.plusOrMinus), start = {
                         x: b.position.x + (50 + ip.spawnOffset.y + spawnOffset()) * Math.sin(p.angle) + (weapon.recoilImpulseParity * ip.spawnOffset.x + spawnOffset()) * Math.cos(p.angle),
                         y: b.position.y - (50 + ip.spawnOffset.y + spawnOffset()) * Math.cos(p.angle) + (weapon.recoilImpulseParity * ip.spawnOffset.x + spawnOffset()) * Math.sin(p.angle)
                     }, dev = p.angle + a * (Math.random() - 0.5), body = Matter.Bodies.rectangle(start.x, start.y, ip.ballistics.tracer.width * 50, Math.min(100, ip.spawnOffset.y), { isStatic: false, friction: 1, restitution: 0, density: 1, angle: dev });
@@ -282,9 +309,9 @@ class gun {
                             y: b.position.y - (50 + ip.spawnOffset.y) * Math.cos(p.angle) + (weapon.recoilImpulseParity * ip.spawnOffset.x) * Math.sin(p.angle)
                         };
                         new casing(Matter.Bodies.rectangle(start.x, start.y, 0, 0, { isStatic: false, friction: 1, restitution: 0, density: 1, angle: p.angle }), ip, p.angle, start, gamespace._currentUpdate, {
-                            perp: meanDevPM_random(ip.casing.velocity.perp.value, ip.casing.velocity.perp.variation.value, ip.casing.velocity.perp.variation.plusOrMinus),
-                            parr: meanDevPM_random(ip.casing.velocity.parr.value, ip.casing.velocity.parr.variation.value, ip.casing.velocity.parr.variation.plusOrMinus),
-                            angular: meanDevPM_random(ip.casing.velocity.angular.value, ip.casing.velocity.angular.variation.value, ip.casing.velocity.angular.variation.plusOrMinus)
+                            perp: +meanDevPM_random(ip.casing.velocity.perp.value, ip.casing.velocity.perp.variation.value, ip.casing.velocity.perp.variation.plusOrMinus),
+                            parr: +meanDevPM_random(ip.casing.velocity.parr.value, ip.casing.velocity.parr.variation.value, ip.casing.velocity.parr.variation.plusOrMinus),
+                            angular: +meanDevPM_random(ip.casing.velocity.angular.value, ip.casing.velocity.angular.variation.value, ip.casing.velocity.angular.variation.plusOrMinus)
                         });
                     }
                     if (!ip.casing.spawnDelay) {
@@ -371,7 +398,7 @@ class bullet {
             this.destroy();
         }, v = this.#emitter.ballistics.velocity * (gamespace._currentUpdate - this.#created) / 1000;
         Matter.Body.setPosition(bd, { x: this.#start.x + Math.sin(this.#angle) * v, y: this.#start.y - Math.cos(this.#angle) * v });
-        this.squaredDistance = sqauredDist(this.#start, bd.position);
+        this.squaredDistance = +sqauredDist(this.#start, bd.position);
         if (this.squaredDistance > this.#emitter.ballistics.range ** 2) {
             removeBullet();
             return;
@@ -425,6 +452,13 @@ class bullet {
                 ;
                 if (target.health <= 0) {
                     Matter.World.remove(gamespace.world, target.body);
+                    gamespace.kills.push({
+                        killer: this.#shooter.name,
+                        killed: target.name,
+                        weapon: this.#emitter.name,
+                        timestamp: gamespace._currentUpdate,
+                        id: generateId.next().value
+                    });
                     target.destroy();
                     gamespace.objects.players.splice(index, 1);
                 }
@@ -437,17 +471,17 @@ class bullet {
         if (!bd) {
             return;
         }
-        if (sqauredDist(bd.position, gamespace.player.body.position) < (p5.width + p5.height) ** 2) {
-            p5.push();
-            p5.translate(bd.position.x, bd.position.y);
-            p5.rotate(this.angle);
-            const c = p5.color(gamespace.bulletInfo[this.#emitter.caliber]?.tints?.[this.#crit && gamespace.settings.bonus_features.headshots_use_saturated_tracers ? "saturated" : "normal"] ?? "#FFF");
-            c.setAlpha(this.#emitter.suppressed ? 128 : 255);
-            p5.tint(c);
-            const l = Math.min(992, distance(bd.position, this.#start));
-            p5.image(gamespace.images.tracer, 0, l / 2 - this.#length / 2, this.#emitter.ballistics.tracer.width * 50, l);
-            p5.pop();
-        }
+        // if (sqauredDist(bd.position, gamespace.player.body.position) < (p5.width + p5.height) ** 2) {
+        p5.push();
+        p5.translate(bd.position.x, bd.position.y);
+        p5.rotate(this.angle);
+        const c = p5.color(gamespace.bulletInfo[this.#emitter.caliber]?.tints?.[this.#crit && gamespace.settings.bonus_features.headshots_use_saturated_tracers ? "saturated" : "normal"] ?? "#FFF");
+        c.setAlpha(this.#emitter.suppressed ? 128 : 255);
+        p5.tint(c);
+        const l = Math.min(992, +distance(bd.position, this.#start));
+        p5.image(gamespace.images.tracer, 0, l / 2 - this.#length / 2, this.#emitter.ballistics.tracer.width * 50, l);
+        p5.pop();
+        // }
         if (gamespace.settings.debug) {
             p5.fill("#FF000080");
             p5.beginShape();
@@ -487,7 +521,7 @@ class casing {
         this.#created = created;
         this.#velocities = vel;
         this.#info = gamespace.bulletInfo[this.#emitter.caliber].casing;
-        this.#despawnDist = meanDevPM_random(this.#info.despawnDist.mean, this.#info.despawnDist.variation, this.#info.despawnDist.plusOrMinus);
+        this.#despawnDist = +meanDevPM_random(this.#info.despawnDist.mean, this.#info.despawnDist.variation, this.#info.despawnDist.plusOrMinus);
         gamespace.objects.casings.push(this);
     }
     update() {
@@ -497,7 +531,7 @@ class casing {
             y: this.#start.y + (Math.cos(this.#trajectory) * this.#velocities.parr - Math.sin(this.#trajectory) * this.#velocities.perp) * t
         });
         this.#angle = this.#trajectory + this.#velocities.angular * t;
-        this.#squaredDist = sqauredDist(this.#body.position, this.#start);
+        this.#squaredDist = +sqauredDist(this.#body.position, this.#start);
         if (this.#squaredDist > this.#despawnDist ** 2) {
             Matter.World.remove(gamespace.world, this.#body);
             gamespace.objects.casings.splice(gamespace.objects.casings.findIndex(c => c.#body.id == this.#body.id), 1);
@@ -508,7 +542,7 @@ class casing {
         if (!this.#body) {
             return;
         }
-        if (sqauredDist(this.#body.position, gamespace.player.body.position) < (p5.width + p5.height) ** 2) {
+        if (+sqauredDist(this.#body.position, gamespace.player.body.position) < (p5.width + p5.height) ** 2) {
             p5.push();
             p5.translate(this.#body.position.x, this.#body.position.y);
             p5.rotate(this.#angle);
@@ -522,7 +556,8 @@ class casing {
     }
 }
 const gamespace = {
-    get version() { return `0.0.1 (build 05-25-2022)`; },
+    get version() { return `0.0.1 (build 05-29-2022)`; },
+    bots: [],
     bulletInfo: {},
     _currentLevel: void 0,
     _currentUpdate: 0,
@@ -550,6 +585,7 @@ const gamespace = {
         tracer: loadImg("assets/items/ammo/tracer.png")
     },
     keys: {},
+    kills: [],
     lastUpdate: 0,
     levels: [],
     objects: {
@@ -563,11 +599,16 @@ const gamespace = {
     settings: {
         graphicsQuality: 1,
         debug: false,
+        useNativeMath: true,
+        name: "Player",
         bonus_features: {
+            bot_debug: false,
+            csgo_style_killfeed: false,
+            damage_numbers_stack: true,
             headshots_use_saturated_tracers: true,
-            show_damage_numbers: true,
-            damage_numbers_stack: true
-        }
+            show_damage_numbers: true
+        },
+        ui: true
     },
     update(p5) {
         function drawPlayers() {
@@ -605,17 +646,21 @@ const gamespace = {
         ;
         const now = Date.now();
         gamespace.currentUpdate = now;
-        // for (let i = 0; i < 10; i++, Matter.Engine.update(gamespace.engine, gamespace.deltaTime / 10));
         Matter.Engine.update(gamespace.engine, gamespace.deltaTime);
         if (perf.mode.fps) {
             ++perf._data.frames;
+        }
+        for (const key in gamespace.keys) {
+            if (key.startsWith("mwheel")) {
+                gamespace.keys[key] = false;
+            }
         }
         p5.clear(void 0, void 0, void 0, void 0);
         const p = gamespace.player, b = p.body;
         p5.camera(Math.round(b.position.x), Math.round(b.position.y), p.view - p5.width / 2, Math.round(b.position.x), Math.round(b.position.y), 0);
         p5.noStroke();
         p5.rectMode(p5.CORNER);
-        p5.fill(gamespace._currentLevel.world.colour);
+        p5.fill(gamespace._currentLevel.world.color);
         p5.rect(0, 0, gamespace._currentLevel.world.width, gamespace._currentLevel.world.height);
         p5.imageMode(p5.CENTER);
         {
@@ -642,13 +687,19 @@ const gamespace = {
         catch { }
         if (gamespace.settings.bonus_features.show_damage_numbers) {
             gamespace.objects.damageNumbers.forEach((d, i) => {
-                const t = (gamespace._currentUpdate - d.createdTimestamp), lifetime = 500, [minX, maxX, minY, maxY] = [gamespace.player.body.position.x - 1000, gamespace.player.body.position.x + 1000, gamespace.player.body.position.y - 650, gamespace.player.body.position.y + 650], pos = {
+                const t = (gamespace._currentUpdate - d.createdTimestamp), lifetime = 500, pos = {
                     x: d.position.x + d.rngOffset.x,
                     y: d.position.y + d.rngOffset.y
                 };
                 p5.push();
-                p5.translate(+clamp(pos.x, minX, maxX), +clamp(pos.y, minY, maxY));
-                p5.textAlign(checkBounds(pos.x, minX, maxX) ? "center" : ({ 1: "left", [-1]: "right" })[Math.cmp(pos.x, minX)], checkBounds(pos.y, minY, maxY) ? "center" : ({ 1: "top", [-1]: "bottom" })[Math.cmp(pos.y, minY)]);
+                p5.translate(
+                // +clamp(pos.x, minX, maxX),
+                // +clamp(pos.y, minY, maxY)
+                pos.x, pos.y);
+                p5.textAlign(
+                // checkBounds(pos.x, minX, maxX) ? "center" : ({ 1: "left", [-1]: "right" })[Math.cmp(pos.x, minX)],
+                // checkBounds(pos.y, minY, maxY) ? "center" : ({ 1: "top", [-1]: "bottom" })[Math.cmp(pos.y, minY)]
+                "center", "center");
                 p5.textSize(d.lethal ? 90 : 80);
                 if (d.crit) {
                     const c = p5.color(0, 255, 0);
@@ -679,8 +730,12 @@ const gamespace = {
 })();
 /*
 
-    tsc classes.ts main.ts perf.ts util.ts input.ts ui.ts libraries/p5/types/index.d.ts libraries/p5/types/global.d.ts libraries/matter/types/index.d.ts libraries/decimaljs/decimal.global.d.ts --target esnext --declaration
+    tsc classes.ts main.ts perf.ts util.ts input.ts ui.ts memory.ts libraries/p5/types/index.d.ts libraries/p5/types/global.d.ts libraries/matter/types/index.d.ts libraries/decimaljs/decimal.global.d.ts --target esnext --declaration
 
-    tsc assets/levels/level0/level.ts classes.d.ts main.d.ts perf.d.ts util.d.ts input.d.ts ui.d.ts libraries/p5/types/index.d.ts libraries/p5/types/global.d.ts libraries/matter/types/index.d.ts libraries/decimaljs/decimal.global.d.ts --target esnext --declaration
+    tsc assets/levels/level0/level.ts classes.d.ts main.d.ts perf.d.ts util.d.ts input.d.ts ui.d.ts memory.d.ts libraries/p5/types/index.d.ts libraries/p5/types/global.d.ts libraries/matter/types/index.d.ts libraries/decimaljs/decimal.global.d.ts --target esnext --declaration
+
+    tsc assets/levels/level1/level.ts classes.d.ts main.d.ts perf.d.ts util.d.ts input.d.ts ui.d.ts memory.d.ts libraries/p5/types/index.d.ts libraries/p5/types/global.d.ts libraries/matter/types/index.d.ts libraries/decimaljs/decimal.global.d.ts --target esnext --declaration
+
+    tsc assets/scripts/std_ai.ts classes.d.ts main.d.ts perf.d.ts util.d.ts input.d.ts ui.d.ts memory.d.ts libraries/p5/types/index.d.ts libraries/p5/types/global.d.ts libraries/matter/types/index.d.ts libraries/decimaljs/decimal.global.d.ts --target esnext --declaration
 
 */ 

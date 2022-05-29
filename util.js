@@ -1,3 +1,9 @@
+const generateId = (function* () {
+    let i = 0;
+    while (true) {
+        yield i++;
+    }
+})();
 function loadImg(path) {
     return p5.prototype.loadImage.call({ _decrementPreload: () => { } }, path);
 }
@@ -10,14 +16,17 @@ function makeElement(tag, id = void 0, className = void 0) {
     className && (ele.className = className);
     return ele;
 }
-function sqauredDist(ptA, ptB) {
-    return (ptB.x - ptA.x) ** 2 + (ptB.y - ptA.y) ** 2;
+function sqauredDist(ptA, ptB, options) {
+    options = { useNativeMath: (options ?? gamespace.settings).useNativeMath };
+    return options.useNativeMath ? (ptB.x - ptA.x) ** 2 + (ptB.y - ptA.y) ** 2 : Decimal.sub(ptB.x, ptA.x).pow(2).plus(Decimal.sub(ptB.y, ptA.y).pow(2));
 }
-function distance(ptA, ptB) {
-    return Math.sqrt(sqauredDist(ptA, ptB));
+function distance(ptA, ptB, options) {
+    options = { useNativeMath: (options ?? gamespace.settings).useNativeMath };
+    return (options.useNativeMath ? Math : Decimal).sqrt(sqauredDist(ptA, ptB, options));
 }
-function RPMToMSDelay(rpm) {
-    return 60000 / rpm;
+function RPMToMSDelay(rpm, options) {
+    options = { useNativeMath: (options ?? gamespace.settings).useNativeMath };
+    return options.useNativeMath ? 60000 / rpm : Decimal.div(60000, rpm);
 }
 function parseLevelData(data) {
     return {
@@ -63,34 +72,56 @@ function parseLevelData(data) {
         }, ({
             1: 2050,
             2: 2400,
-            // 4: 3000,
+            4: 3079,
             8: 3950,
-            // 15: 104 / 68
-        })[1]))
+            // 15: 9200
+        })[p.scope], ["Flavie", "Mathis", "Sarah", "Juliette", "Emma", "Lexie", "Oceane", "Maeva", "Sophia", "Charles", "Jeanne", "Laurent", "Theo", "Eli", "Edouard", "Axel", "Leonie", "Mayson", "Louis", "William", "Laurence", "Sophie", "Charlie", "Charlotte", "Beatrice", "Jayden", "Clara", "Felix", "Ellie", "James", "Ethan", "Milan", "Rosalie", "Hubert", "Lea", "Amelia", "Olivia", "Noah", "Emile", "Florence", "Simone", "Adele", "Mia", "Elizabeth", "Ophelie", "Flora", "Gabriel", "Victoria", "Logan", "Raphael", "Arnaud", "Victor", "Benjamin", "Livia", "Alicia", "Arthur", "Anna", "Lily", "Henri", "Nathan", "Romy", "Thomas", "Alice", "Lucas", "Theodore", "Liam", "Jules", "Chloe", "Camille", "Leonard", "Antoine", "Nolan", "Elliot", "Jackson", "Jake", "Zoe", "Samuel", "Eleonore", "Julia", "Maelie", "Alexis", "Mila", "Eloi", "Noelie", "Matheo", "Elena", "Jacob", "Jade", "Leo", "Jasmine", "Raphaelle", "Rose", "Adam", "Eva", "Olivier", "Xavier", "Loic", "Sofia", "Zachary", "Zack"][Math.floor(Math.random() * 100)]))
     };
 }
 function parseGunData(gunData) {
     const playerSize = 50;
     function toMS(val) {
+        const nM = gamespace.settings.useNativeMath;
         switch (val.givenIn) {
             case "ms": return val.value;
-            case "s": return val.value * 1000;
-            case "RPM": return RPMToMSDelay(val.value);
+            case "s": return nM ? val.value * 1000 : +Decimal.mul(val.value, 1000);
+            case "RPM": return +RPMToMSDelay(val.value);
         }
     }
     function toRad(val) {
+        const nM = gamespace.settings.useNativeMath;
         switch (val.givenIn) {
             case "radians": return val.value;
-            case "degrees": return val.value * Math.PI / 180;
-            case "gradians": return val.value * 0.9;
-            case "turns": return val.value * 2 * Math.PI;
+            case "degrees": return nM ? val.value * Math.PI / 180 : +Decimal.mul(val.value, Decimal.acos(-1)).div(180);
+            case "gradians": return nM ? val.value * 0.9 : +Decimal.mul(val.value, 0.9);
+            case "turns": return nM ? val.value * 2 * Math.PI : +Decimal.mul(val.value, 2);
         }
     }
     return gunData.map(g => {
-        return new gunPrototype(g.name, g.dual, (() => {
+        return new gunPrototype(g.name, (() => {
             return {
-                held: g.images.held && loadImg(g.images.held),
-                loot: g.images.loot && loadImg(g.images.loot)
+                class: g.summary.class,
+                engagementDistance: {
+                    min: g.summary.engagementDistance.min.givenIn == "absolute" ? g.summary.engagementDistance.min.value : g.summary.engagementDistance.min.value * playerSize,
+                    max: g.summary.engagementDistance.max.givenIn == "absolute" ? g.summary.engagementDistance.max.value : g.summary.engagementDistance.max.value * playerSize
+                },
+                shouldNoslow: g.summary.shouldNoslow,
+                role: g.summary.role
+            };
+        })(), g.dual, (() => {
+            return {
+                loot: {
+                    img: g.images.loot && loadImg(g.images.loot),
+                    src: g.images.loot
+                },
+                held: {
+                    img: g.images.held && loadImg(g.images.held),
+                    src: g.images.held
+                },
+                silhouette: {
+                    img: g.images.silhouette && loadImg(g.images.silhouette),
+                    src: g.images.silhouette
+                }
             };
         })(), g.tint, (() => {
             const b = g.ballistics, t = b.tracer;
@@ -222,18 +253,20 @@ function parseAmmoData(data) {
     return final;
 }
 function $(ele) { return document.getElementById(ele); }
-function average(...args) {
-    for (var i = 0, sum = 0; i < args.length; sum += +args[i++])
-        ;
-    return sum / args.length;
+function average(options, ...args) {
+    options = { useNativeMath: options?.useNativeMath ?? gamespace.settings.useNativeMath };
+    if (options.useNativeMath) {
+        return args.reduce((p, c) => +p + +c, 0) / args.length;
+    }
+    return args.reduce((p, c) => Decimal.add(p, c), 0);
 }
-function stdDev(...arr) {
-    const avg = average(...arr), a = arr.map(e => Math.abs(+e - +avg));
-    return average(...a);
+function stdDev(options, ...arr) {
+    options = { useNativeMath: options?.useNativeMath ?? gamespace.settings.useNativeMath };
+    const nM = options.useNativeMath, avg = average(options, ...arr), a = arr.map(e => (nM ? Math : Decimal).abs((nM ? +e - +avg : Decimal.sub(e, avg))));
+    return average(options, ...a);
 }
 function checkBounds(value, lowerBound, upperBound, options = { inclusion: { lower: true, upper: true }, useNativeMath: true }) {
-    options = { useNativeMath: options?.useNativeMath ?? true, inclusion: { lower: options.inclusion?.lower ?? true, upper: options.inclusion?.upper ?? true } };
-    // options = { useNativeMath: options.useNativeMath ?? window.settings.framework.defaults.useNativeMath, inclusion: { lower: options.inclusion?.lower ?? true, upper: options.inclusion?.upper ?? true } };
+    options = { useNativeMath: options.useNativeMath ?? gamespace.settings.useNativeMath, inclusion: { lower: options.inclusion?.lower ?? true, upper: options.inclusion?.upper ?? true } };
     value = +value, lowerBound = typeof lowerBound != "string" ? +lowerBound : lowerBound, upperBound = typeof upperBound != "string" ? +upperBound : upperBound;
     if (Number.isNaN(value) || !Number.isFinite(value) || (lowerBound == upperBound && !(options.inclusion.lower || options.inclusion.upper)) || lowerBound == "inf" || upperBound == "-inf" || lowerBound > upperBound) {
         return false;
@@ -248,14 +281,12 @@ function checkBounds(value, lowerBound, upperBound, options = { inclusion: { low
 }
 ;
 function clamp(value, min, max, options) {
-    options = { useNativeMath: options?.useNativeMath ?? true };
-    // options = { useNativeMath: options?.useNativeMath ?? window.settings.framework.defaults.useNativeMath };
+    options = { useNativeMath: options?.useNativeMath ?? gamespace.settings.useNativeMath };
     min ??= -Infinity, max ??= Infinity;
     return options.useNativeMath ? Math.max(+min, Math.min(+value, +max)) : Decimal.clamp(value, min, max);
 }
 function normalizeAngle(a, options = { useNativeMath: true, normalizeTo: "radians" }) {
-    options = { useNativeMath: options?.useNativeMath ?? true, normalizeTo: options?.normalizeTo ?? "degrees" };
-    // options = { useNativeMath: options.useNativeMath ?? window.settings.framework.defaults.useNativeMath, normalizeTo: options.normalizeTo ?? "degrees" };
+    options = { useNativeMath: options.useNativeMath ?? gamespace.settings.useNativeMath, normalizeTo: options.normalizeTo ?? "degrees" };
     const fullTurn = {
         degrees: 360,
         radians: options.useNativeMath ? 2 * Math.PI : Decimal.mul(2, Math.PI),
@@ -264,10 +295,38 @@ function normalizeAngle(a, options = { useNativeMath: true, normalizeTo: "radian
     }[options.normalizeTo];
     return options.useNativeMath ? +a - Math.floor(+a / fullTurn) * fullTurn : Decimal.sub(a, Decimal.div(a, fullTurn).floor().mul(fullTurn));
 }
-function meanDevPM_random(mean, deviation, plusOrMinus) {
+function meanDevPM_random(mean, deviation, plusOrMinus, options) {
+    options = { useNativeMath: options?.useNativeMath ?? gamespace.settings.useNativeMath };
     return deviation
-        ? mean + deviation * (plusOrMinus ? 2 * (Math.random() - 0.5) : Math.random())
+        ? options.useNativeMath ? +mean + +deviation * (plusOrMinus ? 2 * (Math.random() - 0.5) : Math.random()) : Decimal.mul(deviation, plusOrMinus ? Decimal.mul(2, Math.random()).sub(0.5) : Math.random()).add(mean)
         : mean;
+}
+function clone(object) {
+    if (typeof object != "object" || object === null) {
+        return object;
+    }
+    if (Array.isArray(object)) {
+        const copy = [];
+        for (const key in object) {
+            const value = object[key];
+            if (typeof value == "object" && value !== null) {
+                copy[key] = value === null ? value : clone(value);
+                continue;
+            }
+            copy[key] = value;
+        }
+        return copy;
+    }
+    const copy = {};
+    for (const key in object) {
+        const value = object[key];
+        if (typeof value == "object" && object !== null) {
+            copy[key] = value === null ? value : clone(value);
+            continue;
+        }
+        copy[key] = value;
+    }
+    return copy;
 }
 (() => {
     Math.cmp = function (a, b) {
@@ -279,7 +338,7 @@ function meanDevPM_random(mean, deviation, plusOrMinus) {
     // Just adding short circuits, like sin(π) = 0, sec, csc and cot
     // source: https://en.wikipedia.org/wiki/Exact_trigonometric_values#Common_angles
     // Not covered: any of the hyperbolic trig functions
-    const π = true ? Math.PI : Decimal.acos(-1), nativeSin = Math.sin, nativeCos = Math.cos, nativeTan = Math.tan, nativeArcSin = Math.asin, nativeArcCos = Math.acos, nativeArcTan = Math.atan, sin = {
+    const π = Math.PI, nativeSin = Math.sin, nativeCos = Math.cos, nativeTan = Math.tan, nativeArcSin = Math.asin, nativeArcCos = Math.acos, nativeArcTan = Math.atan, sin = {
         0: 0,
         [+π / 12]: 0.25881904510252076,
         [+π / 10]: 0.30901699437494742,
@@ -321,13 +380,13 @@ function meanDevPM_random(mean, deviation, plusOrMinus) {
         [2 * +π / 5]: 3.0776835371752534,
         [5 * +π / 12]: 3.7320508075688773,
         [+π / 2]: Infinity
-    }, nM = true;
+    };
     Math.sin = function (x) {
         const ang = normalizeAngle(x, { normalizeTo: "radians" }), a = normalizeAngle(x, { normalizeTo: "π" }), sign = [1, -1][+(ang != a)];
         return sign * (sin[+a] ?? nativeSin.call(Math, +a));
     };
     Math.cos = function (x) {
-        const ang = normalizeAngle(x, { normalizeTo: "radians" }), a = normalizeAngle(x, { normalizeTo: "π" }), sign = [1, -1][+checkBounds(ang, nM ? π / 2 : π.div(2), nM ? π * 1.5 : π.mul(1.5))];
+        const ang = normalizeAngle(x, { normalizeTo: "radians" }), a = normalizeAngle(x, { normalizeTo: "π" }), sign = [1, -1][+checkBounds(ang, π / 2, π * 1.5)];
         return sign * (cos[+a] ?? sign * nativeCos.call(Math, +ang));
     };
     Math.tan = function (x) {
@@ -358,11 +417,11 @@ function meanDevPM_random(mean, deviation, plusOrMinus) {
         x = Math.abs(x);
         for (const p in cos) {
             if (cos[p] == x) {
-                return sign == -1 ? (nM ? π - +p : +(π.sub(p))) : +p;
+                return sign == -1 ? π - +p : +p;
             }
         }
         const nac = nativeArcCos.call(Math, x);
-        return sign == -1 ? +π - nac : +π.sub(nac);
+        return sign == -1 ? +π - nac : nac;
     };
     Math.atan = function (x) {
         const sign = Math.sign(x);
@@ -374,7 +433,7 @@ function meanDevPM_random(mean, deviation, plusOrMinus) {
         }
         return sign * nativeArcTan.call(Math, x);
     };
-    Math.asec = function (x) { return x == 1 ? 0 : x == -1 ? +π : Math.acos(nM ? 1 / x : +Decimal.div(1, x)); };
-    Math.acsc = function (x) { return x == 1 ? nM ? π / 2 : +π.div(2) : x == -1 ? nM ? -π / 2 : -+π.div(2) : Math.asin(nM ? 1 / x : +Decimal.div(1, x)); };
-    Math.acot = function (x) { return x == Infinity ? 0 : x == -Infinity ? +π : nM ? π / 2 - Math.atan(x) : +(π.div(2).sub(Math.atan(x))); };
+    Math.asec = function (x) { return x == 1 ? 0 : x == -1 ? +π : Math.acos(1 / x); };
+    Math.acsc = function (x) { return x == 1 ? π / 2 : x == -1 ? -π / 2 : Math.asin(1 / x); };
+    Math.acot = function (x) { return x == Infinity ? 0 : x == -Infinity ? +π : π / 2 - Math.atan(x); };
 })();
