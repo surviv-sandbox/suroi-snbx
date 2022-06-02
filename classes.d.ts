@@ -58,6 +58,7 @@ declare class playerLike {
             timer: false | number;
             all: boolean;
         };
+        anticipatedReload: false | number;
     };
     speed: {
         base: number;
@@ -137,8 +138,11 @@ declare class gunPrototype {
         x: number;
         y: number;
     };
-    width: number;
-    height: number;
+    dimensions: {
+        width: number;
+        height: number;
+        above: boolean;
+    };
     switchDelay: number;
     hands: {
         lefthand: {
@@ -192,7 +196,7 @@ declare class gunPrototype {
         y: number;
         duration: number;
     };
-    fireMode: ("automatic" | "semi" | `burst-${number}`)[];
+    fireMode: ("automatic" | "semi" | `${"auto-" | ""}burst-${number}`)[];
     burstProps: {
         shotDelay: number;
         burstDelay: number;
@@ -258,6 +262,7 @@ declare class gunPrototype {
     }, dimensions: {
         width: number;
         height: number;
+        above: boolean;
     }, hands: {
         lefthand: {
             x: number;
@@ -298,7 +303,7 @@ declare class gun {
     get proto(): gunPrototype;
     get activeFireModeIndex(): number;
     set activeFireModeIndex(v: number);
-    get activeFireMode(): `burst-${number}` | "automatic" | "semi";
+    get activeFireMode(): "automatic" | "semi" | `burst-${number}` | `auto-burst-${number}`;
     get ammo(): number;
     set ammo(v: number);
     recoilImpulseParity: -1 | 1;
@@ -306,6 +311,7 @@ declare class gun {
     primary(shooter: playerLike): void;
     reload(shooter: playerLike): void;
     stopReload(shooter: playerLike): void;
+    makeCasing(shooter: playerLike): void;
 }
 declare class bullet {
     #private;
@@ -415,6 +421,7 @@ declare const gamespace: {
         [key: number]: boolean;
     };
     kills: {
+        crit: boolean;
         killed: string;
         killer: string;
         timestamp: number;

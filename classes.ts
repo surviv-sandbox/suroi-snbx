@@ -96,12 +96,14 @@ class playerLike {
         reloading: {
             timer: false | number,
             all: boolean;
-        };
+        },
+        anticipatedReload: false | number;
     } = {
             reloading: {
                 timer: false,
                 all: false
-            }
+            },
+            anticipatedReload: false
         };
     speed = {
         base: 12
@@ -136,14 +138,20 @@ class playerLike {
             radius = 50,
             d = Math.min(item?.recoilImpulse?.duration ?? 0, gamespace.lastUpdate - this.state.lastShot[this.inventory.activeIndex]);
 
+
         if (item) {
+            if (item.dimensions.above) {
+                p5.fill("#F8C574");
+                p5.ellipse(0, 0, 2 * radius, 2 * radius, 70);
+            }
+
             p5.tint(item.tint ?? "#FFFFFF");
             p5.image(
                 item.images.held.img,
                 (item.offset.x + (ac.recoilImpulseParity == 1 ? item.recoilImpulse.x * (1 - (d / item.recoilImpulse.duration)) : 0)) * radius,
                 (item.offset.y - (ac.recoilImpulseParity == 1 ? item.recoilImpulse.y * (1 - (d / item.recoilImpulse.duration)) : 0)) * radius,
-                item.width * radius,
-                item.height * radius
+                item.dimensions.width * radius,
+                item.dimensions.height * radius
             );
 
             if (item.dual) {
@@ -151,18 +159,20 @@ class playerLike {
                     item.images.held.img,
                     -(item.offset.x + (ac.recoilImpulseParity == -1 ? item.recoilImpulse.x * (1 - (d / item.recoilImpulse.duration)) : 0)) * radius,
                     (item.offset.y - (ac.recoilImpulseParity == -1 ? item.recoilImpulse.y * (1 - (d / item.recoilImpulse.duration)) : 0)) * radius,
-                    item.width * radius,
-                    item.height * radius
+                    item.dimensions.width * radius,
+                    item.dimensions.height * radius
                 );
             }
             p5.tint("#FFFFFF");
         }
 
-        p5.fill("#F8C574");
-        p5.ellipse(0, 0, 2 * radius, 2 * radius, 70);
+        if (!item?.dimensions?.above) {
+            p5.fill("#F8C574");
+            p5.ellipse(0, 0, 2 * radius, 2 * radius, 70);
+        }
 
         for (let i = 0; i <= 1; i++) {
-            p5.fill(["#000", "#F8C574"][i]);
+            p5.fill(["#302719", "#F8C574"][i]);
             Object.values(item.hands).filter(v => v).forEach((hand, index) => {
                 p5.ellipse(
                     (hand.x + (!item.dual || ac.recoilImpulseParity == (1 - 2 * index) ? item?.recoilImpulse?.x ?? 0 : 0) * (1 - (d / (item?.recoilImpulse?.duration ?? d)))) * radius,
@@ -218,11 +228,18 @@ class playerLike {
         this.inventory.activeIndex = index;
 
         if (!i.activeItem.ammo) {
-            i.activeItem.reload(this);
+            this.timers.anticipatedReload && clearTimeout(this.timers.anticipatedReload);
+
+            this.timers.anticipatedReload = setTimeout(() => {
+                i.activeItem.reload(this);
+            }, this.state.eSwitchDelay) as any as number;
         }
     }
     #determineMoveSpeed() {
-        if (this.state.firing || gamespace._currentUpdate - this.state.lastShot[this.inventory.activeIndex] < this.inventory.activeItem.proto.delay && !this.state.noSlow) {
+        if (this.state.firing ||
+            gamespace._currentUpdate - this.state.lastShot[this.inventory.activeIndex] < (!!this.inventory.activeItem.activeFireMode.match(/(auto-)?burst-/) ? this.inventory.activeItem.proto.burstProps.burstDelay : this.inventory.activeItem.proto.delay)
+            && !this.state.noSlow
+        ) {
             return (this.speed.base + this.inventory.activeItem.proto.moveSpeedPenalties.firing) / 2;
         } else {
             return this.speed.base + this.inventory.activeItem.proto.moveSpeedPenalties.active - 1;
@@ -303,8 +320,11 @@ class gunPrototype {
         moving: 0,
     };
     offset: { x: number; y: number; } = { x: 0, y: 0 };
-    width: number;
-    height: number;
+    dimensions: {
+        width: number,
+        height: number,
+        above: boolean;
+    };
     switchDelay: number;
     hands: { lefthand: { x: number; y: number; }; righthand?: { x: number; y: number; }; } = {
         lefthand: { x: 0.5, y: -1 },
@@ -345,7 +365,7 @@ class gunPrototype {
         spawnDelay: number;
     };
     recoilImpulse: { x: number; y: number; duration: number; } = { x: 0, y: -5, duration: 80 };
-    fireMode: ("automatic" | "semi" | `burst-${number}`)[] = ["automatic"];
+    fireMode: ("automatic" | "semi" | `${"auto-" | ""}burst-${number}`)[] = ["automatic"];
     burstProps: { shotDelay: number; burstDelay: number; } = {
         shotDelay: 60,
         burstDelay: 500,
@@ -411,7 +431,7 @@ class gunPrototype {
         delay: number,
         accuracy: { default: number, moving: number; },
         offset: { x: number, y: number; },
-        dimensions: { width: number, height: number; },
+        dimensions: { width: number, height: number, above: boolean; },
         hands: { lefthand: { x: number, y: number; }, righthand?: { x: number, y: number; }; },
         spawnOffset: { x: number, y: number; },
         suppressed: boolean,
@@ -450,8 +470,7 @@ class gunPrototype {
         this.accuracy = accuracy;
         this.offset = offset;
         this.suppressed = suppressed;
-        this.width = dimensions.width;
-        this.height = dimensions.height;
+        this.dimensions = dimensions;
         this.hands = hands;
         this.spawnOffset = spawnOffset;
         this.recoilImpulse = recoilImpulse;
@@ -497,22 +516,30 @@ class gun {
             b = p.body,
             ip = this.#proto,
             fire = this.activeFireMode,
-            burst = fire.startsWith("burst-");
+            burst = !!fire.match(/(auto-)?burst-/);
 
         if ((gamespace._currentUpdate - p.state.lastShot[p.inventory.activeIndex]) >= (burst ? (ip.burstProps.burstDelay ?? ip.delay) : ip.delay) && this.#ammo) {
             p.state.fired = 0;
             const timer = setTimeout(function a(weapon: gun) {
+                const exceed = p.state.fired >= +fire.replace(/(auto-)?burst-/, "");
                 if (
                     !gamespace.objects.players.find(p => p.body.id == b.id) ||
                     (p.state.reloading && p.timers.reloading.all) ||
-                    (!p.state.attacking) ||
-                    (burst && p.state.fired >= +fire.replace("burst-", "")) ||
+                    (!p.state.attacking && !(burst && !exceed)) ||
+                    (burst && (!fire.startsWith("auto-burst-") && exceed)) ||
                     (!weapon.#ammo) ||
                     (gamespace._currentUpdate - p.state.lastSwitch < p.state.eSwitchDelay)
                 ) {
-                    p.state.firing = false;
                     p.state.fired = 0;
+                    p.state.firing = false;
                     clearTimeout(timer);
+                    return;
+                }
+
+                if (burst && fire.startsWith("auto-burst-") && exceed) {
+                    p.state.fired = 0;
+                    p.state.firing = false;
+                    setTimeout(a, weapon.#proto.burstProps.burstDelay, weapon);
                     return;
                 }
 
@@ -546,41 +573,19 @@ class gun {
                     new bullet(body, p, ip, dev, start, gamespace._currentUpdate, Math.min(100, ip.spawnOffset.y), Math.random() >= 0.85);
                 }
 
-                try {
-                    function makeCasing() {
-                        if (shooter.state.noSlow) { return; }
-
-                        const start = {
-                            x: b.position.x + (50 + ip.spawnOffset.y) * Math.sin(p.angle) + (weapon.recoilImpulseParity * ip.spawnOffset.x) * Math.cos(p.angle),
-                            y: b.position.y - (50 + ip.spawnOffset.y) * Math.cos(p.angle) + (weapon.recoilImpulseParity * ip.spawnOffset.x) * Math.sin(p.angle)
-                        };
-
-                        new casing(
-                            Matter.Bodies.rectangle(
-                                start.x,
-                                start.y,
-                                0,
-                                0,
-                                { isStatic: false, friction: 1, restitution: 0, density: 1, angle: p.angle }
-                            ),
-                            ip,
-                            p.angle,
-                            start,
-                            gamespace._currentUpdate,
-                            {
-                                perp: +meanDevPM_random(ip.casing.velocity.perp.value, ip.casing.velocity.perp.variation.value, ip.casing.velocity.perp.variation.plusOrMinus),
-                                parr: +meanDevPM_random(ip.casing.velocity.parr.value, ip.casing.velocity.parr.variation.value, ip.casing.velocity.parr.variation.plusOrMinus),
-                                angular: +meanDevPM_random(ip.casing.velocity.angular.value, ip.casing.velocity.angular.variation.value, ip.casing.velocity.angular.variation.plusOrMinus)
-                            }
-                        );
-                    }
-
-                    if (!ip.casing.spawnDelay) {
-                        makeCasing();
-                    } else {
-                        setTimeout(makeCasing, ip.casing.spawnDelay);
-                    }
-                } catch { }
+                if (ip.casing.spawnOn == "fire" && !shooter.state.noSlow) {
+                    try {
+                        if (!ip.casing.spawnDelay) {
+                            weapon.makeCasing(shooter);
+                        } else {
+                            setTimeout(() => {
+                                if (shooter.inventory.activeItem.#proto.name == weapon.#proto.name) {
+                                    weapon.makeCasing(shooter);
+                                }
+                            }, ip.casing.spawnDelay);
+                        }
+                    } catch { }
+                }
 
                 if (!weapon.#ammo) {
                     return weapon.reload(shooter);
@@ -603,6 +608,18 @@ class gun {
 
         shooter.timers.reloading.timer && clearTimeout(shooter.timers.reloading.timer);
 
+        if (this.#proto.casing.spawnOn == "reload") {
+            try {
+                if (!this.#proto.casing.spawnDelay) {
+                    for (let i = 0; i < this.#proto.magazineCapacity.normal; i++, this.makeCasing(shooter));
+                } else {
+                    setTimeout(() => {
+                        for (let i = 0; i < this.#proto.magazineCapacity.normal; i++, this.makeCasing(shooter));
+                    }, this.#proto.casing.spawnDelay);
+                }
+            } catch { }
+        }
+
         shooter.timers.reloading = {
             timer: setTimeout(() => {
                 this.#ammo = Math.min(this.#ammo + (reloadToUse.ammoReloaded == "all" ? Infinity : reloadToUse.ammoReloaded as number), this.#proto.magazineCapacity.normal);
@@ -619,6 +636,34 @@ class gun {
             clearTimeout(shooter.timers.reloading.timer as any);
             shooter.state.reloading = shooter.timers.reloading.timer = false;
         }
+    }
+    makeCasing(shooter: playerLike) {
+        const p = shooter,
+            b = p.body,
+            ip = this.#proto,
+            start = {
+                x: b.position.x + (50 + ip.spawnOffset.y) * Math.sin(p.angle) + +((ip.casing.spawnOn == "fire") && (this.recoilImpulseParity * ip.spawnOffset.x) * Math.cos(p.angle)),
+                y: b.position.y - (50 + ip.spawnOffset.y) * Math.cos(p.angle) + +((ip.casing.spawnOn == "fire") && (this.recoilImpulseParity * ip.spawnOffset.x) * Math.sin(p.angle))
+            };
+
+        new casing(
+            Matter.Bodies.rectangle(
+                start.x,
+                start.y,
+                0,
+                0,
+                { isStatic: false, friction: 1, restitution: 0, density: 1, angle: p.angle }
+            ),
+            ip,
+            p.angle,
+            start,
+            gamespace._currentUpdate,
+            {
+                perp: +meanDevPM_random(ip.casing.velocity.perp.value, ip.casing.velocity.perp.variation.value, ip.casing.velocity.perp.variation.plusOrMinus),
+                parr: +meanDevPM_random(ip.casing.velocity.parr.value, ip.casing.velocity.parr.variation.value, ip.casing.velocity.parr.variation.plusOrMinus),
+                angular: +meanDevPM_random(ip.casing.velocity.angular.value, ip.casing.velocity.angular.variation.value, ip.casing.velocity.angular.variation.plusOrMinus)
+            }
+        );
     }
 }
 
@@ -741,6 +786,7 @@ class bullet {
                     Matter.World.remove(gamespace.world, target.body);
 
                     gamespace.kills.push({
+                        crit: this.#crit,
                         killer: this.#shooter.name,
                         killed: target.name,
                         weapon: this.#emitter.name,
@@ -829,7 +875,7 @@ class casing {
 
         Matter.Body.setPosition(this.#body, {
             x: this.#start.x + (Math.sin(this.#trajectory) * this.#velocities.parr - Math.cos(this.#trajectory) * this.#velocities.perp) * t,
-            y: this.#start.y + (Math.cos(this.#trajectory) * this.#velocities.parr - Math.sin(this.#trajectory) * this.#velocities.perp) * t
+            y: this.#start.y + (-Math.cos(this.#trajectory) * this.#velocities.parr + Math.sin(this.#trajectory) * this.#velocities.perp) * t
         });
 
         this.#angle = this.#trajectory + this.#velocities.angular * t;
@@ -843,15 +889,15 @@ class casing {
     }
     draw(p5: import("p5")) {
         if (!this.#body) { return; }
-        if (+sqauredDist(this.#body.position, gamespace.player.body.position) < (p5.width + p5.height) ** 2) {
-            p5.push();
-            p5.translate(this.#body.position.x, this.#body.position.y);
-            p5.rotate(this.#angle);
+        // if (+sqauredDist(this.#body.position, gamespace.player.body.position) < (p5.width + p5.height) ** 2) {
+        p5.push();
+        p5.translate(this.#body.position.x, this.#body.position.y);
+        p5.rotate(this.#angle);
 
-            p5.tint(255, 255 - (255 * this.#squaredDist / this.#despawnDist ** 2));
-            p5.image(this.#info.img, 0, 0, this.#info.width, this.#info.height);
-            p5.pop();
-        }
+        p5.tint(255, 255 - (255 * this.#squaredDist / this.#despawnDist ** 2));
+        p5.image(this.#info.img, 0, 0, this.#info.width, this.#info.height);
+        p5.pop();
+        // }
     }
     destroy() {
         this.#body = this.#emitter = void 0;
@@ -910,6 +956,7 @@ const gamespace: {
     images: { [key: string]: import("p5").Image; },
     keys: { [key: number]: boolean; },
     kills: {
+        crit: boolean,
         killed: string,
         killer: string,
         timestamp: number,
@@ -963,7 +1010,7 @@ const gamespace: {
     update: (p5: import("p5")) => void,
     world: Matter.Composite;
 } = {
-    get version() { return `0.0.1 (build 05-29-2022)`; },
+    get version() { return `0.0.1 (build 06-01-2022)`; },
     bots: [],
     bulletInfo: {},
     _currentLevel: void 0,
@@ -1095,8 +1142,8 @@ const gamespace: {
 
         drawObjects(0);
         drawBullets();
-        drawCasings();
         drawPlayers();
+        drawCasings();
         drawObjects(1);
         try {
             playerMove();

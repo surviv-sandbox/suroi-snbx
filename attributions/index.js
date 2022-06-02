@@ -6,7 +6,7 @@
 
     doc.appendChild(table).appendChild(head);
     table.appendChild(body);
-    head.innerHTML = `<tr><td><em>Asset</em></td><td><em>Source</em></td></tr>`;
+    head.innerHTML = `<tr><td><em>Asset</em></td><td><em>Source</em></td><td><em>Renamed?</em></td></tr>`;
 
     const arr = (await (await fetch("attributions.txt")).text()).split("\n");
 
@@ -15,6 +15,7 @@
         const row = document.createElement("tr"),
             cellA = document.createElement("td"),
             cellB = document.createElement("td"),
+            cellC = document.createElement("td"),
             a = document.createElement("a");
 
         body.appendChild(row);
@@ -23,9 +24,9 @@
             a.title = a.href = e.match(/\(https?:\/\/.*\)/g)[0].replace(/\(|\)/g, "");
             a.textContent = e.match(/\[.*?\]/g)[0].replace(/[\[\]]/g, "");
             cellB.appendChild(a);
+            cellC.innerHTML = !!e.match(/".*?".*?\(https?:\/\/.*\) \(Renamed\)/) ? `<span style="color: #8F8">yes</span>` : `<span style="color: #F88">no</span>`;
 
-            row.appendChild(cellA);
-            row.appendChild(cellB);
+            row.append(cellA, cellB, cellC);
             ++i;
         } catch (e) { break; }
     }

@@ -104,7 +104,7 @@ function drawUI() {
                 const p = ($(`killfeed-kill-${k.id}`) ?? makeElement("div", `killfeed-kill-${k.id}`, "killfeed-entry"));
                 if (!$(`killfeed-kill-${k.id}`)) {
                     if (gamespace.settings.bonus_features.csgo_style_killfeed) {
-                        p.innerHTML = `${k.killer}&nbsp;&nbsp;&nbsp;<img src="${gamespace.guns.find(g => g.name == k.weapon).images.silhouette.src}" class="killfeed-image"/>&nbsp;&nbsp;&nbsp;${k.killed}`;
+                        p.innerHTML = `${k.killer}&nbsp;&nbsp;&nbsp;<img src="${gamespace.guns.find(g => g.name == k.weapon).images.silhouette.src}" class="killfeed-image"${k.crit ? ` style="background: content-box radial-gradient(#f00, transparent);"` : ""}/>&nbsp;&nbsp;&nbsp;${k.killed}`;
                         p.style.backgroundColor = k.killed == gamespace.settings.name ? "#8008" : "";
                         p.style.outline = k.killer == gamespace.settings.name ? "calc(2vh / 9) solid #C00" : "";
                     }

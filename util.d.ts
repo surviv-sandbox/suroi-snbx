@@ -187,6 +187,7 @@ declare type JSONGun = {
     dimensions: {
         width: scaleOrAbsolute;
         height: scaleOrAbsolute;
+        above: boolean;
     };
     reload: {
         duration: timeModes;

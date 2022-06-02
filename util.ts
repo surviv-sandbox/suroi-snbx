@@ -168,7 +168,7 @@ function parseLevelData(data: JSONLevel): { obstacles: obstacle[]; players: play
                     2: 2400,
                     4: 3079,
                     8: 3950,
-                    // 15: 9200
+                    15: 5660
                 })[p.scope],
                 ["Flavie", "Mathis", "Sarah", "Juliette", "Emma", "Lexie", "Oceane", "Maeva", "Sophia", "Charles", "Jeanne", "Laurent", "Theo", "Eli", "Edouard", "Axel", "Leonie", "Mayson", "Louis", "William", "Laurence", "Sophie", "Charlie", "Charlotte", "Beatrice", "Jayden", "Clara", "Felix", "Ellie", "James", "Ethan", "Milan", "Rosalie", "Hubert", "Lea", "Amelia", "Olivia", "Noah", "Emile", "Florence", "Simone", "Adele", "Mia", "Elizabeth", "Ophelie", "Flora", "Gabriel", "Victoria", "Logan", "Raphael", "Arnaud", "Victor", "Benjamin", "Livia", "Alicia", "Arthur", "Anna", "Lily", "Henri", "Nathan", "Romy", "Thomas", "Alice", "Lucas", "Theodore", "Liam", "Jules", "Chloe", "Camille", "Leonard", "Antoine", "Nolan", "Elliot", "Jackson", "Jake", "Zoe", "Samuel", "Eleonore", "Julia", "Maelie", "Alexis", "Mila", "Eloi", "Noelie", "Matheo", "Elena", "Jacob", "Jade", "Leo", "Jasmine", "Raphaelle", "Rose", "Adam", "Eva", "Olivier", "Xavier", "Loic", "Sofia", "Zachary", "Zack"][Math.floor(Math.random() * 100)]
             )
@@ -254,7 +254,8 @@ type JSONGun = {
     imageOffset: offsetData,
     dimensions: {
         width: scaleOrAbsolute,
-        height: scaleOrAbsolute;
+        height: scaleOrAbsolute,
+        above: boolean;
     },
     reload: {
         duration: timeModes,
@@ -389,7 +390,8 @@ function parseGunData(gunData: JSONGun[]) {
                 const d = g.dimensions;
                 return {
                     width: d.width.givenIn == "scale" ? d.width.value : d.width.value / playerSize,
-                    height: d.height.givenIn == "scale" ? d.height.value : d.height.value / playerSize
+                    height: d.height.givenIn == "scale" ? d.height.value : d.height.value / playerSize,
+                    above: d.above
                 };
             })(),
             (() => {
@@ -595,7 +597,9 @@ function meanDevPM_random(mean: Decimal.Value, deviation: Decimal.Value, plusOrM
     options = { useNativeMath: options?.useNativeMath ?? gamespace.settings.useNativeMath };
 
     return deviation
-        ? options.useNativeMath ? +mean + +deviation * (plusOrMinus ? 2 * (Math.random() - 0.5) : Math.random()) : Decimal.mul(deviation, plusOrMinus ? Decimal.mul(2, Math.random()).sub(0.5) : Math.random()).add(mean)
+        ? options.useNativeMath
+            ? +mean + +deviation * (plusOrMinus ? 2 * (Math.random() - 0.5) : Math.random())
+            : Decimal.mul(deviation, plusOrMinus ? Decimal.mul(2, Math.random()).sub(0.5) : Math.random()).add(mean)
         : mean;
 }
 
