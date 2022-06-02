@@ -144,8 +144,10 @@ export const level = await (async () => {
 
                     document.body.style.backgroundColor = "#80AF49";
 
-                    overlay.style.aspectRatio = cont.style.aspectRatio = "1";
-                    cont.style.width = "50%";
+                    // overlay.style.aspectRatio = cont.style.aspectRatio = "1";
+                    cont.style.width = "75%";
+                    cont.style.height = "90%";
+                    overlay.style.width = overlay.style.height = "100%";
                     cont.style.borderRadius = "calc(50vw / 72)";
                     cont.style.backgroundColor = "#0008";
                     overlay.style.position = cont.style.position = "absolute";
@@ -153,35 +155,46 @@ export const level = await (async () => {
                     cont.style.left = "50%";
                     cont.style.top = "50%";
 
-                    overlay.style.width = "100%";
-                    overlay.width = 1000;
-                    overlay.height = 1000;
+                    overlay.width = 1500;
+                    overlay.height = 1125;
 
                     const otx = overlay.getContext("2d");
+
+                    otx.fillStyle = "#FFF1";
+                    otx.fillRect(0, 56.25, 1500, 56.25);
+                    otx.fillRect(0, 450, 1500, 56.25);
+
                     otx.lineWidth = 1;
                     otx.strokeStyle = "#FFF";
 
-                    otx.moveTo(500, 0);
-                    otx.lineTo(500, 450);
-                    otx.moveTo(500, 550);
-                    otx.lineTo(500, 900);
+                    otx.moveTo(750, 0);
+                    otx.lineTo(750, 506.25);
+                    otx.moveTo(750, 618.75);
+                    otx.lineTo(750, 1040.625);
                     otx.stroke();
                     otx.beginPath();
-                    otx.moveTo(0, 900);
-                    otx.lineTo(1000, 900);
+                    otx.moveTo(0, 1040.625);
+                    otx.lineTo(1500, 1040.625);
                     otx.stroke();
+
 
                     otx.font = "calc(250vw / 72) roboto";
                     otx.textAlign = "center";
                     otx.textBaseline = "bottom";
-                    otx.strokeText("YOU", 250, 100);
-                    otx.strokeText("BOT", 750, 100);
+                    otx.strokeText("YOU", 375, 61.875);
+                    otx.strokeText("BOT", 1125, 61.875);
 
                     otx.fillStyle = "#FFF";
                     otx.textBaseline = "middle";
-                    otx.fillText("VS", 500, 500);
+                    otx.fillText("VS", 750, 61.875);
 
-                    const buttons: [HTMLButtonElement[], HTMLButtonElement[], HTMLButtonElement[], HTMLButtonElement[]] = [[], [], [], []],
+                    const buttonContainers = [
+                        makeElement("div", "bot-weapon-primary-cont"),
+                        makeElement("div", "player-weapon-primary-cont"),
+                        makeElement("div", "bot-weapon-secondary-cont"),
+                        makeElement("div", "player-weapon-secondary-cont")
+                    ],
+                        buttons: [HTMLButtonElement[], HTMLButtonElement[], HTMLButtonElement[], HTMLButtonElement[]] = [[], [], [], []],
                         inputs: HTMLInputElement[] = [];
 
                     for (let i = 0; i <= 1; i++) {
@@ -199,7 +212,7 @@ export const level = await (async () => {
 
                             otx.textBaseline = "bottom";
                             otx.font = "calc(180vw / 72) roboto";
-                            otx.fillText(`${h ? "Secondary" : "Primary"} Weapon`, i ? 250 : 750, 150 + h * 350);
+                            otx.fillText(`${h ? "Secondary" : "Primary"} Weapon`, i ? 375 : 1125, 112.5 + h * 337.5);
 
                             gamespace.guns.concat({ name: "Random" } as any).forEach((g, j) => {
                                 const b = makeElement("button", `gun-${i ? "player" : "bot"}-${g.name}-${h}`, "surviv-outline-button"),
@@ -215,10 +228,10 @@ export const level = await (async () => {
                                 b.style.borderColor = (currentlySelected || (s + g.name) == "RandomRandom") ? "#0F0" : "";
                                 b.style.backgroundColor = (currentlySelected || (s + g.name) == "RandomRandom") ? "#0108" : "";
                                 b.style.position = "absolute";
-                                b.style[i ? "right" : "left"] = `${53 + (j % 4) * 12}%`;
-                                b.style.width = "10%";
-                                b.style.height = `7.5%`;
-                                b.style.top = `${8.5 * Math.floor(j / 4) + 35 * h + 18}%`;
+                                b.style.left = `${(j % 5) * 20 + 1}%`;
+                                b.style.width = `19%`;
+                                b.style.height = `${76 / 3}%`;
+                                b.style.top = `${(76 / 3 + 1) * Math.floor(j / 5)}%`;
 
                                 b.addEventListener("click", e => (!e.button && (() => {
                                     if (entity.inventory[`slot${hCopy}`].name == g.name) { return; }
@@ -239,7 +252,7 @@ export const level = await (async () => {
                             });
                         }
 
-                        otx.fillText("Health", i ? 250 : 750, 750);
+                        otx.fillText("Health", i ? 375 : 1125, 871.875);
 
                         const input = makeElement("input", `health-${i ? "player" : "bot"}`),
                             h = memoryManager.getItem([...path, `health-${i ? "player" : "bot"}-preset`]);
@@ -252,7 +265,7 @@ export const level = await (async () => {
                         input.style.position = "absolute";
                         input.style.left = i ? "25%" : "75%";
                         input.style.transform = "translate(-50%, 0)";
-                        input.style.top = "75%";
+                        input.style.top = "77.5%";
                         input.style.backgroundColor = "#0008";
                         input.style.color = "white";
                         input.style.font = "calc(14vh / 9) roboto";
@@ -273,45 +286,30 @@ export const level = await (async () => {
                             entity.maxHealth = Math.max(100, entity.health = v);
                         });
 
-                        if (!i) {
-                            const disable = makeElement("input", "ai-disable"),
-                                d = memoryManager.getItem([...path, "ai-disable"], "boolean");
-
-                            otx.fillText("Disable AI", 750, 840);
-
-                            disable.type = "checkbox";
-                            disable.checked = d;
-
-                            disable.style.aspectRatio = "1";
-                            disable.style.width = "5%";
-                            disable.style.top = "85%";
-                            disable.style.left = "75%";
-                            disable.style.transform = "translate(-50%, 0)";
-
-                            disable.addEventListener("change", () => void memoryManager.setItem([...path, "ai-disable"], disable.checked, true));
-
-                            inputs.push(disable);
-                        } else {
-                            const ignore = makeElement("input", "ai-ignore"),
-                                d = memoryManager.getItem([...path, "ai-ignore"], "boolean");
-
-                            otx.fillText("Ignored by AI", 250, 840);
-
-                            ignore.type = "checkbox";
-                            ignore.checked = d;
-
-                            ignore.style.aspectRatio = "1";
-                            ignore.style.width = "5%";
-                            ignore.style.top = "85%";
-                            ignore.style.left = "25%";
-                            ignore.style.transform = "translate(-50%, 0)";
-
-                            ignore.addEventListener("change", () => void memoryManager.setItem([...path, "ai-ignore"], ignore.checked, true));
-
-                            inputs.push(ignore);
-                        }
-
                         inputs.push(input);
+
+                        {
+                            const a = `ai-${i ? "disabl" : "ignor"}e`,
+                                input = makeElement("input", a),
+                                d = memoryManager.getItem([...path, a], "boolean");
+
+                            otx.fillText(`${i ? "Ignored by" : "Disable"} AI`, 1125 - 750 * i, 787.5);
+
+                            input.type = "checkbox";
+                            input.checked = d;
+
+                            input.style.aspectRatio = "1";
+                            input.style.width = "5%";
+                            input.style.top = "70%";
+                            input.style.left = `${75 - 50 * i}%`;
+                            input.style.transform = "translate(-50%, 0)";
+
+                            input.addEventListener("change", () => {
+                                memoryManager.setItem([...path, a], input.checked, true);
+                            });
+
+                            inputs.push(input);
+                        }
                     }
 
                     const battle = makeElement("button", "battle", "surviv-purple-button");
@@ -320,7 +318,7 @@ export const level = await (async () => {
 
                     battle.style.width = "15%";
                     battle.style.left = "50%";
-                    battle.style.top = "92%";
+                    battle.style.top = "93.5%";
                     battle.style.transform = "translate(-50%, 0)";
 
                     battle.addEventListener("click", e => void (!e.button && (() => {
@@ -329,7 +327,60 @@ export const level = await (async () => {
                         new p5(s, void 0);
                     })()));
 
-                    doc.appendChild(cont).append(overlay, ...buttons.flat(), ...inputs, battle);
+                    buttonContainers.forEach((b, i) => {
+                        b.style.width = "50%";
+                        b.style.height = "25%";
+                        b.style.overflow = "scroll";
+                        b.style.position = "absolute";
+                        b.style.left = `${50 - 50 * (i % 2)}%`;
+                        b.style.top = `${30 * Math.floor(i / 2) + 10}%`;
+
+                        b.append(...buttons[i]);
+                    });
+
+                    const scopes = makeElement("div", "player-scope-cont"),
+                        preset = memoryManager.getItem([...path, "player-scope-pref"], "number") ?? 1;
+
+                    levelData.players[0].view = ({
+                        1: 2050,
+                        2: 2400,
+                        4: 3079,
+                        8: 3950,
+                        15: 5660
+                    })[preset];
+
+                    [1, 2, 4, 8, 15].forEach((n, i) => {
+                        const button = makeElement("button", `scope-option-${i}`, "surviv-outline-button");
+
+                        button.style.background = `url("./assets/items/scopes/loot-scope-${`${n}`.padStart(2, "0")}.svg") center center / 80% 80% no-repeat #0008`;
+                        button.style.aspectRatio = "1";
+                        button.style.width = "5%";
+                        button.style.left = `${2.5 + 10 * i}%`;
+                        button.style.top = "82.5%";
+                        button.style.borderColor = (preset == n) ? "#0F0" : "";
+                        button.style.backgroundColor = (preset == n) ? "#0108" : "";
+
+                        button.addEventListener("click", e => void (!e.button && (() => {
+                            memoryManager.setItem([...path, "player-scope-pref"], n, true);
+
+                            (Array.from(scopes.children) as HTMLButtonElement[]).forEach(b => b.style.backgroundColor = b.style.borderColor = "");
+
+                            button.style.borderColor = "#0F0";
+                            button.style.backgroundColor = "#0108";
+
+                            levelData.players[0].view = ({
+                                1: 2050,
+                                2: 2400,
+                                4: 3079,
+                                8: 3950,
+                                15: 5660
+                            })[n];
+                        })()));
+
+                        scopes.appendChild(button);
+                    });
+
+                    doc.appendChild(cont).append(overlay, ...buttonContainers, ...inputs, battle, scopes);
 
                     document.body.appendChild(doc);
 

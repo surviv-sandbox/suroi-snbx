@@ -2,7 +2,7 @@ const botConfig = {
     detectionRange: 2500,
     maxTurnSpeed: Math.PI / 180 * 15,
     noslowDelay: 50,
-    noslowSpeed: 200
+    noslowSpeed: 400
 };
 class AI {
     #state = "idle";
@@ -25,7 +25,7 @@ class AI {
         weaponLoadState: [true, true]
     };
     get memory() { return clone(this.#memory); }
-    constructor(player) {
+    constructor (player) {
         this.#player = player;
         this.#memory.lastPosition = { ...this.#player.body.position };
     }
@@ -38,16 +38,16 @@ class AI {
         }
         const l = $(`ai-${this.#player.body.id}-debug`);
         l.innerText = [`state: ${this.#state}`,
-            `subState: ${this.#subState}`,
-            `target: ${this.#target?.body.id}`,
-            `position: (${Math.round(100 * this.#player.body.position.x) / 100}, ${Math.round(100 * this.#player.body.position.y) / 100})`,
-            `wanderTarget: ${this.#memory.wanderTarget ? `(${this.#memory.wanderTarget.x}, ${this.#memory.wanderTarget.y})` : "none"}`,
-            `angle: ${Math.round(100 * this.#player.angle) / 100}`,
-            `distToTarget: ${this.#target ? Math.round(+distance(this.#player.body.position, this.#target.body.position) * 100) / 100 : "NA"}`,
-            `strafeDirection: ${this.#memory.strafe.dir}`,
-            `ammo: ${this.#player.inventory.activeItem.ammo}`,
-            `reloading: ${this.#player.state.reloading}`,
-            `activeWeapon: ${this.#player.inventory.activeItem.proto.name}`]
+        `subState: ${this.#subState}`,
+        `target: ${this.#target?.body.id}`,
+        `position: (${Math.round(100 * this.#player.body.position.x) / 100}, ${Math.round(100 * this.#player.body.position.y) / 100})`,
+        `wanderTarget: ${this.#memory.wanderTarget ? `(${this.#memory.wanderTarget.x}, ${this.#memory.wanderTarget.y})` : "none"}`,
+        `angle: ${Math.round(100 * this.#player.angle) / 100}`,
+        `distToTarget: ${this.#target ? Math.round(+distance(this.#player.body.position, this.#target.body.position) * 100) / 100 : "NA"}`,
+        `strafeDirection: ${this.#memory.strafe.dir}`,
+        `ammo: ${this.#player.inventory.activeItem.ammo}`,
+        `reloading: ${this.#player.state.reloading}`,
+        `activeWeapon: ${this.#player.inventory.activeItem.proto.name}`]
             .join("\n");
     }
     update() {
@@ -133,10 +133,12 @@ class AI {
                         timestamp: gamespace._currentUpdate
                     };
                 }
-                if (ip.summary.class == "shotgun" || ip.summary.class == "sniper_rifle" || this.#subState == "strafe" || this.#subState == "reloading") {
+                if (["shotgun", "sniper_rifle", "semi_pistol_move"].includes(ip.summary.class) ||
+                    ["strafe", "reloading"].includes(this.#subState)) {
                     this.#player.move(...this.#memory.strafe.dir);
                 }
                 if (this.#subState == "noslow") {
+                    console.log("skip");
                     break;
                 }
                 if (this.#subState != "strafe" && this.#subState != "reloading") {
@@ -167,18 +169,32 @@ class AI {
                             }
                         }, Math.random() * 400 + 500);
                     }
+                    if (ip.summary.class == "burst_ar" && pl.state.fired >= +i.activeFireMode.replace("burst-", "")) {
+                        this.#subState = "strafe";
+                        setTimeout(() => {
+                            if (this.#subState == "strafe") {
+                                this.#subState = "default";
+                            }
+                        }, Math.random() * 200 + 400);
+                    }
                     if ((gamespace._currentUpdate - pl.state.lastSwitch >= pl.state.eSwitchDelay)) {
                         pl.state.attacking = true;
-                        !pl.state.firing && pl.inventory.activeItem.primary(pl);
-                        if (ip.summary.shouldNoslow && !pl.state.noSlow) {
-                            setTimeout(() => {
+                        if (!pl.state.firing) {
+                            pl.inventory.activeItem.primary(pl);
+                            if (!i.ammo && this.#memory.weaponLoadState[1 - pl.inventory.activeIndex] && Math.random() > 0.4) {
                                 pl.switchSlots(1 - pl.inventory.activeIndex);
-                                this.#subState = "noslow";
+                            }
+                            if (ip.summary.shouldNoslow && !pl.state.noSlow) {
                                 setTimeout(() => {
                                     pl.switchSlots(1 - pl.inventory.activeIndex);
-                                    this.#subState = "default";
-                                }, botConfig.noslowSpeed * (Math.random() * 0.2 + 0.9));
-                            }, botConfig.noslowDelay);
+                                    console.log("initial");
+                                    this.#subState = "noslow";
+                                    setTimeout(() => {
+                                        console.log("back");
+                                        this.#subState = "default";
+                                    }, botConfig.noslowSpeed * (Math.random() * 0.2 + 0.9));
+                                }, botConfig.noslowDelay);
+                            }
                         }
                     }
                 }
@@ -187,12 +203,6 @@ class AI {
                     y: pos.y
                 };
                 this.#resolveTargets();
-                if (this.#state != "engage") {
-                    this.#memory.wanderTarget = {
-                        x: this.#memory.lastTargetPos.x + (Math.random() * 100 - 50),
-                        y: this.#memory.lastTargetPos.y + (Math.random() * 100 - 50)
-                    };
-                }
                 break;
             }
         }
@@ -214,13 +224,15 @@ class AI {
         const candidate = gamespace.objects.players
             .filter(b => b.body.id != this.#player.body.id && !b.aiIgnore)
             .map(b => ({ player: b, dist: +sqauredDist(this.#player.body.position, b.body.position) }))
-            .sort((a, b) => a.dist - b.dist)[0];
+            .sort((a, b) => a.dist - b.dist)[0], t = this.#target, d = t?.body ? +sqauredDist(t.body.position, this.#player.body.position) : Infinity;
         if (!candidate) {
             this.#state = "wander";
             return;
         }
         if (candidate.dist <= botConfig.detectionRange ** 2) {
-            this.#target = candidate.player;
+            if (candidate.player.body.id != t?.body?.id && candidate.dist / d <= 0.8) {
+                this.#target = candidate.player;
+            }
             this.#state = "engage";
         }
         else {

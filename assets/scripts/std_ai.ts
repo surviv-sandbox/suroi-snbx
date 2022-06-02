@@ -2,7 +2,7 @@ const botConfig = {
     detectionRange: 2500,
     maxTurnSpeed: Math.PI / 180 * 15,
     noslowDelay: 50,
-    noslowSpeed: 200
+    noslowSpeed: 400
 };
 
 class AI {
@@ -192,7 +192,10 @@ class AI {
                     };
                 }
 
-                if (ip.summary.class == "shotgun" || ip.summary.class == "sniper_rifle" || this.#subState == "strafe" || this.#subState == "reloading") {
+                if (
+                    ["shotgun", "sniper_rifle", "semi_pistol_move"].includes(ip.summary.class) ||
+                    ["strafe", "reloading"].includes(this.#subState)
+                ) {
                     this.#player.move(...this.#memory.strafe.dir);
                 }
 
@@ -235,20 +238,35 @@ class AI {
                         }, Math.random() * 400 + 500);
                     }
 
+                    if (ip.summary.class == "burst_ar" && pl.state.fired >= +i.activeFireMode.replace("burst-", "")) {
+                        this.#subState = "strafe";
+
+                        setTimeout(() => {
+                            if (this.#subState == "strafe") {
+                                this.#subState = "default";
+                            }
+                        }, Math.random() * 200 + 400);
+                    }
+
                     if ((gamespace._currentUpdate - pl.state.lastSwitch >= pl.state.eSwitchDelay)) {
                         pl.state.attacking = true;
-                        !pl.state.firing && pl.inventory.activeItem.primary(pl);
+                        if (!pl.state.firing) {
+                            pl.inventory.activeItem.primary(pl);
 
-                        if (ip.summary.shouldNoslow && !pl.state.noSlow) {
-                            setTimeout(() => {
+                            if (!i.ammo && this.#memory.weaponLoadState[1 - pl.inventory.activeIndex] && Math.random() > 0.4) {
                                 pl.switchSlots(1 - pl.inventory.activeIndex as 0 | 1);
-                                this.#subState = "noslow";
+                            }
 
+                            if (ip.summary.shouldNoslow && !pl.state.noSlow) {
                                 setTimeout(() => {
                                     pl.switchSlots(1 - pl.inventory.activeIndex as 0 | 1);
-                                    this.#subState = "default";
-                                }, botConfig.noslowSpeed * (Math.random() * 0.2 + 0.9));
-                            }, botConfig.noslowDelay);
+                                    this.#subState = "noslow";
+
+                                    setTimeout(() => {
+                                        this.#subState = "default";
+                                    }, botConfig.noslowSpeed * (Math.random() * 0.2 + 0.9));
+                                }, botConfig.noslowDelay);
+                            }
                         }
                     }
                 }
@@ -259,13 +277,6 @@ class AI {
                     y: pos.y
                 };
                 this.#resolveTargets();
-
-                if (this.#state != "engage") {
-                    this.#memory.wanderTarget = {
-                        x: this.#memory.lastTargetPos.x + (Math.random() * 100 - 50),
-                        y: this.#memory.lastTargetPos.y + (Math.random() * 100 - 50)
-                    };
-                }
                 break;
             }
         }
@@ -302,7 +313,9 @@ class AI {
         const candidate = gamespace.objects.players
             .filter(b => b.body.id != this.#player.body.id && !b.aiIgnore)
             .map(b => ({ player: b, dist: +sqauredDist(this.#player.body.position, b.body.position) }))
-            .sort((a, b) => a.dist - b.dist)[0];
+            .sort((a, b) => a.dist - b.dist)[0],
+            t = this.#target,
+            d = (t as playerLike)?.body ? +sqauredDist((t as playerLike).body.position, this.#player.body.position) : Infinity;
 
         if (!candidate) {
             this.#state = "wander";
@@ -310,7 +323,10 @@ class AI {
         }
 
         if (candidate.dist <= botConfig.detectionRange ** 2) {
-            this.#target = candidate.player;
+            if (candidate.player.body.id != (t as playerLike)?.body?.id && candidate.dist / d <= 0.8) {
+                this.#target = candidate.player;
+            }
+
             this.#state = "engage";
         } else {
             this.#target = void 0;

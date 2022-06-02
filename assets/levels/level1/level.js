@@ -3,11 +3,11 @@ export const level = await (async () => {
     const json = await (await fetch("assets/levels/level1/data.json")).json();
     const levelData = parseLevelData(json), name = "Bot War", path = ["levels", `level-${name}`], level = {
         name: name,
-        description: "100 bots. 1 winner. And you as a spectator.",
+        description: "50 bots. 1 winner. And you as a spectator.",
         levelData: levelData,
         world: {
-            width: 10000,
-            height: 10000,
+            width: 5000,
+            height: 5000,
             color: "#80AF49",
             gridColor: "#00000028",
         },
@@ -43,7 +43,7 @@ export const level = await (async () => {
                             [w / 2, -500, w + 1000, 1000],
                             [w / 2, h + 500, w + 1000, 1000]
                         ].map(v => makeBound(...v))
-                        //@ts-ignore
+                            //@ts-ignore
                         ).forEach(ob => void Matter.World.add(world, ob.body));
                         gamespace.objects.obstacles = levelData.obstacles;
                         gamespace.objects.players = levelData.players;
@@ -66,7 +66,7 @@ export const level = await (async () => {
                     gamespace.player.angle = Math.PI / 2 + Math.atan2(p5.mouseY - p5.height / 2, p5.mouseX - p5.width / 2);
                     gamespace.bots = gamespace.objects.players.map(p => new AI(p));
                     const r = () => new gun(gamespace.guns[Math.floor(Math.random() * gamespace.guns.length)]);
-                    ;
+                    // const r = () => new gun(gamespace.guns.find(g => g.name == "M134"));
                     gamespace.objects.players.slice(1).forEach(p => {
                         p.name = `BOT ${p.name}`;
                         p.inventory.slot0 = r();

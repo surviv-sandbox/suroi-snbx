@@ -99,7 +99,8 @@
             "height": {
                 "givenIn": "scale",
                 "value": 3.15
-            }
+            },
+            "above": false
         },
         "reload": {
             "duration": {
@@ -325,7 +326,8 @@
             "height": {
                 "givenIn": "scale",
                 "value": 4.1
-            }
+            },
+            "above": false
         },
         "reload": {
             "duration": {
@@ -559,7 +561,8 @@
             "height": {
                 "givenIn": "scale",
                 "value": 3.15
-            }
+            },
+            "above": false
         },
         "reload": {
             "duration": {
@@ -764,7 +767,7 @@
             },
             "firing": {
                 "givenIn": "scale",
-                "value": 0
+                "value": -5
             }
         },
         "imageOffset": {
@@ -785,7 +788,8 @@
             "height": {
                 "givenIn": "scale",
                 "value": 3
-            }
+            },
+            "above": false
         },
         "reload": {
             "duration": {
@@ -1011,7 +1015,8 @@
             "height": {
                 "givenIn": "scale",
                 "value": 3.5
-            }
+            },
+            "above": false
         },
         "reload": {
             "duration": {
@@ -1165,7 +1170,7 @@
             "damage": 12,
             "velocity": {
                 "givenIn": "absolute",
-                "value": 4750
+                "value": 4250
             },
             "range": {
                 "givenIn": "absolute",
@@ -1237,7 +1242,8 @@
             "height": {
                 "givenIn": "scale",
                 "value": 1.5
-            }
+            },
+            "above": false
         },
         "reload": {
             "duration": {
@@ -1381,7 +1387,7 @@
             "damage": 12,
             "velocity": {
                 "givenIn": "absolute",
-                "value": 4750
+                "value": 4250
             },
             "range": {
                 "givenIn": "absolute",
@@ -1453,7 +1459,8 @@
             "height": {
                 "givenIn": "scale",
                 "value": 1.5
-            }
+            },
+            "above": false
         },
         "reload": {
             "duration": {
@@ -1496,7 +1503,7 @@
         "projectileSpawnOffset": {
             "perp": {
                 "givenIn": "scale",
-                "value": 0.75
+                "value": 0.525
             },
             "parr": {
                 "givenIn": "absolute",
@@ -1507,7 +1514,7 @@
             "spawnOffset": {
                 "perp": {
                     "givenIn": "absolute",
-                    "value": 0.75
+                    "value": 0.525
                 },
                 "parr": {
                     "givenIn": "absolute",
@@ -1567,6 +1574,2029 @@
         },
         "possibleFireModes": [
             "semi"
+        ],
+        "burstProps": {
+            "shotDelay": {
+                "givenIn": "RPM",
+                "value": 600
+            },
+            "burstDelay": {
+                "givenIn": "ms",
+                "value": 0
+            }
+        }
+    },
+    {
+        "name": "SV-98",
+        "summary": {
+            "class": "sniper_rifle",
+            "engagementDistance": {
+                "min": {
+                    "givenIn": "absolute",
+                    "value": 600
+                },
+                "max": {
+                    "givenIn": "absolute",
+                    "value": 6000
+                }
+            },
+            "shouldNoslow": true,
+            "role": "primary"
+        },
+        "dual": false,
+        "images": {
+            "loot": "assets/items/firearms/SV-98/loot-weapon-sv98.svg",
+            "held": "assets/items/firearms/shared/gun-long.png",
+            "silhouette": "assets/items/firearms/SV-98/sv98-silhouette.png"
+        },
+        "tint": "#658947",
+        "ballistics": {
+            "damage": 80,
+            "velocity": {
+                "givenIn": "absolute",
+                "value": 9100
+            },
+            "range": {
+                "givenIn": "absolute",
+                "value": 26000
+            },
+            "tracer": {
+                "width": {
+                    "givenIn": "scale",
+                    "value": 0.32
+                },
+                "height": {
+                    "givenIn": "scale",
+                    "value": 22.2222222
+                }
+            },
+            "obstacleMult": 1.5,
+            "headshotMult": 1.5,
+            "fsa": {
+                "enabled": false,
+                "rechargeTime": {
+                    "givenIn": "s",
+                    "value": 1e10
+                }
+            },
+            "falloff": 0.96,
+            "projectiles": 1
+        },
+        "suppressed": false,
+        "caliber": "7.62x54mmR",
+        "firingDelay": {
+            "givenIn": "s",
+            "value": 1.5
+        },
+        "accuracy": {
+            "default": {
+                "givenIn": "degrees",
+                "value": 1
+            },
+            "moving": {
+                "givenIn": "degrees",
+                "value": 2.5
+            }
+        },
+        "moveSpeedPenalties": {
+            "active": {
+                "givenIn": "scale",
+                "value": 0
+            },
+            "firing": {
+                "givenIn": "scale",
+                "value": 0
+            }
+        },
+        "imageOffset": {
+            "perp": {
+                "givenIn": "scale",
+                "value": 0
+            },
+            "parr": {
+                "givenIn": "scale",
+                "value": -1.5
+            }
+        },
+        "dimensions": {
+            "width": {
+                "givenIn": "scale",
+                "value": 0.45
+            },
+            "height": {
+                "givenIn": "scale",
+                "value": 3.6
+            },
+            "above": false
+        },
+        "reload": {
+            "duration": {
+                "givenIn": "ms",
+                "value": 2700
+            },
+            "ammoReloaded": "all",
+            "chain": false
+        },
+        "magazineCapacity": {
+            "normal": 10,
+            "firepower": 15
+        },
+        "switchDelay": {
+            "givenIn": "s",
+            "value": 1
+        },
+        "handPositions": {
+            "leftHand": {
+                "perp": {
+                    "givenIn": "scale",
+                    "value": 0.1
+                },
+                "parr": {
+                    "givenIn": "scale",
+                    "value": -0.85
+                }
+            },
+            "rightHand": {
+                "perp": {
+                    "givenIn": "scale",
+                    "value": 0.325
+                },
+                "parr": {
+                    "givenIn": "scale",
+                    "value": -1.875
+                }
+            }
+        },
+        "projectileSpawnOffset": {
+            "perp": {
+                "givenIn": "absolute",
+                "value": 0
+            },
+            "parr": {
+                "givenIn": "absolute",
+                "value": 40
+            }
+        },
+        "casings": {
+            "spawnOffset": {
+                "perp": {
+                    "givenIn": "absolute",
+                    "value": 0
+                },
+                "parr": {
+                    "givenIn": "absolute",
+                    "value": 40
+                }
+            },
+            "velocity": {
+                "perp": {
+                    "givenIn": "absolute",
+                    "value": -300,
+                    "variation": {
+                        "givenIn": "ratio",
+                        "value": 0.9,
+                        "plusOrMinus": true
+                    }
+                },
+                "parr": {
+                    "givenIn": "absolute",
+                    "value": -50,
+                    "variation": {
+                        "givenIn": "ratio",
+                        "value": 0.6,
+                        "plusOrMinus": true
+                    }
+                },
+                "angular": {
+                    "givenIn": "turns",
+                    "value": 2,
+                    "variation": {
+                        "givenIn": "ratio",
+                        "value": 1,
+                        "plusOrMinus": true
+                    }
+                }
+            },
+            "spawnOn": "fire",
+            "spawnDelay": {
+                "givenIn": "ms",
+                "value": 800
+            }
+        },
+        "recoilImpulse": {
+            "direction": {
+                "perp": {
+                    "givenIn": "scale",
+                    "value": 0
+                },
+                "parr": {
+                    "givenIn": "scale",
+                    "value": -0.2
+                }
+            },
+            "duration": {
+                "givenIn": "ms",
+                "value": 150
+            }
+        },
+        "possibleFireModes": [
+            "semi"
+        ],
+        "burstProps": {
+            "shotDelay": {
+                "givenIn": "s",
+                "value": 1.5
+            },
+            "burstDelay": {
+                "givenIn": "ms",
+                "value": 0
+            }
+        }
+    },
+    {
+        "name": "L86A2",
+        "summary": {
+            "class": "dmr",
+            "engagementDistance": {
+                "min": {
+                    "givenIn": "absolute",
+                    "value": 750
+                },
+                "max": {
+                    "givenIn": "absolute",
+                    "value": 4000
+                }
+            },
+            "shouldNoslow": false,
+            "role": "primary"
+        },
+        "dual": false,
+        "images": {
+            "loot": "assets/items/firearms/L86A2/loot-weapon-l86.svg",
+            "held": "assets/items/firearms/shared/gun-long.png",
+            "silhouette": "assets/items/firearms/L86A2/l86-silhouette.png"
+        },
+        "tint": "#DCC8A7",
+        "ballistics": {
+            "damage": 26.5,
+            "velocity": {
+                "givenIn": "absolute",
+                "value": 6700
+            },
+            "range": {
+                "givenIn": "absolute",
+                "value": 21250
+            },
+            "tracer": {
+                "width": {
+                    "givenIn": "scale",
+                    "value": 0.15
+                },
+                "height": {
+                    "givenIn": "scale",
+                    "value": 20
+                }
+            },
+            "obstacleMult": 1,
+            "headshotMult": 2,
+            "fsa": {
+                "enabled": false,
+                "rechargeTime": {
+                    "givenIn": "s",
+                    "value": 1e10
+                }
+            },
+            "falloff": 0.9,
+            "projectiles": 1
+        },
+        "suppressed": false,
+        "caliber": "5.56x45mm",
+        "firingDelay": {
+            "givenIn": "ms",
+            "value": 190
+        },
+        "accuracy": {
+            "default": {
+                "givenIn": "degrees",
+                "value": 1
+            },
+            "moving": {
+                "givenIn": "degrees",
+                "value": 3.5
+            }
+        },
+        "moveSpeedPenalties": {
+            "active": {
+                "givenIn": "scale",
+                "value": 0
+            },
+            "firing": {
+                "givenIn": "scale",
+                "value": 0
+            }
+        },
+        "imageOffset": {
+            "perp": {
+                "givenIn": "scale",
+                "value": 0
+            },
+            "parr": {
+                "givenIn": "scale",
+                "value": -1.4
+            }
+        },
+        "dimensions": {
+            "width": {
+                "givenIn": "scale",
+                "value": 0.45
+            },
+            "height": {
+                "givenIn": "scale",
+                "value": 3.55
+            },
+            "above": false
+        },
+        "reload": {
+            "duration": {
+                "givenIn": "ms",
+                "value": 2900
+            },
+            "ammoReloaded": "all",
+            "chain": false
+        },
+        "magazineCapacity": {
+            "normal": 30,
+            "firepower": 40
+        },
+        "switchDelay": {
+            "givenIn": "ms",
+            "value": 750
+        },
+        "handPositions": {
+            "leftHand": {
+                "perp": {
+                    "givenIn": "scale",
+                    "value": 0.1
+                },
+                "parr": {
+                    "givenIn": "scale",
+                    "value": -0.85
+                }
+            },
+            "rightHand": {
+                "perp": {
+                    "givenIn": "scale",
+                    "value": 0.32
+                },
+                "parr": {
+                    "givenIn": "scale",
+                    "value": -1.5
+                }
+            }
+        },
+        "projectileSpawnOffset": {
+            "perp": {
+                "givenIn": "absolute",
+                "value": 0
+            },
+            "parr": {
+                "givenIn": "absolute",
+                "value": 40
+            }
+        },
+        "casings": {
+            "spawnOffset": {
+                "perp": {
+                    "givenIn": "absolute",
+                    "value": 0
+                },
+                "parr": {
+                    "givenIn": "absolute",
+                    "value": 40
+                }
+            },
+            "velocity": {
+                "perp": {
+                    "givenIn": "absolute",
+                    "value": -300,
+                    "variation": {
+                        "givenIn": "ratio",
+                        "value": 0.9,
+                        "plusOrMinus": true
+                    }
+                },
+                "parr": {
+                    "givenIn": "absolute",
+                    "value": -50,
+                    "variation": {
+                        "givenIn": "ratio",
+                        "value": 0.6,
+                        "plusOrMinus": true
+                    }
+                },
+                "angular": {
+                    "givenIn": "turns",
+                    "value": 2,
+                    "variation": {
+                        "givenIn": "ratio",
+                        "value": 1,
+                        "plusOrMinus": true
+                    }
+                }
+            },
+            "spawnOn": "fire",
+            "spawnDelay": {
+                "givenIn": "ms",
+                "value": 0
+            }
+        },
+        "recoilImpulse": {
+            "direction": {
+                "perp": {
+                    "givenIn": "scale",
+                    "value": 0
+                },
+                "parr": {
+                    "givenIn": "scale",
+                    "value": -0.15
+                }
+            },
+            "duration": {
+                "givenIn": "ms",
+                "value": 80
+            }
+        },
+        "possibleFireModes": [
+            "semi"
+        ],
+        "burstProps": {
+            "shotDelay": {
+                "givenIn": "s",
+                "value": 1.5
+            },
+            "burstDelay": {
+                "givenIn": "ms",
+                "value": 0
+            }
+        }
+    },
+    {
+        "name": "AN-94",
+        "summary": {
+            "class": "burst_ar",
+            "engagementDistance": {
+                "min": {
+                    "givenIn": "absolute",
+                    "value": 500
+                },
+                "max": {
+                    "givenIn": "absolute",
+                    "value": 3000
+                }
+            },
+            "shouldNoslow": false,
+            "role": "primary"
+        },
+        "dual": false,
+        "images": {
+            "loot": "assets/items/firearms/AN-94/loot-weapon-an94.svg",
+            "held": "assets/items/firearms/shared/gun-long.png",
+            "silhouette": "assets/items/firearms/AN-94/an94-silhouette.png"
+        },
+        "tint": "#2D2D2D",
+        "ballistics": {
+            "damage": 17.5,
+            "velocity": {
+                "givenIn": "absolute",
+                "value": 5500
+            },
+            "range": {
+                "givenIn": "absolute",
+                "value": 15000
+            },
+            "tracer": {
+                "width": {
+                    "givenIn": "scale",
+                    "value": 0.15
+                },
+                "height": {
+                    "givenIn": "scale",
+                    "value": 20
+                }
+            },
+            "obstacleMult": 1,
+            "headshotMult": 2,
+            "fsa": {
+                "enabled": false,
+                "rechargeTime": {
+                    "givenIn": "s",
+                    "value": 1e10
+                }
+            },
+            "falloff": 0.9,
+            "projectiles": 1
+        },
+        "suppressed": false,
+        "caliber": "7.62x39mm",
+        "firingDelay": {
+            "givenIn": "RPM",
+            "value": 600
+        },
+        "accuracy": {
+            "default": {
+                "givenIn": "degrees",
+                "value": 1.5
+            },
+            "moving": {
+                "givenIn": "degrees",
+                "value": 4
+            }
+        },
+        "moveSpeedPenalties": {
+            "active": {
+                "givenIn": "scale",
+                "value": 0
+            },
+            "firing": {
+                "givenIn": "scale",
+                "value": 0
+            }
+        },
+        "imageOffset": {
+            "perp": {
+                "givenIn": "scale",
+                "value": 0
+            },
+            "parr": {
+                "givenIn": "scale",
+                "value": -1.5
+            }
+        },
+        "dimensions": {
+            "width": {
+                "givenIn": "scale",
+                "value": 0.45
+            },
+            "height": {
+                "givenIn": "scale",
+                "value": 3.25
+            },
+            "above": false
+        },
+        "reload": {
+            "duration": {
+                "givenIn": "s",
+                "value": 2.35
+            },
+            "ammoReloaded": "all",
+            "chain": false
+        },
+        "magazineCapacity": {
+            "normal": 45,
+            "firepower": 60
+        },
+        "switchDelay": {
+            "givenIn": "ms",
+            "value": 750
+        },
+        "handPositions": {
+            "leftHand": {
+                "perp": {
+                    "givenIn": "scale",
+                    "value": 0.1
+                },
+                "parr": {
+                    "givenIn": "scale",
+                    "value": -0.85
+                }
+            },
+            "rightHand": {
+                "perp": {
+                    "givenIn": "scale",
+                    "value": 0.3
+                },
+                "parr": {
+                    "givenIn": "scale",
+                    "value": -1.875
+                }
+            }
+        },
+        "projectileSpawnOffset": {
+            "perp": {
+                "givenIn": "absolute",
+                "value": 0
+            },
+            "parr": {
+                "givenIn": "absolute",
+                "value": 40
+            }
+        },
+        "casings": {
+            "spawnOffset": {
+                "perp": {
+                    "givenIn": "absolute",
+                    "value": 0
+                },
+                "parr": {
+                    "givenIn": "absolute",
+                    "value": 40
+                }
+            },
+            "velocity": {
+                "perp": {
+                    "givenIn": "absolute",
+                    "value": -300,
+                    "variation": {
+                        "givenIn": "ratio",
+                        "value": 1,
+                        "plusOrMinus": true
+                    }
+                },
+                "parr": {
+                    "givenIn": "absolute",
+                    "value": -50,
+                    "variation": {
+                        "givenIn": "ratio",
+                        "value": 1,
+                        "plusOrMinus": false
+                    }
+                },
+                "angular": {
+                    "givenIn": "turns",
+                    "value": 2,
+                    "variation": {
+                        "givenIn": "ratio",
+                        "value": 1,
+                        "plusOrMinus": false
+                    }
+                }
+            },
+            "spawnOn": "fire",
+            "spawnDelay": {
+                "givenIn": "ms",
+                "value": 0
+            }
+        },
+        "recoilImpulse": {
+            "direction": {
+                "perp": {
+                    "givenIn": "scale",
+                    "value": 0
+                },
+                "parr": {
+                    "givenIn": "scale",
+                    "value": -0.1
+                }
+            },
+            "duration": {
+                "givenIn": "ms",
+                "value": 80
+            }
+        },
+        "possibleFireModes": [
+            "auto-burst-2"
+        ],
+        "burstProps": {
+            "shotDelay": {
+                "givenIn": "RPM",
+                "value": 2400
+            },
+            "burstDelay": {
+                "givenIn": "RPM",
+                "value": 250
+            }
+        }
+    },
+    {
+        "name": "P30L",
+        "summary": {
+            "class": "semi_pistol_move",
+            "engagementDistance": {
+                "min": {
+                    "givenIn": "absolute",
+                    "value": 300
+                },
+                "max": {
+                    "givenIn": "absolute",
+                    "value": 2000
+                }
+            },
+            "shouldNoslow": false,
+            "role": "primary"
+        },
+        "dual": false,
+        "images": {
+            "loot": "assets/items/firearms/P30L/loot-weapon-p30l.svg",
+            "held": "assets/items/firearms/P30L/p30l.png",
+            "silhouette": "assets/items/firearms/P30L/p30l-silhouette.png"
+        },
+        "tint": "#FFFFFF",
+        "ballistics": {
+            "damage": 21,
+            "velocity": {
+                "givenIn": "absolute",
+                "value": 4700
+            },
+            "range": {
+                "givenIn": "absolute",
+                "value": 5000
+            },
+            "tracer": {
+                "width": {
+                    "givenIn": "scale",
+                    "value": 0.2
+                },
+                "height": {
+                    "givenIn": "scale",
+                    "value": 10
+                }
+            },
+            "obstacleMult": 1,
+            "headshotMult": 2,
+            "fsa": {
+                "enabled": false,
+                "rechargeTime": {
+                    "givenIn": "s",
+                    "value": 1e10
+                }
+            },
+            "falloff": 0.75,
+            "projectiles": 1
+        },
+        "suppressed": false,
+        "caliber": "9x19mm",
+        "firingDelay": {
+            "givenIn": "ms",
+            "value": 140
+        },
+        "accuracy": {
+            "default": {
+                "givenIn": "degrees",
+                "value": 2
+            },
+            "moving": {
+                "givenIn": "degrees",
+                "value": 1
+            }
+        },
+        "moveSpeedPenalties": {
+            "active": {
+                "givenIn": "scale",
+                "value": 1
+            },
+            "firing": {
+                "givenIn": "scale",
+                "value": 1
+            }
+        },
+        "imageOffset": {
+            "perp": {
+                "givenIn": "scale",
+                "value": 0
+            },
+            "parr": {
+                "givenIn": "scale",
+                "value": -1.45
+            }
+        },
+        "dimensions": {
+            "width": {
+                "givenIn": "scale",
+                "value": 0.43359375
+            },
+            "height": {
+                "givenIn": "scale",
+                "value": 1.7916420991
+            },
+            "above": false
+        },
+        "reload": {
+            "duration": {
+                "givenIn": "s",
+                "value": 1.2
+            },
+            "ammoReloaded": "all",
+            "chain": false
+        },
+        "magazineCapacity": {
+            "normal": 15,
+            "firepower": 30
+        },
+        "switchDelay": {
+            "givenIn": "ms",
+            "value": 250
+        },
+        "handPositions": {
+            "leftHand": {
+                "perp": {
+                    "givenIn": "scale",
+                    "value": 0.1
+                },
+                "parr": {
+                    "givenIn": "scale",
+                    "value": -0.85
+                }
+            }
+        },
+        "projectileSpawnOffset": {
+            "perp": {
+                "givenIn": "absolute",
+                "value": 0
+            },
+            "parr": {
+                "givenIn": "absolute",
+                "value": 10
+            }
+        },
+        "casings": {
+            "spawnOffset": {
+                "perp": {
+                    "givenIn": "scale",
+                    "value": 0.525
+                },
+                "parr": {
+                    "givenIn": "absolute",
+                    "value": 40
+                }
+            },
+            "velocity": {
+                "perp": {
+                    "givenIn": "absolute",
+                    "value": -150,
+                    "variation": {
+                        "givenIn": "ratio",
+                        "value": 0.4,
+                        "plusOrMinus": true
+                    }
+                },
+                "parr": {
+                    "givenIn": "absolute",
+                    "value": -10,
+                    "variation": {
+                        "givenIn": "ratio",
+                        "value": 1,
+                        "plusOrMinus": true
+                    }
+                },
+                "angular": {
+                    "givenIn": "turns",
+                    "value": 2,
+                    "variation": {
+                        "givenIn": "ratio",
+                        "value": 1,
+                        "plusOrMinus": false
+                    }
+                }
+            },
+            "spawnOn": "fire",
+            "spawnDelay": {
+                "givenIn": "ms",
+                "value": 0
+            }
+        },
+        "recoilImpulse": {
+            "direction": {
+                "perp": {
+                    "givenIn": "scale",
+                    "value": 0
+                },
+                "parr": {
+                    "givenIn": "scale",
+                    "value": -0.05
+                }
+            },
+            "duration": {
+                "givenIn": "ms",
+                "value": 70
+            }
+        },
+        "possibleFireModes": [
+            "semi"
+        ],
+        "burstProps": {
+            "shotDelay": {
+                "givenIn": "RPM",
+                "value": 600
+            },
+            "burstDelay": {
+                "givenIn": "ms",
+                "value": 0
+            }
+        }
+    },
+    {
+        "name": "Dual P30L",
+        "summary": {
+            "class": "semi_pistol_move",
+            "engagementDistance": {
+                "min": {
+                    "givenIn": "absolute",
+                    "value": 200
+                },
+                "max": {
+                    "givenIn": "absolute",
+                    "value": 1500
+                }
+            },
+            "shouldNoslow": false,
+            "role": "primary"
+        },
+        "dual": true,
+        "images": {
+            "loot": "assets/items/firearms/Dual P30L/loot-weapon-p30l-dual.svg",
+            "held": "assets/items/firearms/P30L/p30l.png",
+            "silhouette": "assets/items/firearms/Dual P30L/p30l-dual-silhouette.png"
+        },
+        "tint": "#FFFFFF",
+        "ballistics": {
+            "damage": 21,
+            "velocity": {
+                "givenIn": "absolute",
+                "value": 4700
+            },
+            "range": {
+                "givenIn": "absolute",
+                "value": 5000
+            },
+            "tracer": {
+                "width": {
+                    "givenIn": "scale",
+                    "value": 0.2
+                },
+                "height": {
+                    "givenIn": "scale",
+                    "value": 10
+                }
+            },
+            "obstacleMult": 1,
+            "headshotMult": 2,
+            "fsa": {
+                "enabled": false,
+                "rechargeTime": {
+                    "givenIn": "s",
+                    "value": 1e10
+                }
+            },
+            "falloff": 0.75,
+            "projectiles": 1
+        },
+        "suppressed": false,
+        "caliber": "9x19mm",
+        "firingDelay": {
+            "givenIn": "ms",
+            "value": 90
+        },
+        "accuracy": {
+            "default": {
+                "givenIn": "degrees",
+                "value": 3
+            },
+            "moving": {
+                "givenIn": "degrees",
+                "value": 2
+            }
+        },
+        "moveSpeedPenalties": {
+            "active": {
+                "givenIn": "scale",
+                "value": 0
+            },
+            "firing": {
+                "givenIn": "scale",
+                "value": 0
+            }
+        },
+        "imageOffset": {
+            "perp": {
+                "givenIn": "scale",
+                "value": 0.525
+            },
+            "parr": {
+                "givenIn": "scale",
+                "value": -1.45
+            }
+        },
+        "dimensions": {
+            "width": {
+                "givenIn": "scale",
+                "value": 0.43359375
+            },
+            "height": {
+                "givenIn": "scale",
+                "value": 1.7916420991
+            },
+            "above": false
+        },
+        "reload": {
+            "duration": {
+                "givenIn": "s",
+                "value": 2.65
+            },
+            "ammoReloaded": "all",
+            "chain": false
+        },
+        "magazineCapacity": {
+            "normal": 30,
+            "firepower": 60
+        },
+        "switchDelay": {
+            "givenIn": "ms",
+            "value": 300
+        },
+        "handPositions": {
+            "leftHand": {
+                "perp": {
+                    "givenIn": "scale",
+                    "value": 0.525
+                },
+                "parr": {
+                    "givenIn": "scale",
+                    "value": -0.95
+                }
+            },
+            "rightHand": {
+                "perp": {
+                    "givenIn": "scale",
+                    "value": -0.525
+                },
+                "parr": {
+                    "givenIn": "scale",
+                    "value": -0.95
+                }
+            }
+        },
+        "projectileSpawnOffset": {
+            "perp": {
+                "givenIn": "scale",
+                "value": 0.525
+            },
+            "parr": {
+                "givenIn": "absolute",
+                "value": 10
+            }
+        },
+        "casings": {
+            "spawnOffset": {
+                "perp": {
+                    "givenIn": "absolute",
+                    "value": 0.525
+                },
+                "parr": {
+                    "givenIn": "absolute",
+                    "value": 40
+                }
+            },
+            "velocity": {
+                "perp": {
+                    "givenIn": "absolute",
+                    "value": -150,
+                    "variation": {
+                        "givenIn": "ratio",
+                        "value": 0.4,
+                        "plusOrMinus": true
+                    }
+                },
+                "parr": {
+                    "givenIn": "absolute",
+                    "value": -10,
+                    "variation": {
+                        "givenIn": "ratio",
+                        "value": 1,
+                        "plusOrMinus": true
+                    }
+                },
+                "angular": {
+                    "givenIn": "turns",
+                    "value": 2,
+                    "variation": {
+                        "givenIn": "ratio",
+                        "value": 1,
+                        "plusOrMinus": false
+                    }
+                }
+            },
+            "spawnOn": "fire",
+            "spawnDelay": {
+                "givenIn": "ms",
+                "value": 0
+            }
+        },
+        "recoilImpulse": {
+            "direction": {
+                "perp": {
+                    "givenIn": "scale",
+                    "value": 0
+                },
+                "parr": {
+                    "givenIn": "scale",
+                    "value": -0.05
+                }
+            },
+            "duration": {
+                "givenIn": "ms",
+                "value": 70
+            }
+        },
+        "possibleFireModes": [
+            "semi"
+        ],
+        "burstProps": {
+            "shotDelay": {
+                "givenIn": "RPM",
+                "value": 600
+            },
+            "burstDelay": {
+                "givenIn": "ms",
+                "value": 0
+            }
+        }
+    },
+    {
+        "name": "FAMAS",
+        "summary": {
+            "class": "burst_ar",
+            "engagementDistance": {
+                "min": {
+                    "givenIn": "absolute",
+                    "value": 500
+                },
+                "max": {
+                    "givenIn": "absolute",
+                    "value": 2200
+                }
+            },
+            "shouldNoslow": false,
+            "role": "primary"
+        },
+        "dual": false,
+        "images": {
+            "loot": "assets/items/firearms/FAMAS/loot-weapon-famas.svg",
+            "held": "assets/items/firearms/FAMAS/famas.png",
+            "silhouette": "assets/items/firearms/FAMAS/famas-silhouette.png"
+        },
+        "tint": "#FFFFFF",
+        "ballistics": {
+            "damage": 17,
+            "velocity": {
+                "givenIn": "absolute",
+                "value": 5500
+            },
+            "range": {
+                "givenIn": "absolute",
+                "value": 7500
+            },
+            "tracer": {
+                "width": {
+                    "givenIn": "scale",
+                    "value": 0.15
+                },
+                "height": {
+                    "givenIn": "scale",
+                    "value": 15
+                }
+            },
+            "obstacleMult": 1,
+            "headshotMult": 2,
+            "fsa": {
+                "enabled": false,
+                "rechargeTime": {
+                    "givenIn": "s",
+                    "value": 1e10
+                }
+            },
+            "falloff": 0.8,
+            "projectiles": 1
+        },
+        "suppressed": false,
+        "caliber": "5.56x45mm",
+        "firingDelay": {
+            "givenIn": "RPM",
+            "value": 600
+        },
+        "accuracy": {
+            "default": {
+                "givenIn": "degrees",
+                "value": 1.1
+            },
+            "moving": {
+                "givenIn": "degrees",
+                "value": 2
+            }
+        },
+        "moveSpeedPenalties": {
+            "active": {
+                "givenIn": "scale",
+                "value": 0
+            },
+            "firing": {
+                "givenIn": "scale",
+                "value": 0
+            }
+        },
+        "imageOffset": {
+            "perp": {
+                "givenIn": "scale",
+                "value": 0
+            },
+            "parr": {
+                "givenIn": "scale",
+                "value": -1.95
+            }
+        },
+        "dimensions": {
+            "width": {
+                "givenIn": "scale",
+                "value": 0.5120481928
+            },
+            "height": {
+                "givenIn": "scale",
+                "value": 2.5
+            },
+            "above": true
+        },
+        "reload": {
+            "duration": {
+                "givenIn": "s",
+                "value": 2.3
+            },
+            "ammoReloaded": "all",
+            "chain": false
+        },
+        "magazineCapacity": {
+            "normal": 25,
+            "firepower": 35
+        },
+        "switchDelay": {
+            "givenIn": "ms",
+            "value": 750
+        },
+        "handPositions": {
+            "leftHand": {
+                "perp": {
+                    "givenIn": "scale",
+                    "value": 0.085
+                },
+                "parr": {
+                    "givenIn": "scale",
+                    "value": -1.45
+                }
+            },
+            "rightHand": {
+                "perp": {
+                    "givenIn": "scale",
+                    "value": 0.325
+                },
+                "parr": {
+                    "givenIn": "scale",
+                    "value": -2.4
+                }
+            }
+        },
+        "projectileSpawnOffset": {
+            "perp": {
+                "givenIn": "absolute",
+                "value": 0
+            },
+            "parr": {
+                "givenIn": "absolute",
+                "value": 40
+            }
+        },
+        "casings": {
+            "spawnOffset": {
+                "perp": {
+                    "givenIn": "absolute",
+                    "value": 0
+                },
+                "parr": {
+                    "givenIn": "absolute",
+                    "value": 40
+                }
+            },
+            "velocity": {
+                "perp": {
+                    "givenIn": "absolute",
+                    "value": -300,
+                    "variation": {
+                        "givenIn": "ratio",
+                        "value": 1,
+                        "plusOrMinus": true
+                    }
+                },
+                "parr": {
+                    "givenIn": "absolute",
+                    "value": -30,
+                    "variation": {
+                        "givenIn": "ratio",
+                        "value": 1,
+                        "plusOrMinus": false
+                    }
+                },
+                "angular": {
+                    "givenIn": "turns",
+                    "value": 2,
+                    "variation": {
+                        "givenIn": "ratio",
+                        "value": 1,
+                        "plusOrMinus": false
+                    }
+                }
+            },
+            "spawnOn": "fire",
+            "spawnDelay": {
+                "givenIn": "ms",
+                "value": 0
+            }
+        },
+        "recoilImpulse": {
+            "direction": {
+                "perp": {
+                    "givenIn": "scale",
+                    "value": 0
+                },
+                "parr": {
+                    "givenIn": "scale",
+                    "value": -0.05
+                }
+            },
+            "duration": {
+                "givenIn": "ms",
+                "value": 70
+            }
+        },
+        "possibleFireModes": [
+            "auto-burst-3"
+        ],
+        "burstProps": {
+            "shotDelay": {
+                "givenIn": "ms",
+                "value": 70
+            },
+            "burstDelay": {
+                "givenIn": "ms",
+                "value": 350
+            }
+        }
+    },
+    {
+        "name": "OTs-38",
+        "summary": {
+            "class": "semi_pistol",
+            "engagementDistance": {
+                "min": {
+                    "givenIn": "absolute",
+                    "value": 500
+                },
+                "max": {
+                    "givenIn": "absolute",
+                    "value": 1800
+                }
+            },
+            "shouldNoslow": false,
+            "role": "secondary"
+        },
+        "dual": false,
+        "images": {
+            "loot": "assets/items/firearms/OTs-38/loot-weapon-ots38.svg",
+            "held": "assets/items/firearms/OTs-38/ots38.png",
+            "silhouette": "assets/items/firearms/OTs-38/ots38-silhouette.png"
+        },
+        "tint": "#FFFFFF",
+        "ballistics": {
+            "damage": 32,
+            "velocity": {
+                "givenIn": "absolute",
+                "value": 5750
+            },
+            "range": {
+                "givenIn": "absolute",
+                "value": 6750
+            },
+            "tracer": {
+                "width": {
+                    "givenIn": "scale",
+                    "value": 0.15
+                },
+                "height": {
+                    "givenIn": "scale",
+                    "value": 10
+                }
+            },
+            "obstacleMult": 1,
+            "headshotMult": 2,
+            "fsa": {
+                "enabled": false,
+                "rechargeTime": {
+                    "givenIn": "s",
+                    "value": 1e10
+                }
+            },
+            "falloff": 0.77,
+            "projectiles": 1
+        },
+        "suppressed": true,
+        "caliber": "7.62x41mm",
+        "firingDelay": {
+            "givenIn": "ms",
+            "value": 360
+        },
+        "accuracy": {
+            "default": {
+                "givenIn": "degrees",
+                "value": 1.2
+            },
+            "moving": {
+                "givenIn": "degrees",
+                "value": 2.4
+            }
+        },
+        "moveSpeedPenalties": {
+            "active": {
+                "givenIn": "scale",
+                "value": 0
+            },
+            "firing": {
+                "givenIn": "scale",
+                "value": 0
+            }
+        },
+        "imageOffset": {
+            "perp": {
+                "givenIn": "scale",
+                "value": 0
+            },
+            "parr": {
+                "givenIn": "scale",
+                "value": -1.4
+            }
+        },
+        "dimensions": {
+            "width": {
+                "givenIn": "scale",
+                "value": 0.4661
+            },
+            "height": {
+                "givenIn": "scale",
+                "value": 1.5
+            },
+            "above": false
+        },
+        "reload": {
+            "duration": {
+                "givenIn": "s",
+                "value": 2
+            },
+            "ammoReloaded": "all",
+            "chain": false
+        },
+        "magazineCapacity": {
+            "normal": 5,
+            "firepower": 5
+        },
+        "switchDelay": {
+            "givenIn": "ms",
+            "value": 300
+        },
+        "handPositions": {
+            "leftHand": {
+                "perp": {
+                    "givenIn": "scale",
+                    "value": 0.1
+                },
+                "parr": {
+                    "givenIn": "scale",
+                    "value": -0.85
+                }
+            }
+        },
+        "projectileSpawnOffset": {
+            "perp": {
+                "givenIn": "absolute",
+                "value": 0
+            },
+            "parr": {
+                "givenIn": "absolute",
+                "value": 10
+            }
+        },
+        "casings": {
+            "spawnOffset": {
+                "perp": {
+                    "givenIn": "scale",
+                    "value": 0.525
+                },
+                "parr": {
+                    "givenIn": "absolute",
+                    "value": 40
+                }
+            },
+            "velocity": {
+                "perp": {
+                    "givenIn": "absolute",
+                    "value": 0,
+                    "variation": {
+                        "givenIn": "absolute",
+                        "value": 400,
+                        "plusOrMinus": true
+                    }
+                },
+                "parr": {
+                    "givenIn": "absolute",
+                    "value": -400,
+                    "variation": {
+                        "givenIn": "scale",
+                        "value": 0.4,
+                        "plusOrMinus": true
+                    }
+                },
+                "angular": {
+                    "givenIn": "turns",
+                    "value": 0,
+                    "variation": {
+                        "givenIn": "absolute",
+                        "value": 3,
+                        "plusOrMinus": true
+                    }
+                }
+            },
+            "spawnOn": "reload",
+            "spawnDelay": {
+                "givenIn": "ms",
+                "value": 0
+            }
+        },
+        "recoilImpulse": {
+            "direction": {
+                "perp": {
+                    "givenIn": "scale",
+                    "value": 0
+                },
+                "parr": {
+                    "givenIn": "scale",
+                    "value": -0.05
+                }
+            },
+            "duration": {
+                "givenIn": "ms",
+                "value": 70
+            }
+        },
+        "possibleFireModes": [
+            "semi"
+        ],
+        "burstProps": {
+            "shotDelay": {
+                "givenIn": "RPM",
+                "value": 600
+            },
+            "burstDelay": {
+                "givenIn": "ms",
+                "value": 0
+            }
+        }
+    },
+    {
+        "name": "Dual OTs-38",
+        "summary": {
+            "class": "semi_pistol",
+            "engagementDistance": {
+                "min": {
+                    "givenIn": "absolute",
+                    "value": 500
+                },
+                "max": {
+                    "givenIn": "absolute",
+                    "value": 4000
+                }
+            },
+            "shouldNoslow": false,
+            "role": "primary"
+        },
+        "dual": true,
+        "images": {
+            "loot": "assets/items/firearms/Dual OTs-38/loot-weapon-ots38-dual.svg",
+            "held": "assets/items/firearms/OTs-38/ots38.png",
+            "silhouette": "assets/items/firearms/Dual OTs-38/ots38-dual-silhouette.png"
+        },
+        "tint": "#FFFFFF",
+        "ballistics": {
+            "damage": 32,
+            "velocity": {
+                "givenIn": "absolute",
+                "value": 5750
+            },
+            "range": {
+                "givenIn": "absolute",
+                "value": 6750
+            },
+            "tracer": {
+                "width": {
+                    "givenIn": "scale",
+                    "value": 0.15
+                },
+                "height": {
+                    "givenIn": "scale",
+                    "value": 10
+                }
+            },
+            "obstacleMult": 1,
+            "headshotMult": 2,
+            "fsa": {
+                "enabled": false,
+                "rechargeTime": {
+                    "givenIn": "s",
+                    "value": 1e10
+                }
+            },
+            "falloff": 0.77,
+            "projectiles": 1
+        },
+        "suppressed": true,
+        "caliber": "7.62x41mm",
+        "firingDelay": {
+            "givenIn": "ms",
+            "value": 90
+        },
+        "accuracy": {
+            "default": {
+                "givenIn": "degrees",
+                "value": 1.4
+            },
+            "moving": {
+                "givenIn": "degrees",
+                "value": 2.8
+            }
+        },
+        "moveSpeedPenalties": {
+            "active": {
+                "givenIn": "scale",
+                "value": 0
+            },
+            "firing": {
+                "givenIn": "scale",
+                "value": 0
+            }
+        },
+        "imageOffset": {
+            "perp": {
+                "givenIn": "scale",
+                "value": 0.525
+            },
+            "parr": {
+                "givenIn": "scale",
+                "value": -1.4
+            }
+        },
+        "dimensions": {
+            "width": {
+                "givenIn": "scale",
+                "value": 0.4661
+            },
+            "height": {
+                "givenIn": "scale",
+                "value": 1.5
+            },
+            "above": false
+        },
+        "reload": {
+            "duration": {
+                "givenIn": "s",
+                "value": 3.8
+            },
+            "ammoReloaded": "all",
+            "chain": false
+        },
+        "magazineCapacity": {
+            "normal": 10,
+            "firepower": 10
+        },
+        "switchDelay": {
+            "givenIn": "ms",
+            "value": 300
+        },
+        "handPositions": {
+            "leftHand": {
+                "perp": {
+                    "givenIn": "scale",
+                    "value": 0.525
+                },
+                "parr": {
+                    "givenIn": "scale",
+                    "value": -0.85
+                }
+            },
+            "rightHand": {
+                "perp": {
+                    "givenIn": "scale",
+                    "value": -0.525
+                },
+                "parr": {
+                    "givenIn": "scale",
+                    "value": -0.85
+                }
+            }
+        },
+        "projectileSpawnOffset": {
+            "perp": {
+                "givenIn": "scale",
+                "value": 0.525
+            },
+            "parr": {
+                "givenIn": "absolute",
+                "value": 10
+            }
+        },
+        "casings": {
+            "spawnOffset": {
+                "perp": {
+                    "givenIn": "scale",
+                    "value": 0.525
+                },
+                "parr": {
+                    "givenIn": "absolute",
+                    "value": 40
+                }
+            },
+            "velocity": {
+                "perp": {
+                    "givenIn": "absolute",
+                    "value": 0,
+                    "variation": {
+                        "givenIn": "absolute",
+                        "value": 400,
+                        "plusOrMinus": true
+                    }
+                },
+                "parr": {
+                    "givenIn": "absolute",
+                    "value": -400,
+                    "variation": {
+                        "givenIn": "scale",
+                        "value": 0.4,
+                        "plusOrMinus": true
+                    }
+                },
+                "angular": {
+                    "givenIn": "turns",
+                    "value": 0,
+                    "variation": {
+                        "givenIn": "absolute",
+                        "value": 3,
+                        "plusOrMinus": true
+                    }
+                }
+            },
+            "spawnOn": "reload",
+            "spawnDelay": {
+                "givenIn": "ms",
+                "value": 0
+            }
+        },
+        "recoilImpulse": {
+            "direction": {
+                "perp": {
+                    "givenIn": "scale",
+                    "value": 0
+                },
+                "parr": {
+                    "givenIn": "scale",
+                    "value": -0.05
+                }
+            },
+            "duration": {
+                "givenIn": "ms",
+                "value": 70
+            }
+        },
+        "possibleFireModes": [
+            "semi"
+        ],
+        "burstProps": {
+            "shotDelay": {
+                "givenIn": "RPM",
+                "value": 600
+            },
+            "burstDelay": {
+                "givenIn": "ms",
+                "value": 0
+            }
+        }
+    },
+    {
+        "name": "M134",
+        "summary": {
+            "class": "LMG",
+            "engagementDistance": {
+                "min": {
+                    "givenIn": "absolute",
+                    "value": 1000
+                },
+                "max": {
+                    "givenIn": "absolute",
+                    "value": 5500
+                }
+            },
+            "shouldNoslow": false,
+            "role": "primary"
+        },
+        "dual": false,
+        "images": {
+            "loot": "assets/items/firearms/M134/loot-weapon-m134.svg",
+            "held": "assets/items/firearms/M134/m134.svg",
+            "silhouette": "assets/items/firearms/M134/m134-silhouette.png"
+        },
+        "tint": "#FFFFFF",
+        "ballistics": {
+            "damage": 10,
+            "velocity": {
+                "givenIn": "absolute",
+                "value": 6500
+            },
+            "range": {
+                "givenIn": "absolute",
+                "value": 10000
+            },
+            "tracer": {
+                "width": {
+                    "givenIn": "scale",
+                    "value": 0.15
+                },
+                "height": {
+                    "givenIn": "scale",
+                    "value": 30
+                }
+            },
+            "obstacleMult": 5,
+            "headshotMult": 1.5,
+            "fsa": {
+                "enabled": false,
+                "rechargeTime": {
+                    "givenIn": "s",
+                    "value": 1e10
+                }
+            },
+            "falloff": 0.5,
+            "projectiles": 1
+        },
+        "suppressed": false,
+        "caliber": "7.62x51mm",
+        "firingDelay": {
+            "givenIn": "ms",
+            "value": 55
+        },
+        "accuracy": {
+            "default": {
+                "givenIn": "degrees",
+                "value": 1
+            },
+            "moving": {
+                "givenIn": "degrees",
+                "value": 1
+            }
+        },
+        "moveSpeedPenalties": {
+            "active": {
+                "givenIn": "scale",
+                "value": -3
+            },
+            "firing": {
+                "givenIn": "scale",
+                "value": -6
+            }
+        },
+        "imageOffset": {
+            "perp": {
+                "givenIn": "scale",
+                "value": 0.1
+            },
+            "parr": {
+                "givenIn": "scale",
+                "value": -3
+            }
+        },
+        "dimensions": {
+            "width": {
+                "givenIn": "scale",
+                "value": 1.8181818
+            },
+            "height": {
+                "givenIn": "scale",
+                "value": 5
+            },
+            "above": false
+        },
+        "reload": {
+            "duration": {
+                "givenIn": "s",
+                "value": 8
+            },
+            "ammoReloaded": "all",
+            "chain": false
+        },
+        "magazineCapacity": {
+            "normal": 200,
+            "firepower": 250
+        },
+        "switchDelay": {
+            "givenIn": "ms",
+            "value": 900
+        },
+        "handPositions": {
+            "leftHand": {
+                "perp": {
+                    "givenIn": "scale",
+                    "value": 0.35
+                },
+                "parr": {
+                    "givenIn": "scale",
+                    "value": -0.85
+                }
+            },
+            "rightHand": {
+                "perp": {
+                    "givenIn": "scale",
+                    "value": 0
+                },
+                "parr": {
+                    "givenIn": "scale",
+                    "value": -3
+                }
+            }
+        },
+        "projectileSpawnOffset": {
+            "perp": {
+                "givenIn": "absolute",
+                "value": 0
+            },
+            "parr": {
+                "givenIn": "absolute",
+                "value": 60
+            }
+        },
+        "casings": {
+            "spawnOffset": {
+                "perp": {
+                    "givenIn": "absolute",
+                    "value": 0
+                },
+                "parr": {
+                    "givenIn": "absolute",
+                    "value": 40
+                }
+            },
+            "velocity": {
+                "perp": {
+                    "givenIn": "absolute",
+                    "value": 500,
+                    "variation": {
+                        "givenIn": "ratio",
+                        "value": 1,
+                        "plusOrMinus": true
+                    }
+                },
+                "parr": {
+                    "givenIn": "absolute",
+                    "value": -30,
+                    "variation": {
+                        "givenIn": "ratio",
+                        "value": 1,
+                        "plusOrMinus": false
+                    }
+                },
+                "angular": {
+                    "givenIn": "turns",
+                    "value": -2,
+                    "variation": {
+                        "givenIn": "ratio",
+                        "value": 1,
+                        "plusOrMinus": false
+                    }
+                }
+            },
+            "spawnOn": "fire",
+            "spawnDelay": {
+                "givenIn": "ms",
+                "value": 0
+            }
+        },
+        "recoilImpulse": {
+            "direction": {
+                "perp": {
+                    "givenIn": "scale",
+                    "value": 0
+                },
+                "parr": {
+                    "givenIn": "scale",
+                    "value": -0.1
+                }
+            },
+            "duration": {
+                "givenIn": "ms",
+                "value": 170
+            }
+        },
+        "possibleFireModes": [
+            "automatic"
         ],
         "burstProps": {
             "shotDelay": {

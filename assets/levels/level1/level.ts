@@ -87,7 +87,8 @@ export const level = await (async () => {
 
                         gamespace.bots = gamespace.objects.players.map(p => new AI(p));
 
-                        const r = () => new gun(gamespace.guns[Math.floor(Math.random() * gamespace.guns.length)]);;
+                        const r = () => new gun(gamespace.guns[Math.floor(Math.random() * gamespace.guns.length)]);
+                        // const r = () => new gun(gamespace.guns.find(g => g.name == ""));
 
                         gamespace.objects.players.slice(1).forEach(p => {
                             p.name = `BOT ${p.name}`;

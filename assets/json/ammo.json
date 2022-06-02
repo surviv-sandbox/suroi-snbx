@@ -87,6 +87,50 @@
             "height": 40
         }
     },
+    "7.62x41mm": {
+        "tints": {
+            "normal": "#C5D6FE",
+            "saturated": "#ABC4FF",
+            "chambered": "#004CFF"
+        },
+        "spawnVar": {
+            "mean": 0,
+            "variation": 0,
+            "plusOrMinus": false
+        },
+        "casing": {
+            "img": "assets/items/ammo/shell-762mm.png",
+            "despawnDist": {
+                "mean": 100,
+                "variation": 10,
+                "plusOrMinus": true
+            },
+            "width": 13.2544378698,
+            "height": 40
+        }
+    },
+    "7.62x51mm": {
+        "tints": {
+            "normal": "#C5D6FE",
+            "saturated": "#ABC4FF",
+            "chambered": "#004CFF"
+        },
+        "spawnVar": {
+            "mean": 0,
+            "variation": 0,
+            "plusOrMinus": false
+        },
+        "casing": {
+            "img": "assets/items/ammo/shell-762mm.png",
+            "despawnDist": {
+                "mean": 100,
+                "variation": 10,
+                "plusOrMinus": true
+            },
+            "width": 13.2544378698,
+            "height": 40
+        }
+    },
     "7.62x54mmR": {
         "tints": {
             "normal": "#C5D6FE",
