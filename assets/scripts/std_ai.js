@@ -25,7 +25,7 @@ class AI {
         weaponLoadState: [true, true]
     };
     get memory() { return clone(this.#memory); }
-    constructor (player) {
+    constructor(player) {
         this.#player = player;
         this.#memory.lastPosition = { ...this.#player.body.position };
     }
@@ -38,19 +38,22 @@ class AI {
         }
         const l = $(`ai-${this.#player.body.id}-debug`);
         l.innerText = [`state: ${this.#state}`,
-        `subState: ${this.#subState}`,
-        `target: ${this.#target?.body.id}`,
-        `position: (${Math.round(100 * this.#player.body.position.x) / 100}, ${Math.round(100 * this.#player.body.position.y) / 100})`,
-        `wanderTarget: ${this.#memory.wanderTarget ? `(${this.#memory.wanderTarget.x}, ${this.#memory.wanderTarget.y})` : "none"}`,
-        `angle: ${Math.round(100 * this.#player.angle) / 100}`,
-        `distToTarget: ${this.#target ? Math.round(+distance(this.#player.body.position, this.#target.body.position) * 100) / 100 : "NA"}`,
-        `strafeDirection: ${this.#memory.strafe.dir}`,
-        `ammo: ${this.#player.inventory.activeItem.ammo}`,
-        `reloading: ${this.#player.state.reloading}`,
-        `activeWeapon: ${this.#player.inventory.activeItem.proto.name}`]
+            `subState: ${this.#subState}`,
+            `target: ${this.#target?.body.id}`,
+            `position: (${Math.round(100 * this.#player.body.position.x) / 100}, ${Math.round(100 * this.#player.body.position.y) / 100})`,
+            `wanderTarget: ${this.#memory.wanderTarget ? `(${this.#memory.wanderTarget.x}, ${this.#memory.wanderTarget.y})` : "none"}`,
+            `angle: ${Math.round(100 * this.#player.angle) / 100}`,
+            `distToTarget: ${this.#target ? Math.round(+distance(this.#player.body.position, this.#target.body.position) * 100) / 100 : "NA"}`,
+            `strafeDirection: ${this.#memory.strafe.dir}`,
+            `ammo: ${this.#player.inventory.activeItem.ammo}`,
+            `reloading: ${this.#player.state.reloading}`,
+            `activeWeapon: ${this.#player.inventory.activeItem.proto.name}`]
             .join("\n");
     }
     update() {
+        if (!this.#player.body) {
+            return;
+        }
         const pl = this.#player, i = pl.inventory.activeItem, ip = i.proto;
         switch (this.state) {
             case "idle": {
@@ -138,7 +141,6 @@ class AI {
                     this.#player.move(...this.#memory.strafe.dir);
                 }
                 if (this.#subState == "noslow") {
-                    console.log("skip");
                     break;
                 }
                 if (this.#subState != "strafe" && this.#subState != "reloading") {
@@ -187,10 +189,8 @@ class AI {
                             if (ip.summary.shouldNoslow && !pl.state.noSlow) {
                                 setTimeout(() => {
                                     pl.switchSlots(1 - pl.inventory.activeIndex);
-                                    console.log("initial");
                                     this.#subState = "noslow";
                                     setTimeout(() => {
-                                        console.log("back");
                                         this.#subState = "default";
                                     }, botConfig.noslowSpeed * (Math.random() * 0.2 + 0.9));
                                 }, botConfig.noslowDelay);
@@ -222,7 +222,7 @@ class AI {
     }
     #resolveTargets() {
         const candidate = gamespace.objects.players
-            .filter(b => b.body.id != this.#player.body.id && !b.aiIgnore)
+            .filter(b => b.body.id != this.#player.body.id && !b.aiIgnore && !b.state.frozen)
             .map(b => ({ player: b, dist: +sqauredDist(this.#player.body.position, b.body.position) }))
             .sort((a, b) => a.dist - b.dist)[0], t = this.#target, d = t?.body ? +sqauredDist(t.body.position, this.#player.body.position) : Infinity;
         if (!candidate) {

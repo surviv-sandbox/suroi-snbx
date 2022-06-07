@@ -77,6 +77,8 @@ class AI {
     }
 
     update() {
+        if (!this.#player.body) { return; }
+
         const pl = this.#player,
             i = pl.inventory.activeItem,
             ip = i.proto;
@@ -311,7 +313,7 @@ class AI {
 
     #resolveTargets() {
         const candidate = gamespace.objects.players
-            .filter(b => b.body.id != this.#player.body.id && !b.aiIgnore)
+            .filter(b => b.body.id != this.#player.body.id && !b.aiIgnore && !b.state.frozen)
             .map(b => ({ player: b, dist: +sqauredDist(this.#player.body.position, b.body.position) }))
             .sort((a, b) => a.dist - b.dist)[0],
             t = this.#target,

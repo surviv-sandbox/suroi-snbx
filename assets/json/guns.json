@@ -691,7 +691,7 @@
     {
         "name": "PKP Pecheneg",
         "summary": {
-            "class": "LMG",
+            "class": "lmg",
             "engagementDistance": {
                 "min": {
                     "givenIn": "absolute",
@@ -3385,7 +3385,7 @@
     {
         "name": "M134",
         "summary": {
-            "class": "LMG",
+            "class": "lmg",
             "engagementDistance": {
                 "min": {
                     "givenIn": "absolute",

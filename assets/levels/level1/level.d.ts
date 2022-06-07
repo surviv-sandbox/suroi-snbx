@@ -1,5 +1,6 @@
 export declare const level: {
     name: string;
+    jsonPath: string;
     description: string;
     levelData: {
         obstacles: obstacle[];

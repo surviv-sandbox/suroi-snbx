@@ -1,4 +1,4 @@
-import AI from "../../scripts/std_ai.js";
+import std_setup from "../../scripts/std_level_setup.js";
 export const level = await (async () => {
     const json: JSONLevel = await (await fetch("assets/levels/level0/data.json")).json();
 
@@ -7,6 +7,7 @@ export const level = await (async () => {
         path = ["levels", `level-${name}`],
         level = {
             name: name,
+            jsonPath: "assets/levels/level0/data.json",
             description: "Fight a very advanced and totally state-of-the art bot.",
             levelData: levelData,
             world: {
@@ -27,113 +28,68 @@ export const level = await (async () => {
                         world = engine.world;
 
                     p5.setup = function () {
-                        engine.gravity.y = 0;
-                        gamespace.engine = engine;
-                        gamespace.world = world;
+                        std_setup(engine, world, p5, level, { font: "assets/fonts/RobotoCondensed-Bold.ttf", size: 80 });
 
-                        document.addEventListener("contextmenu", e => e.preventDefault());
-
-                        p5.createCanvas(p5.windowWidth, p5.windowHeight, p5.WEBGL);
-                        $("defaultCanvas0").style.display = "none";
-
-                        gamespace.lastUpdate = gamespace._currentUpdate = Date.now();
-
-                        p5.imageMode(p5.CENTER);
-                        p5.angleMode(p5.RADIANS);
-                        p5.textFont(p5.loadFont("assets/fonts/RobotoCondensed-Bold.ttf"), 80);
-
-                        {
-                            function makeBound(x: number, y: number, w: number, h: number): obstacle {
-                                //@ts-ignore
-                                return new obstacle(Matter.Bodies.rectangle(x, y, w, h, { isStatic: true }), 0, gamespace.images.blank, { width: 1, height: 1 }, "#FFFFFF", 1, { x: 0, y: 0, angle: 0 }, p5.CENTER);
-                            }
-
-                            const w = level.world.width,
-                                h = level.world.height;
-
-                            levelData.obstacles.concat(levelData.players as any,
-                                ...[
-                                    [-500, h / 2, 1000, h + 1000],
-                                    [w + 500, h / 2, 1000, h + 1000],
-                                    [w / 2, -500, w + 1000, 1000],
-                                    [w / 2, h + 500, w + 1000, 1000]
-                                ].map(v => makeBound(...v as [number, number, number, number]))
-                                //@ts-ignore
-                            ).forEach(ob => void Matter.World.add(world, ob.body));
-
-                            gamespace.objects.obstacles = levelData.obstacles;
-                            gamespace.objects.players = levelData.players;
-
-                            //@ts-ignore
-                            Matter.Body.setPosition(gamespace.objects.players[1].body, {
-                                x: Math.random() * level.world.width,
-                                y: Math.random() * level.world.height
-                            });
-                        }
-
-                        p5.cursor("crosshair");
-                        $("defaultCanvas0").style.display = "";
-                        window.addEventListener("resize", () => void p5.resizeCanvas(p5.windowWidth, p5.windowHeight));
-                        p5.pixelDensity(gamespace.settings.graphicsQuality);
-                        p5.textAlign(p5.CENTER, p5.CENTER);
-
-                        gamespace.player = gamespace.objects.players[0];
-                        gamespace.player.name = gamespace.settings.name;
-                        gamespace.player.angle = Math.PI / 2 + Math.atan2(p5.mouseY - p5.height / 2, p5.mouseX - p5.width / 2);
-
-                        gamespace.bots = gamespace.objects.players.slice(1).map(p => (p.name = `BOT ${p.name}`, new AI(p)));
+                        //@ts-ignore
+                        Matter.Body.setPosition(gamespace.objects.players[1].body, {
+                            x: Math.random() * level.world.width,
+                            y: Math.random() * level.world.height
+                        });
 
                         w = gamespace.objects.players.map(p => [p.inventory.slot0, p.inventory.slot1].map(g => (g as gun).proto.name));
                         doAI = !memoryManager.getItem([...path, "ai-disable"], "boolean");
                         gamespace.player.aiIgnore = memoryManager.getItem([...path, "ai-ignore"], "boolean");
-
-                        createUI();
                     };
 
-                    let done = false,
-                        w: string[][],
+                    let w: string[][],
                         doAI = true;
 
                     p5.draw = function () {
                         gamespace.update(p5);
-                        if (!done) {
-                            if (gamespace.objects.players.length == 1) {
-                                done = true;
-                                gamespace.freeze();
+                        if (gamespace.objects.players.length == 1) {
+                            gamespace.freeze();
+                            p5.noLoop();
+                            p5.draw = void 0;
 
-                                const winBanner = makeElement("p", "winner-text");
+                            const winBanner = makeElement("p", "winner-text");
 
-                                winBanner.style.font = "calc(250vw / 72) roboto";
-                                winBanner.style.color = "#FF0";
-                                winBanner.style.width = "100%";
-                                winBanner.style.left = "50%";
-                                winBanner.style.top = "20%";
-                                winBanner.style.position = "absolute";
-                                winBanner.style.transform = "translate(-50%, 0)";
-                                winBanner.style.textShadow = "calc(10vw / 72) calc(2vh / 9) black";
-                                winBanner.style.pointerEvents = "none";
-                                winBanner.style.userSelect = "none";
-                                winBanner.style.textAlign = "center";
+                            winBanner.style.font = "calc(250vw / 72) roboto";
+                            winBanner.style.color = "#FF0";
+                            winBanner.style.width = "100%";
+                            winBanner.style.left = "50%";
+                            winBanner.style.top = "20%";
+                            winBanner.style.position = "absolute";
+                            winBanner.style.transform = "translate(-50%, 0)";
+                            winBanner.style.textShadow = "calc(10vw / 72) calc(2vh / 9) black";
+                            winBanner.style.pointerEvents = "none";
+                            winBanner.style.userSelect = "none";
+                            winBanner.style.textAlign = "center";
 
-                                winBanner.innerHTML = `You ${gamespace.player.body.circleRadius /* identify the rendering hack */ ? "win!" : "lose."} Remaining HP: ${gamespace.objects.players[0].health}<br><span style="font-size: calc(200vw / 72)">${w[0][0]}/${w[0][1]} vs ${w[1][0]}/${w[1][1]}</span>`;
+                            winBanner.innerHTML = `You ${gamespace.player.body ? "win!" : "lose."} Remaining HP: ${gamespace.objects.players[0].health}<br><span style="font-size: calc(200vw / 72)">${w[0][0]}/${w[0][1]} vs ${w[1][0]}/${w[1][1]}</span>`;
 
-                                setTimeout(() => {
-                                    winBanner.innerHTML += `<br><span style="font-size: calc(180vw / 72)">Press Escape to restart.</span>`;
-                                    document.addEventListener("keydown", e => e.key == "Escape" && (e.preventDefault(), window.location.reload()));
-                                }, 250);
+                            setTimeout(() => {
+                                winBanner.innerHTML += `<br><span style="font-size: calc(180vw / 72)">Press Escape to restart.</span>`;
+                                document.addEventListener("keydown", e => {
+                                    if (e.key == "Escape") {
+                                        e.preventDefault();
+                                        gamespace.cleanUp(gamespace.p5, { clearEvents: true });
+                                        Array.from(document.body.children).forEach(n => n.remove());
+                                        makeMenu(true);
+                                    }
+                                });
+                            }, 250);
 
 
-                                document.body.appendChild(winBanner);
-                                return;
-                            }
-
-                            gamespace.bots.forEach(b => {
-                                if (b.player.body !== void 0 && b.player.body.id != gamespace.player.body.id && doAI) {
-                                    gamespace.settings.bonus_features.bot_debug && b.debug();
-                                    b.update();
-                                }
-                            });
+                            document.body.appendChild(winBanner);
+                            return;
                         }
+
+                        gamespace.bots.forEach(b => {
+                            if (b.player.body !== void 0 && b.player.body.id != gamespace.player.body.id && doAI) {
+                                gamespace.settings.bonus_features.bot_debug && b.debug();
+                                b.update();
+                            }
+                        });
                     };
                 };
 
@@ -144,7 +100,6 @@ export const level = await (async () => {
 
                     document.body.style.backgroundColor = "#80AF49";
 
-                    // overlay.style.aspectRatio = cont.style.aspectRatio = "1";
                     cont.style.width = "75%";
                     cont.style.height = "90%";
                     overlay.style.width = overlay.style.height = "100%";
@@ -162,7 +117,7 @@ export const level = await (async () => {
 
                     otx.fillStyle = "#FFF1";
                     otx.fillRect(0, 56.25, 1500, 56.25);
-                    otx.fillRect(0, 450, 1500, 56.25);
+                    otx.fillRect(0, 393.75, 1500, 56.25);
 
                     otx.lineWidth = 1;
                     otx.strokeStyle = "#FFF";
@@ -176,7 +131,6 @@ export const level = await (async () => {
                     otx.moveTo(0, 1040.625);
                     otx.lineTo(1500, 1040.625);
                     otx.stroke();
-
 
                     otx.font = "calc(250vw / 72) roboto";
                     otx.textAlign = "center";
@@ -289,7 +243,7 @@ export const level = await (async () => {
                         inputs.push(input);
 
                         {
-                            const a = `ai-${i ? "disabl" : "ignor"}e`,
+                            const a = `ai-${i ? "ignore" : "disable"}`,
                                 input = makeElement("input", a),
                                 d = memoryManager.getItem([...path, a], "boolean");
 
@@ -342,11 +296,11 @@ export const level = await (async () => {
                         preset = memoryManager.getItem([...path, "player-scope-pref"], "number") ?? 1;
 
                     levelData.players[0].view = ({
-                        1: 2050,
-                        2: 2400,
-                        4: 3079,
-                        8: 3950,
-                        15: 5660
+                        1: 1330,
+                        2: 1680,
+                        4: 2359,
+                        8: 3230,
+                        15: 4940
                     })[preset];
 
                     [1, 2, 4, 8, 15].forEach((n, i) => {
@@ -369,11 +323,11 @@ export const level = await (async () => {
                             button.style.backgroundColor = "#0108";
 
                             levelData.players[0].view = ({
-                                1: 2050,
-                                2: 2400,
-                                4: 3079,
-                                8: 3950,
-                                15: 5660
+                                1: 1330,
+                                2: 1680,
+                                4: 2359,
+                                8: 3230,
+                                15: 4940
                             })[n];
                         })()));
 
