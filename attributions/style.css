@@ -50,6 +50,7 @@ button#back {
     border-bottom-width: calc(5vw / 18);
     border-radius: calc(25vw / 72);
     font-family: "roboto", "Helvetica", monospace;
+    text-shadow: 0 calc(1vh / 9) calc(2vh / 9) rgb(0 0 0 / 25%);
     font-size: calc(35vw / 36);
     width: 5%;
     height: 5%;

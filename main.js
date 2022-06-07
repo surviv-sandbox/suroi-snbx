@@ -1,4 +1,4 @@
-(function makeMenu(first) {
+function makeMenu(first) {
     if (memoryManager.getItem("sawPopup", "boolean") || window.confirm("This build of surviv.io sandbox is an alpha build, and may therefore be unstable. No garantees about this build's quality or fitness for any given purpose are given.")) {
         memoryManager.has("sawPopup") || memoryManager.setItem("sawPopup", true);
         {
@@ -19,6 +19,14 @@
         nameField.textContent = gamespace.settings.name;
         nameField.contentEditable = "true";
         ver.innerHTML = `SURVIV.IO sandbox v${gamespace.version}`;
+        if (!gamespace.levels.length) {
+            play.disabled = true;
+            play.style.opacity = "0.5";
+            gamespace.events.addEventListener("levelsLoaded", (ev, ...args) => {
+                play.disabled = false;
+                play.style.opacity = "";
+            }, { once: true });
+        }
         (first ? document.body.appendChild(container) : $("menu-container")).append(title, play, settings, changelog, attributions, ver, nameField);
         document.body.style.backgroundColor = "#83AF50";
         nameField.addEventListener("keydown", e => e.key == "Enter" && nameField.blur());
@@ -102,4 +110,6 @@
             gamespace.levels[index].initializer();
         }
     }
-})(true);
+}
+;
+makeMenu(true);

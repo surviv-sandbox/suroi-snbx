@@ -3,6 +3,7 @@ type JSONValue = string | number | boolean | null;
 type JSONObject = { [key: string]: JSONContent; };
 type JSONArray = JSONObject["string"][];
 type JSONContent = JSONValue | JSONObject | JSONArray;
+type timestamp = number;
 
 type JSONLevel = {
     obstacles: (
@@ -121,7 +122,7 @@ function parseLevelData(data: JSONLevel): { obstacles: obstacle[]; players: play
                     body = Matter.Bodies.polygon(o.x, o.y, o.sides, o.radius, o.options);
                     break;
                 case "fromVertices":
-                    body = Matter.Bodies.fromVertices(o.x, o.y, o.vertexSets, o.options);
+                    body = Matter.Bodies.fromVertices(o.x, o.y, [o.vertexSets], o.options);
                     break;
                 case "trapezoid":
                     body = Matter.Bodies.trapezoid(o.x, o.y, o.width, o.height, o.slope, o.options);
@@ -164,13 +165,13 @@ function parseLevelData(data: JSONLevel): { obstacles: obstacle[]; players: play
                     density: 0.01
                 },
                 ({
-                    1: 2050,
-                    2: 2400,
-                    4: 3079,
-                    8: 3950,
-                    15: 5660
+                    1: 1330,
+                    2: 1680,
+                    4: 2359,
+                    8: 3230,
+                    15: 4940
                 })[p.scope],
-                ["Flavie", "Mathis", "Sarah", "Juliette", "Emma", "Lexie", "Oceane", "Maeva", "Sophia", "Charles", "Jeanne", "Laurent", "Theo", "Eli", "Edouard", "Axel", "Leonie", "Mayson", "Louis", "William", "Laurence", "Sophie", "Charlie", "Charlotte", "Beatrice", "Jayden", "Clara", "Felix", "Ellie", "James", "Ethan", "Milan", "Rosalie", "Hubert", "Lea", "Amelia", "Olivia", "Noah", "Emile", "Florence", "Simone", "Adele", "Mia", "Elizabeth", "Ophelie", "Flora", "Gabriel", "Victoria", "Logan", "Raphael", "Arnaud", "Victor", "Benjamin", "Livia", "Alicia", "Arthur", "Anna", "Lily", "Henri", "Nathan", "Romy", "Thomas", "Alice", "Lucas", "Theodore", "Liam", "Jules", "Chloe", "Camille", "Leonard", "Antoine", "Nolan", "Elliot", "Jackson", "Jake", "Zoe", "Samuel", "Eleonore", "Julia", "Maelie", "Alexis", "Mila", "Eloi", "Noelie", "Matheo", "Elena", "Jacob", "Jade", "Leo", "Jasmine", "Raphaelle", "Rose", "Adam", "Eva", "Olivier", "Xavier", "Loic", "Sofia", "Zachary", "Zack"][Math.floor(Math.random() * 100)]
+                `BOT ${["Flavie", "Mathis", "Sarah", "Juliette", "Emma", "Lexie", "Oceane", "Maeva", "Sophia", "Charles", "Jeanne", "Laurent", "Theo", "Eli", "Edouard", "Axel", "Leonie", "Mayson", "Louis", "William", "Laurence", "Sophie", "Charlie", "Charlotte", "Beatrice", "Jayden", "Clara", "Felix", "Ellie", "James", "Ethan", "Milan", "Rosalie", "Hubert", "Lea", "Amelia", "Olivia", "Noah", "Emile", "Florence", "Simone", "Adele", "Mia", "Elizabeth", "Ophelie", "Flora", "Gabriel", "Victoria", "Logan", "Raphael", "Arnaud", "Victor", "Benjamin", "Livia", "Alicia", "Arthur", "Anna", "Lily", "Henri", "Nathan", "Romy", "Thomas", "Alice", "Lucas", "Theodore", "Liam", "Jules", "Chloe", "Camille", "Leonard", "Antoine", "Nolan", "Elliot", "Jackson", "Jake", "Zoe", "Samuel", "Eleonore", "Julia", "Maelie", "Alexis", "Mila", "Eloi", "Noelie", "Matheo", "Elena", "Jacob", "Jade", "Leo", "Jasmine", "Raphaelle", "Rose", "Adam", "Eva", "Olivier", "Xavier", "Loic", "Sofia", "Zachary", "Zack"][Math.floor(Math.random() * 100)]}`
             )
         )
     };
@@ -636,6 +637,61 @@ function clone<T extends JSONContent>(object: T): T {
     }
 
     return copy as T;
+}
+
+function getDecimalPlaces(n: number | Decimal) {
+    if (n instanceof Decimal) { return n.decimalPlaces(); }
+    const str = n.toString();
+    return +!!str.match(/\./) && str.length - (str.indexOf(".") + 1);
+}
+
+function sliceToDecimalPlaces(number: number | Decimal, decimalPlaces: number) {
+    return +number
+        .toString()
+        .split(".")
+        .map((v, i) =>
+            i
+                ? (() => {
+                    const d = v.slice(0, decimalPlaces);
+                    return v[decimalPlaces] == "9" ? `${d.slice(0, -1)}${+d.slice(-1) + 1}` : d;
+                })()
+                : v)
+        .join(".");
+}
+
+const getRenderDistFromView = (() => {
+    // Basically an implementation of a function cache, but very niche-ly done
+
+    const map = new Map<number, Decimal>();
+
+    function getRenderDistFromView(v: number) {
+        /* 
+        √(642281v^2 + 34228610v + 714829400) / 722
+    
+        calculated as
+    
+        (((v * 642281 34228610)v + 714829400) ^ 0.5) / 722
+        */
+
+        return Decimal.mul((v + 720), 642281).add(34228610).mul((v + 720)).add(714829400).sqrt().div(722);
+    }
+
+    return (view: number) => {
+        if (map.has(view)) {
+            return +map.get(view);
+        }
+
+        const v = getRenderDistFromView(view);
+
+        map.set(view, v);
+
+        return +v;
+    };
+})();
+
+async function loadJSONBasedGamespaceFields() {
+    gamespace.guns = parseGunData((await (await fetch("assets/json/guns.json")).json()) as JSONGun[]);
+    gamespace.bulletInfo = parseAmmoData((await (await fetch("assets/json/ammo.json")).json()) as { [key: string]: ammoData; });
 }
 
 (() => {

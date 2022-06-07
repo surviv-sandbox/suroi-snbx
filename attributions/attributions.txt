@@ -30,11 +30,13 @@
 "loot-weapon-ots38.svg" taken from [surviv.io](https://surviv.io/img/loot/loot-weapon-ots38.svg)
 "loot-weapon-ots38-dual.svg" taken from [surviv.io](https://surviv.io/img/loot/loot-weapon-ots38-dual.svg)
 "loot-weapon-m134.svg" taken from [surviv.io](https://surviv.io/img/loot/loot-weapon-m134.svg)
-"loot-scope-01" taken from [surviv.io](https://surviv.io/img/loot/loot-scope-00.svg) (Renamed)
-"loot-scope-02" taken from [surviv.io](https://surviv.io/img/loot/loot-scope-01.svg) (Renamed)
-"loot-scope-04" taken from [surviv.io](https://surviv.io/img/loot/loot-scope-02.svg) (Renamed)
-"loot-scope-08" taken from [surviv.io](https://surviv.io/img/loot/loot-scope-03.svg) (Renamed)
-"loot-scope-15" taken from [surviv.io](https://surviv.io/img/loot/loot-scope-04.svg) (Renamed)
+"loot-scope-01.svg" taken from [surviv.io](https://surviv.io/img/loot/loot-scope-00.svg) (Renamed)
+"loot-scope-02.svg" taken from [surviv.io](https://surviv.io/img/loot/loot-scope-01.svg) (Renamed)
+"loot-scope-04.svg" taken from [surviv.io](https://surviv.io/img/loot/loot-scope-02.svg) (Renamed)
+"loot-scope-08.svg" taken from [surviv.io](https://surviv.io/img/loot/loot-scope-03.svg) (Renamed)
+"loot-scope-15.svg" taken from [surviv.io](https://surviv.io/img/loot/loot-scope-04.svg) (Renamed)
+"quit.svg" taken from [surviv.io](https://surviv.io/img/gui/quit.svg)
+"resume.svg" taken from [surviv.io](https://surviv.io/img/gui/resume.svg)
 
 - Sources
 [surviv.io wiki](https://survivio.fandom.com/wiki/Surviv.io_Wiki)

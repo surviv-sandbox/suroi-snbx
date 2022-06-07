@@ -1,6 +1,7 @@
 class obstacle {
     #body;
     get body() { return this.#body; }
+    events = new customEvent();
     image;
     imageWidth;
     imageHeight;
@@ -24,17 +25,17 @@ class obstacle {
         };
         this.imageMode = imageMode ?? "center";
     }
-    draw(p5) {
-        const b = this.#body;
+    draw() {
+        const b = this.#body, p5 = gamespace.p5;
         p5.push();
         p5.imageMode(this.imageMode);
         p5.translate(b.position.x, b.position.y);
         p5.rotate(this.#body.angle + this.offset.angle);
         p5.translate(this.offset.x, this.offset.y);
-        // if (this.image && sqauredDist(b.position, gamespace.player.body.position) < (p5.width + p5.height) ** 2) {
-        p5.tint(this.tint);
-        p5.image(this.image, 0, 0, this.imageWidth, this.imageHeight);
-        // }
+        if (this.image && sqauredDist(b.position, (gamespace.player.body ? gamespace.player.body.position : { x: gamespace.camera.eyeX, y: gamespace.camera.eyeY })) < gamespace.player.renderDist ** 2) {
+            p5.tint(this.tint);
+            p5.image(this.image, 0, 0, this.imageWidth, this.imageHeight);
+        }
         p5.noTint();
         p5.pop();
         if (gamespace.settings.debug) {
@@ -52,16 +53,21 @@ class playerLike {
     get body() { return this.#body; }
     aiIgnore = false;
     angle;
+    events = new customEvent();
     health;
-    name;
     maxHealth;
+    name;
     inventory;
     options;
+    #renderDist;
+    get renderDist() { return this.#renderDist; }
     state = {
         attacking: false,
         eSwitchDelay: 0,
         fired: 0,
         firing: false,
+        frozen: false,
+        invuln: false,
         lastShot: [0, 0, 0, 0],
         lastFreeSwitch: 0,
         lastSwitch: 0,
@@ -70,6 +76,9 @@ class playerLike {
         reloading: false,
         custom: {}
     };
+    speed = {
+        base: 12
+    };
     timers = {
         reloading: {
             timer: false,
@@ -77,10 +86,12 @@ class playerLike {
         },
         anticipatedReload: false
     };
-    speed = {
-        base: 12
-    };
-    view;
+    #view;
+    get view() { return this.#view; }
+    set view(v) {
+        this.#view = v;
+        this.#renderDist = getRenderDistFromView(v);
+    }
     constructor(body, angle, health, loadout, options, view, name) {
         this.#body = body;
         this.#body.angle = angle;
@@ -95,50 +106,58 @@ class playerLike {
         this.health = health;
         this.maxHealth = Math.max(100, health);
     }
-    draw(p5) {
-        const b = this.#body;
-        p5.push();
-        p5.translate(b.position.x, b.position.y);
-        p5.rotate(this.angle);
-        const ac = this.inventory.activeItem, item = ac.proto, radius = 50, d = Math.min(item?.recoilImpulse?.duration ?? 0, gamespace.lastUpdate - this.state.lastShot[this.inventory.activeIndex]);
-        if (item) {
-            if (item.dimensions.above) {
-                p5.fill("#F8C574");
+    draw() {
+        const b = this.#body, p5 = gamespace.p5;
+        if (!b) {
+            return;
+        }
+        if (b.id == gamespace.player.#body.id || sqauredDist(b.position, (gamespace.player.body ? gamespace.player.body.position : { x: gamespace.camera.eyeX, y: gamespace.camera.eyeY })) < gamespace.player.#renderDist ** 2) {
+            p5.push();
+            p5.translate(b.position.x, b.position.y);
+            p5.rotate(this.angle);
+            const ac = this.inventory.activeItem, item = ac.proto, radius = 50, d = Math.min(item?.recoilImpulse?.duration ?? 0, gamespace.lastUpdate - this.state.lastShot[this.inventory.activeIndex]), op = this.state.invuln ? "80" : "";
+            if (item) {
+                if (item.dimensions.above) {
+                    p5.fill(`#F8C574${op}`);
+                    p5.ellipse(0, 0, 2 * radius, 2 * radius, 70);
+                }
+                p5.tint(`${item.tint ?? "#FFFFFF"}${op}`);
+                p5.image(item.images.held.img, (item.offset.x + (ac.recoilImpulseParity == 1 ? item.recoilImpulse.x * (1 - (d / item.recoilImpulse.duration)) : 0)) * radius, (item.offset.y - (ac.recoilImpulseParity == 1 ? item.recoilImpulse.y * (1 - (d / item.recoilImpulse.duration)) : 0)) * radius, item.dimensions.width * radius, item.dimensions.height * radius);
+                if (item.dual) {
+                    p5.image(item.images.held.img, -(item.offset.x + (ac.recoilImpulseParity == -1 ? item.recoilImpulse.x * (1 - (d / item.recoilImpulse.duration)) : 0)) * radius, (item.offset.y - (ac.recoilImpulseParity == -1 ? item.recoilImpulse.y * (1 - (d / item.recoilImpulse.duration)) : 0)) * radius, item.dimensions.width * radius, item.dimensions.height * radius);
+                }
+                p5.noTint();
+            }
+            if (!item?.dimensions?.above) {
+                p5.fill(`#F8C574${op}`);
                 p5.ellipse(0, 0, 2 * radius, 2 * radius, 70);
             }
-            p5.tint(item.tint ?? "#FFFFFF");
-            p5.image(item.images.held.img, (item.offset.x + (ac.recoilImpulseParity == 1 ? item.recoilImpulse.x * (1 - (d / item.recoilImpulse.duration)) : 0)) * radius, (item.offset.y - (ac.recoilImpulseParity == 1 ? item.recoilImpulse.y * (1 - (d / item.recoilImpulse.duration)) : 0)) * radius, item.dimensions.width * radius, item.dimensions.height * radius);
-            if (item.dual) {
-                p5.image(item.images.held.img, -(item.offset.x + (ac.recoilImpulseParity == -1 ? item.recoilImpulse.x * (1 - (d / item.recoilImpulse.duration)) : 0)) * radius, (item.offset.y - (ac.recoilImpulseParity == -1 ? item.recoilImpulse.y * (1 - (d / item.recoilImpulse.duration)) : 0)) * radius, item.dimensions.width * radius, item.dimensions.height * radius);
+            for (let i = 0; i <= 1; i++) {
+                p5.fill(`${["#302719", "#F8C574"][i]}${op}`);
+                Object.values(item.hands).filter(v => v).forEach((hand, index) => {
+                    p5.ellipse((hand.x + (!item.dual || ac.recoilImpulseParity == (1 - 2 * index) ? item?.recoilImpulse?.x ?? 0 : 0) * (1 - (d / (item?.recoilImpulse?.duration ?? d)))) * radius, (hand.y - (!item.dual || ac.recoilImpulseParity == (1 - 2 * index) ? item?.recoilImpulse?.y ?? 0 : 0) * (1 - (d / (item?.recoilImpulse?.duration ?? d)))) * radius, radius * (i ? 0.525 : 0.75), radius * (i ? 0.525 : 0.75), 50);
+                });
             }
-            p5.tint("#FFFFFF");
+            p5.rotate(-this.angle);
+            p5.pop();
         }
-        if (!item?.dimensions?.above) {
-            p5.fill("#F8C574");
-            p5.ellipse(0, 0, 2 * radius, 2 * radius, 70);
-        }
-        for (let i = 0; i <= 1; i++) {
-            p5.fill(["#302719", "#F8C574"][i]);
-            Object.values(item.hands).filter(v => v).forEach((hand, index) => {
-                p5.ellipse((hand.x + (!item.dual || ac.recoilImpulseParity == (1 - 2 * index) ? item?.recoilImpulse?.x ?? 0 : 0) * (1 - (d / (item?.recoilImpulse?.duration ?? d)))) * radius, (hand.y - (!item.dual || ac.recoilImpulseParity == (1 - 2 * index) ? item?.recoilImpulse?.y ?? 0 : 0) * (1 - (d / (item?.recoilImpulse?.duration ?? d)))) * radius, radius * (i ? 0.525 : 0.75), radius * (i ? 0.525 : 0.75), 50);
-            });
-        }
-        p5.rotate(-this.angle);
-        p5.pop();
     }
     destroy() {
-        if (this.#body.id == gamespace.player.#body.id) { // Temporary hack to keep distance-based rendering from breaking when the player dies
-            this.#body = { position: { ...this.#body.position } };
-        }
-        else {
-            this.#body = void 0;
-        }
+        this.#body = void 0;
     }
     move(w, a, s, d) {
-        const pb = this.body, m = this.#determineMoveSpeed(), f = {
+        if (!this.#body) {
+            return;
+        }
+        if (this.state.frozen) {
+            this.state.moving = false;
+            return;
+        }
+        const pb = this.#body, m = this.#determineMoveSpeed(), f = {
             x: +(a != d) && ((((w != s) ? Math.SQRT1_2 : 1) * [-1, 1][+d] * m) / (gamespace.deltaTime ** 2)),
             y: +(w != s) && ((((a != d) ? Math.SQRT1_2 : 1) * [-1, 1][+s] * m) / (gamespace.deltaTime ** 2))
         };
+        this.events.dispatchEvent("move", `${{ [-1]: "N", 0: "", 1: "S" }[Math.sign(f.y)]}${{ [-1]: "W", 0: "", 1: "E" }[Math.sign(f.x)]}`);
         Matter.Body.applyForce(pb, pb.position, f);
         this.state.moving = !!(f.x || f.y);
     }
@@ -158,8 +177,9 @@ class playerLike {
         this.inventory.activeIndex = index;
         if (!i.activeItem.ammo) {
             this.timers.anticipatedReload && clearTimeout(this.timers.anticipatedReload);
+            const n = i.activeItem.proto.name;
             this.timers.anticipatedReload = setTimeout(() => {
-                i.activeItem.reload(this);
+                i.activeItem.proto.name == n && i.activeItem.reload(this);
             }, this.state.eSwitchDelay);
         }
     }
@@ -278,7 +298,7 @@ class gun {
     }
     primary(shooter) {
         const p = shooter, b = p.body, ip = this.#proto, fire = this.activeFireMode, burst = !!fire.match(/(auto-)?burst-/);
-        if ((gamespace._currentUpdate - p.state.lastShot[p.inventory.activeIndex]) >= (burst ? (ip.burstProps.burstDelay ?? ip.delay) : ip.delay) && this.#ammo) {
+        if ((gamespace._currentUpdate - p.state.lastShot[p.inventory.activeIndex]) >= (burst ? (ip.burstProps.burstDelay ?? ip.delay) : ip.delay) && this.#ammo && !shooter.state.frozen) {
             p.state.fired = 0;
             const timer = setTimeout(function a(weapon) {
                 const exceed = p.state.fired >= +fire.replace(/(auto-)?burst-/, "");
@@ -287,7 +307,8 @@ class gun {
                     (!p.state.attacking && !(burst && !exceed)) ||
                     (burst && (!fire.startsWith("auto-burst-") && exceed)) ||
                     (!weapon.#ammo) ||
-                    (gamespace._currentUpdate - p.state.lastSwitch < p.state.eSwitchDelay)) {
+                    (gamespace._currentUpdate - p.state.lastSwitch < p.state.eSwitchDelay) ||
+                    shooter.state.frozen) {
                     p.state.fired = 0;
                     p.state.firing = false;
                     clearTimeout(timer);
@@ -305,6 +326,7 @@ class gun {
                 weapon.ammo--;
                 p.state.lastShot[p.inventory.activeIndex] = gamespace._currentUpdate;
                 p.state.firing = true;
+                p.events.dispatchEvent("firing", weapon);
                 if (weapon.#proto.dual) {
                     weapon.recoilImpulseParity *= -1;
                 }
@@ -346,6 +368,7 @@ class gun {
         if (this.#ammo == this.#proto.magazineCapacity.normal || shooter.state.reloading) {
             return;
         }
+        shooter.events.dispatchEvent("reloading", this);
         shooter.state.firing = false;
         shooter.state.reloading = gamespace._currentUpdate;
         const reloadToUse = this.#proto[`${this.#proto.altReload && !this.#ammo ? "altR" : "r"}eload`];
@@ -379,10 +402,14 @@ class gun {
     stopReload(shooter) {
         if (shooter.state.reloading) {
             clearTimeout(shooter.timers.reloading.timer);
+            shooter.events.dispatchEvent("stopReload", this);
             shooter.state.reloading = shooter.timers.reloading.timer = false;
         }
     }
     makeCasing(shooter) {
+        if (!shooter.body) {
+            return;
+        }
         const p = shooter, b = p.body, ip = this.#proto, start = {
             x: b.position.x + (50 + ip.spawnOffset.y) * Math.sin(p.angle) + +((ip.casing.spawnOn == "fire") && (this.recoilImpulseParity * ip.spawnOffset.x) * Math.cos(p.angle)),
             y: b.position.y - (50 + ip.spawnOffset.y) * Math.cos(p.angle) + +((ip.casing.spawnOn == "fire") && (this.recoilImpulseParity * ip.spawnOffset.x) * Math.sin(p.angle))
@@ -439,9 +466,10 @@ class bullet {
             return;
         }
         const d = Math.sqrt(this.squaredDistance);
-        if (d - this.#lastFalloffStep > 50000) {
-            this.#lastFalloffStep = 50000 * Math.floor(d / 50000);
-            this.#damage *= this.#emitter.ballistics.falloff;
+        if (d - this.#lastFalloffStep > 5000) {
+            this.#lastFalloffStep = 5000 * Math.floor(d / 5000);
+            const dd = getDecimalPlaces(this.#damage), fd = getDecimalPlaces(this.#emitter.ballistics.falloff);
+            this.#damage = sliceToDecimalPlaces(this.#damage * this.#emitter.ballistics.falloff, dd + fd);
         }
         if (Matter.Query.collides(bd, gamespace.objects.obstacles.map(o => o.body)).length) {
             removeBullet();
@@ -450,74 +478,80 @@ class bullet {
         {
             const p = Matter.Query.collides(bd, gamespace.objects.players.map(o => o.body))[0];
             if (p) {
-                const f = (pl) => pl.body.id == p.bodyA.id, target = gamespace.objects.players.find(f), index = gamespace.objects.players.findIndex(f), d = this.#damage * (this.crit ? this.#emitter.ballistics.headshotMult : 1), lethal = target.health <= d;
-                target.health -= d;
-                if (gamespace.settings.bonus_features.show_damage_numbers) {
-                    const makeNew = () => {
-                        gamespace.objects.damageNumbers.push({
-                            amount: d,
-                            createdTimestamp: gamespace._currentUpdate,
-                            crit: this.#crit,
-                            position: { ...target.body.position },
-                            lethal,
-                            rngOffset: {
-                                x: Math.random() * 30 - 15,
-                                y: Math.random() * 30 - 15
-                            },
-                            targetId: target.body.id
-                        });
-                    };
-                    if (gamespace.settings.bonus_features.damage_numbers_stack) {
-                        const prev = gamespace.objects.damageNumbers.find(da => da.targetId == target.body.id);
-                        if (prev) {
-                            prev.amount += d;
-                            prev.createdTimestamp = gamespace._currentUpdate;
-                            prev.crit = this.#crit;
-                            prev.position = { ...target.body.position };
-                            prev.lethal = lethal;
+                const f = (pl) => pl.body.id == p.bodyA.id, target = gamespace.objects.players.find(f), index = gamespace.objects.players.findIndex(f), d = sliceToDecimalPlaces(this.#damage * (this.crit ? this.#emitter.ballistics.headshotMult : 1), getDecimalPlaces(this.#damage) + (this.crit ? getDecimalPlaces(this.#emitter.ballistics.headshotMult) : 1)), lethal = target.health <= d;
+                if (!target.state.invuln) {
+                    target.health -= d;
+                    if (gamespace.settings.bonus_features.show_damage_numbers) {
+                        const makeNew = () => {
+                            gamespace.objects.damageNumbers.push({
+                                amount: d,
+                                createdTimestamp: gamespace._currentUpdate,
+                                crit: this.#crit,
+                                position: { ...target.body.position },
+                                lethal,
+                                rngOffset: {
+                                    x: Math.random() * 30 - 15,
+                                    y: Math.random() * 30 - 15
+                                },
+                                targetId: target.body.id
+                            });
+                        };
+                        if (gamespace.settings.bonus_features.damage_numbers_stack) {
+                            const prev = gamespace.objects.damageNumbers.find(da => da.targetId == target.body.id);
+                            if (prev) {
+                                prev.amount += d;
+                                prev.createdTimestamp = gamespace._currentUpdate;
+                                prev.crit = this.#crit;
+                                prev.position = { ...target.body.position };
+                                prev.lethal = lethal;
+                            }
+                            else {
+                                makeNew();
+                            }
                         }
                         else {
                             makeNew();
                         }
                     }
-                    else {
-                        makeNew();
+                    ;
+                    if (target.health <= 0) {
+                        const data = { killer: this.#shooter, killed: target, weapon: this.#emitter.name, timestamp: gamespace._currentUpdate }, simpl = {
+                            crit: this.#crit,
+                            killer: data.killer.name,
+                            killed: data.killed.name,
+                            weapon: data.weapon,
+                            timestamp: data.timestamp,
+                            id: generateId.next().value
+                        };
+                        gamespace.kills.push(simpl);
+                        this.#shooter.events.dispatchEvent("kill", data);
+                        if (!target.events.dispatchEvent("killed", data)) {
+                            Matter.World.remove(gamespace.world, target.body);
+                            target.destroy();
+                            gamespace.objects.players.splice(index, 1);
+                        }
                     }
-                }
-                ;
-                if (target.health <= 0) {
-                    Matter.World.remove(gamespace.world, target.body);
-                    gamespace.kills.push({
-                        crit: this.#crit,
-                        killer: this.#shooter.name,
-                        killed: target.name,
-                        weapon: this.#emitter.name,
-                        timestamp: gamespace._currentUpdate,
-                        id: generateId.next().value
-                    });
-                    target.destroy();
-                    gamespace.objects.players.splice(index, 1);
                 }
                 removeBullet();
             }
         }
     }
-    draw(p5) {
-        const bd = this.#body;
+    draw() {
+        const bd = this.#body, p5 = gamespace.p5;
         if (!bd) {
             return;
         }
-        // if (sqauredDist(bd.position, gamespace.player.body.position) < (p5.width + p5.height) ** 2) {
-        p5.push();
-        p5.translate(bd.position.x, bd.position.y);
-        p5.rotate(this.angle);
-        const c = p5.color(gamespace.bulletInfo[this.#emitter.caliber]?.tints?.[this.#crit && gamespace.settings.bonus_features.headshots_use_saturated_tracers ? "saturated" : "normal"] ?? "#FFF");
-        c.setAlpha(this.#emitter.suppressed ? 128 : 255);
-        p5.tint(c);
-        const l = Math.min(992, +distance(bd.position, this.#start));
-        p5.image(gamespace.images.tracer, 0, l / 2 - this.#length / 2, this.#emitter.ballistics.tracer.width * 50, l);
-        p5.pop();
-        // }
+        if (sqauredDist(bd.position, (gamespace.player.body ? gamespace.player.body.position : { x: gamespace.camera.eyeX, y: gamespace.camera.eyeY })) < gamespace.player.renderDist ** 2) {
+            p5.push();
+            p5.translate(bd.position.x, bd.position.y);
+            p5.rotate(this.angle);
+            const c = p5.color(gamespace.bulletInfo[this.#emitter.caliber]?.tints?.[this.#crit && gamespace.settings.bonus_features.headshots_use_saturated_tracers ? "saturated" : "normal"] ?? "#FFF");
+            c.setAlpha(this.#emitter.suppressed ? 128 : 255);
+            p5.tint(c);
+            const l = Math.min(992 /* oooooh, mystery constant */, +distance(bd.position, this.#start));
+            p5.image(gamespace.images.tracer.img, 0, l / 2 - this.#length / 2, this.#emitter.ballistics.tracer.width * 50, l);
+            p5.pop();
+        }
         if (gamespace.settings.debug) {
             p5.fill("#FF000080");
             p5.beginShape();
@@ -564,37 +598,126 @@ class casing {
         const t = (gamespace._currentUpdate - this.#created) / 1000;
         Matter.Body.setPosition(this.#body, {
             x: this.#start.x + (Math.sin(this.#trajectory) * this.#velocities.parr - Math.cos(this.#trajectory) * this.#velocities.perp) * t,
-            y: this.#start.y + (-Math.cos(this.#trajectory) * this.#velocities.parr + Math.sin(this.#trajectory) * this.#velocities.perp) * t
+            y: this.#start.y + (Math.cos(this.#trajectory) * this.#velocities.parr - Math.sin(this.#trajectory) * this.#velocities.perp) * t
         });
         this.#angle = this.#trajectory + this.#velocities.angular * t;
         this.#squaredDist = +sqauredDist(this.#body.position, this.#start);
-        if (this.#squaredDist > this.#despawnDist ** 2) {
+        if (gamespace._currentUpdate - this.#created >= 1000) {
             Matter.World.remove(gamespace.world, this.#body);
             gamespace.objects.casings.splice(gamespace.objects.casings.findIndex(c => c.#body.id == this.#body.id), 1);
             this.destroy();
         }
     }
-    draw(p5) {
-        if (!this.#body) {
+    draw() {
+        const b = this.#body, p5 = gamespace.p5;
+        if (!b) {
             return;
         }
-        // if (+sqauredDist(this.#body.position, gamespace.player.body.position) < (p5.width + p5.height) ** 2) {
-        p5.push();
-        p5.translate(this.#body.position.x, this.#body.position.y);
-        p5.rotate(this.#angle);
-        p5.tint(255, 255 - (255 * this.#squaredDist / this.#despawnDist ** 2));
-        p5.image(this.#info.img, 0, 0, this.#info.width, this.#info.height);
-        p5.pop();
-        // }
+        if (+sqauredDist(b.position, (gamespace.player.body ? gamespace.player.body.position : { x: gamespace.camera.eyeX, y: gamespace.camera.eyeY })) < gamespace.player.renderDist ** 2) {
+            p5.push();
+            p5.translate(b.position.x, b.position.y);
+            p5.rotate(this.#angle);
+            p5.tint(255, 255 - (255 * this.#squaredDist / this.#despawnDist ** 2));
+            p5.image(this.#info.img, 0, 0, this.#info.width, this.#info.height);
+            p5.pop();
+        }
     }
     destroy() {
         this.#body = this.#emitter = void 0;
     }
 }
+;
+class customEvent {
+    #listenerCount = 0;
+    get listenerCount() { return this.#listenerCount; }
+    #listeners = [];
+    get listeners() { return [...this.#listeners.map(l => ({ ...l }))]; }
+    on(event, callback) {
+        this.#listenerCount++;
+        this.#listeners.push({ event: event, name: callback.name, callback: callback, once: false });
+        return this;
+    }
+    once(event, callback) {
+        this.#listenerCount++;
+        this.#listeners.push({ event: event, name: callback.name, callback: callback, once: true });
+        return this;
+    }
+    removeListener(event, name) {
+        const l = this.#listeners.reverse().findIndex(l => l.event == event && l.name == name);
+        // If multiple callbacks have the same name, the one added last is removed (hence the .reverse())
+        if (l >= 0) {
+            this.#listeners.splice(l, 1);
+            this.#listenerCount--;
+        }
+        this.#listeners.reverse();
+        return l >= 0;
+    }
+    addEventListener(event, callback, options = { once: false }) {
+        return this[`on${"ce".repeat(+options.once)}`](event, callback);
+    }
+    removeListenersByType(event) { this.#listenerCount = (this.#listeners = this.#listeners.filter(l => l.event != event)).length; }
+    removeAllListeners() { this.#listenerCount = (this.#listeners = []).length; }
+    dispatchEvent(event, ...args) {
+        if (this.#listenerCount) {
+            const name = event instanceof Event ? event.type : event, ev = event instanceof Event
+                ? event.cancelable
+                    ? event
+                    : new Event(event.type, { bubbles: event.bubbles, cancelable: true, composed: event.composed })
+                : new Event(event, { cancelable: true });
+            this.#listeners.forEach(l => void (l.event == name && l.callback.call(this, ev, ...args)));
+            this.#listeners = this.#listeners.filter(l => l.event != name || !l.once);
+            this.#listenerCount = this.#listeners.length;
+            return ev.defaultPrevented;
+        }
+        return false;
+    }
+}
 const gamespace = {
-    get version() { return `0.0.1 (build 06-01-2022)`; },
+    get version() { return `0.0.1 (build 06-06-2022)`; },
     bots: [],
     bulletInfo: {},
+    camera: void 0,
+    created: 0,
+    cleanUp(p5, options) {
+        const t = setTimeout(() => { });
+        for (let i = 0; i < t; i++) {
+            clearTimeout(i);
+        }
+        p5.noLoop();
+        p5.draw = void 0;
+        gamespace.bots = [];
+        gamespace._currentUpdate = 0;
+        (async () => { gamespace._currentLevel.levelData = parseLevelData(await (await fetch(gamespace._currentLevel.jsonPath)).json()); })();
+        gamespace._currentLevel = void 0;
+        gamespace.created = 0;
+        gamespace.camera = void 0;
+        gamespace.deltaTime = 0;
+        gamespace.engine = void 0;
+        options?.clearEvents && (gamespace.events.removeAllListeners());
+        gamespace._frozen = false;
+        gamespace.keys = {};
+        gamespace.kills = [];
+        gamespace.lastUpdate = 0;
+        gamespace.objects = {
+            bullets: [],
+            casings: [],
+            damageNumbers: [],
+            obstacles: [],
+            players: []
+        };
+        gamespace.player = void 0;
+        gamespace.p5 = void 0;
+        gamespace.world = void 0;
+        options?.reloadJSONBasedFields && loadJSONBasedGamespaceFields();
+        if (options?.reloadFontsAndImages) {
+            for (const a of ["fonts", "images"]) {
+                const k = Object.keys(gamespace[a]), f = Object.values(gamespace[a]).map((f) => ({ src: f.src, [a == "fonts" ? "font" : "img"]: (a == "fonts" ? loadFnt : loadImg)(f.src) })), o = {};
+                for (const i in k) {
+                    o[k[i]] = f[i];
+                }
+            }
+        }
+    },
     _currentLevel: void 0,
     _currentUpdate: 0,
     get currentUpdate() { return gamespace._currentUpdate; },
@@ -603,6 +726,7 @@ const gamespace = {
     },
     deltaTime: 0,
     engine: void 0,
+    events: new customEvent(),
     fonts: {},
     freeze() {
         if (!gamespace._frozen) {
@@ -618,7 +742,10 @@ const gamespace = {
     get frozen() { return gamespace._frozen; },
     guns: [],
     images: {
-        tracer: loadImg("assets/items/ammo/tracer.png")
+        tracer: {
+            src: "assets/items/ammo/tracer.png",
+            img: loadImg("assets/items/ammo/tracer.png")
+        }
     },
     keys: {},
     kills: [],
@@ -632,6 +759,7 @@ const gamespace = {
         players: [],
     },
     player: void 0,
+    p5: void 0,
     settings: {
         graphicsQuality: 1,
         debug: false,
@@ -646,32 +774,30 @@ const gamespace = {
         },
         ui: true
     },
-    update(p5) {
+    update() {
+        const p5 = gamespace.p5;
         function drawPlayers() {
             gamespace.objects.players.forEach(player => {
                 Matter.Body.setVelocity(player.body, { x: -player.body.force.x, y: -player.body.force.y });
-                player.draw(p5);
+                player.draw();
             });
         }
-        ;
         function drawObjects(layer) {
             gamespace.objects.obstacles.filter(o => o.layer == layer).forEach(o => {
                 Matter.Body.setVelocity(o.body, { x: -o.body.force.x, y: o.body.force.y });
-                o.draw(p5);
+                o.draw();
             });
         }
-        ;
         function drawBullets() {
             gamespace.objects.bullets.forEach(b => {
                 b.update();
-                b.draw(p5);
+                b.draw();
             });
         }
-        ;
         function drawCasings() {
             gamespace.objects.casings.forEach(c => {
                 c.update();
-                c.draw(p5);
+                c.draw();
             });
         }
         function playerMove() {
@@ -679,7 +805,6 @@ const gamespace = {
                 gamespace.player.move(!!gamespace.keys[keyBindings.forward.key], !!gamespace.keys[keyBindings["strafe-left"].key], !!gamespace.keys[keyBindings.backward.key], !!gamespace.keys[keyBindings["strafe-right"].key]);
             }
         }
-        ;
         const now = Date.now();
         gamespace.currentUpdate = now;
         Matter.Engine.update(gamespace.engine, gamespace.deltaTime);
@@ -693,7 +818,7 @@ const gamespace = {
         }
         p5.clear(void 0, void 0, void 0, void 0);
         const p = gamespace.player, b = p.body;
-        p5.camera(Math.round(b.position.x), Math.round(b.position.y), p.view - p5.width / 2, Math.round(b.position.x), Math.round(b.position.y), 0);
+        p5.camera(b ? Math.round(b.position.x) : gamespace.camera.eyeX, b ? Math.round(b.position.y) : gamespace.camera.eyeY, p.view, b ? Math.round(b.position.x) : gamespace.camera.centerX, b ? Math.round(b.position.y) : gamespace.camera.centerY, 0);
         p5.noStroke();
         p5.rectMode(p5.CORNER);
         p5.fill(gamespace._currentLevel.world.color);
@@ -717,10 +842,7 @@ const gamespace = {
         drawPlayers();
         drawCasings();
         drawObjects(1);
-        try {
-            playerMove();
-        }
-        catch { }
+        playerMove();
         if (gamespace.settings.bonus_features.show_damage_numbers) {
             gamespace.objects.damageNumbers.forEach((d, i) => {
                 const t = (gamespace._currentUpdate - d.createdTimestamp), lifetime = 500, pos = {
@@ -728,14 +850,8 @@ const gamespace = {
                     y: d.position.y + d.rngOffset.y
                 };
                 p5.push();
-                p5.translate(
-                // +clamp(pos.x, minX, maxX),
-                // +clamp(pos.y, minY, maxY)
-                pos.x, pos.y);
-                p5.textAlign(
-                // checkBounds(pos.x, minX, maxX) ? "center" : ({ 1: "left", [-1]: "right" })[Math.cmp(pos.x, minX)],
-                // checkBounds(pos.y, minY, maxY) ? "center" : ({ 1: "top", [-1]: "bottom" })[Math.cmp(pos.y, minY)]
-                "center", "center");
+                p5.translate(pos.x, pos.y);
+                p5.textAlign("center", "center");
                 p5.textSize(d.lethal ? 90 : 80);
                 if (d.crit) {
                     const c = p5.color(0, 255, 0);
@@ -753,17 +869,14 @@ const gamespace = {
                 }
             });
         }
-        !gamespace._frozen && drawUI();
+        !gamespace._frozen && ui.update();
         if ((p5.mouseX != p5.pmouseX || p5.mouseY != p5.pmouseY) && !gamespace._frozen) {
             p.angle = Math.PI / 2 + Math.atan2(p5.mouseY - p5.height / 2, p5.mouseX - p5.width / 2);
         }
     },
     world: void 0
 };
-(async () => {
-    gamespace.guns = parseGunData((await (await fetch("assets/json/guns.json")).json()));
-    gamespace.bulletInfo = parseAmmoData((await (await fetch("assets/json/ammo.json")).json()));
-})();
+loadJSONBasedGamespaceFields();
 /*
 
     tsc classes.ts main.ts perf.ts util.ts input.ts ui.ts memory.ts libraries/p5/types/index.d.ts libraries/p5/types/global.d.ts libraries/matter/types/index.d.ts libraries/decimaljs/decimal.global.d.ts --target esnext --declaration
@@ -772,6 +885,10 @@ const gamespace = {
 
     tsc assets/levels/level1/level.ts classes.d.ts main.d.ts perf.d.ts util.d.ts input.d.ts ui.d.ts memory.d.ts libraries/p5/types/index.d.ts libraries/p5/types/global.d.ts libraries/matter/types/index.d.ts libraries/decimaljs/decimal.global.d.ts --target esnext --declaration
 
+    tsc assets/levels/level2/level.ts classes.d.ts main.d.ts perf.d.ts util.d.ts input.d.ts ui.d.ts memory.d.ts libraries/p5/types/index.d.ts libraries/p5/types/global.d.ts libraries/matter/types/index.d.ts libraries/decimaljs/decimal.global.d.ts --target esnext --declaration
+
     tsc assets/scripts/std_ai.ts classes.d.ts main.d.ts perf.d.ts util.d.ts input.d.ts ui.d.ts memory.d.ts libraries/p5/types/index.d.ts libraries/p5/types/global.d.ts libraries/matter/types/index.d.ts libraries/decimaljs/decimal.global.d.ts --target esnext --declaration
+    
+    tsc assets/scripts/std_level_setup.ts classes.d.ts main.d.ts perf.d.ts util.d.ts input.d.ts ui.d.ts memory.d.ts libraries/p5/types/index.d.ts libraries/p5/types/global.d.ts libraries/matter/types/index.d.ts libraries/decimaljs/decimal.global.d.ts --target esnext --declaration
 
 */ 

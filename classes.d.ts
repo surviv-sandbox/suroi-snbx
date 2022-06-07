@@ -1,6 +1,7 @@
 declare class obstacle {
     #private;
     get body(): Matter.Body;
+    events: customEvent;
     image: import("p5").Image;
     imageWidth: number;
     imageHeight: number;
@@ -21,16 +22,17 @@ declare class obstacle {
         y: number;
         angle: number;
     }, imageMode: import("p5").IMAGE_MODE);
-    draw(p5: import("p5")): void;
+    draw(): void;
 }
 declare class playerLike {
     #private;
     get body(): Matter.Body;
     aiIgnore: boolean;
     angle: number;
+    events: customEvent;
     health: number;
-    name: string;
     maxHealth: number;
+    name: string;
     inventory: inventory;
     options: {
         friction: number;
@@ -38,11 +40,14 @@ declare class playerLike {
         inertia?: number;
         density: number;
     };
+    get renderDist(): number;
     state: {
         attacking: boolean;
         eSwitchDelay: number;
         fired: number;
         firing: boolean;
+        frozen: boolean;
+        invuln: boolean;
         lastShot: [number, number, number, number];
         lastFreeSwitch: number;
         lastSwitch: number;
@@ -50,8 +55,11 @@ declare class playerLike {
         noSlow: boolean;
         reloading: false | number;
         custom: {
-            [key: string]: any;
+            [key: string]: unknown;
         };
+    };
+    speed: {
+        base: number;
     };
     timers: {
         reloading: {
@@ -60,10 +68,8 @@ declare class playerLike {
         };
         anticipatedReload: false | number;
     };
-    speed: {
-        base: number;
-    };
-    view: number;
+    get view(): number;
+    set view(v: number);
     constructor(body: Matter.Body, angle: number, health: number, loadout: {
         guns: string[];
         activeIndex: number;
@@ -73,7 +79,7 @@ declare class playerLike {
         inertia?: number;
         density: number;
     }, view: number, name: string);
-    draw(p5: import("p5")): void;
+    draw(): void;
     destroy(): void;
     move(w: boolean, a: boolean, s: boolean, d: boolean): void;
     switchSlots(index: 0 | 1): void;
@@ -332,7 +338,7 @@ declare class bullet {
         y: number;
     }, created: number, length: number, crit: boolean);
     update(): void;
-    draw(p5: import("p5")): void;
+    draw(): void;
     destroy(): void;
 }
 declare class casing {
@@ -360,8 +366,33 @@ declare class casing {
         angular: number;
     });
     update(): void;
-    draw(p5: import("p5")): void;
+    draw(): void;
     destroy(): void;
+}
+interface listener {
+    event: string;
+    callback: (this: customEvent, event?: Event, ...args: any[]) => any;
+    name: string;
+    once?: boolean;
+}
+declare class customEvent {
+    #private;
+    get listenerCount(): number;
+    get listeners(): {
+        event: string;
+        callback: (this: customEvent, event?: Event, ...args: any[]) => any;
+        name: string;
+        once?: boolean;
+    }[];
+    on(event: string, callback: listener["callback"]): this;
+    once(event: string, callback: listener["callback"]): this;
+    removeListener(event: string, name: string): boolean;
+    addEventListener(event: string, callback: listener["callback"], options?: {
+        once: boolean;
+    }): this;
+    removeListenersByType(event: string): void;
+    removeAllListeners(): void;
+    dispatchEvent(event: string | Event, ...args: Parameters<listener["callback"]>[1][]): boolean;
 }
 declare const gamespace: {
     readonly version: string;
@@ -390,10 +421,19 @@ declare const gamespace: {
             };
         };
     };
+    camera: import("p5").Camera;
+    cleanUp(p5: import("p5"), options?: {
+        reloadJSONBasedFields?: boolean;
+        reloadFontsAndImages?: boolean;
+        clearEvents?: boolean;
+    }): void;
     _currentLevel: {
-        name: string;
-        description: string;
         color?: string;
+        description: string;
+        initializer: () => void;
+        jsonPath: string;
+        levelData: ReturnType<typeof parseLevelData>;
+        name: string;
         thumbnail?: string;
         world: {
             width: number;
@@ -401,21 +441,28 @@ declare const gamespace: {
             color: string;
             gridColor: `#${string}`;
         };
-        initializer: () => void;
     };
-    _currentUpdate: number;
-    currentUpdate: number;
+    created: timestamp;
+    _currentUpdate: timestamp;
+    currentUpdate: timestamp;
     deltaTime: number;
     engine: Matter.Engine;
+    events: customEvent;
     fonts: {
-        [key: string]: import("p5").Font;
+        [key: string]: {
+            src: string;
+            font: import("p5").Font;
+        };
     };
     freeze: () => void;
     _frozen: boolean;
     readonly frozen: boolean;
     guns: gunPrototype[];
     images: {
-        [key: string]: import("p5").Image;
+        [key: string]: {
+            src: string;
+            img: import("p5").Image;
+        };
     };
     keys: {
         [key: number]: boolean;
@@ -424,15 +471,18 @@ declare const gamespace: {
         crit: boolean;
         killed: string;
         killer: string;
-        timestamp: number;
+        timestamp: timestamp;
         weapon: string;
         id: number;
     }[];
-    lastUpdate: number;
+    lastUpdate: timestamp;
     levels: {
-        name: string;
-        description: string;
         color?: string;
+        description: string;
+        initializer: () => void;
+        jsonPath: string;
+        levelData: ReturnType<typeof parseLevelData>;
+        name: string;
         thumbnail?: string;
         world: {
             width: number;
@@ -440,14 +490,13 @@ declare const gamespace: {
             color: string;
             gridColor: `#${string}`;
         };
-        initializer: () => void;
     }[];
     objects: {
         bullets: bullet[];
         casings: casing[];
         damageNumbers: {
             amount: number;
-            createdTimestamp: number;
+            createdTimestamp: timestamp;
             crit: boolean;
             lethal: boolean;
             position: {
@@ -464,6 +513,7 @@ declare const gamespace: {
         players: playerLike[];
     };
     player: playerLike;
+    p5: import("p5");
     settings: {
         graphicsQuality: number;
         debug: boolean;

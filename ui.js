@@ -1,30 +1,49 @@
-function createUI() {
-    const p = gamespace.player;
-    if (!p) {
-        return;
+class uiManager {
+    static #initialized = false;
+    #elements = [];
+    get elements() { return Object.values(this.#elements).map(e => e.name); }
+    constructor() {
+        if (uiManager.#initialized) {
+            throw new Error(`uiManager already initialized.`);
+        }
+        uiManager.#initialized = true;
     }
-    const container = makeElement("div", "ui-container", `ui ${gamespace.settings.ui ? "" : "hidden"}`);
-    document.body.appendChild(container);
-    // Ammo
-    {
-        const cont = makeElement("div", "ui-ammo-cont", `ui ammo`), ammo = makeElement("div", "ui-ammo-counter-main", `ui ammo`), resAmmo = makeElement("div", "ui-ammo-counter-res", `ui ammo`);
-        container.appendChild(cont).append(ammo, resAmmo);
+    add(...items) {
+        items.forEach(i => {
+            if (i.callCreateImmediately) {
+                i.create?.($("ui-container"));
+            }
+        });
+        this.#elements.push(...items.map(i => (delete i.callCreateImmediately, i)));
     }
-    // HP
-    {
-        const doc = new DocumentFragment(), cont = makeElement("div", "ui-hp-cont", `hud hp`), innerCont = makeElement("div", "ui-hp-inner-cont", `hud hp`), bar = makeElement("div", "ui-hp-bar", `hud hp`), lag = makeElement("div", "ui-hp-bar-lag", `hud hp`);
-        doc.appendChild(cont).appendChild(innerCont).appendChild(bar);
-        innerCont.appendChild(lag);
-        container.appendChild(doc);
+    remove(item) {
+        this.#elements = this.#elements.filter(e => e.name != item);
+    }
+    create() {
+        const p = gamespace.player;
+        if (!p) {
+            return;
+        }
+        const container = makeElement("div", "ui-container", `ui ${gamespace.settings.ui ? "" : "hidden"}`);
+        document.body.appendChild(container);
+        this.#elements.forEach(e => e.create?.(container));
+    }
+    update() {
+        const p = gamespace.player, i = p?.inventory?.activeItem;
+        if (!p) {
+            return;
+        }
+        this.#elements.forEach(e => e.update?.(p, i));
     }
 }
-function drawUI() {
-    const p = gamespace.player, i = p?.inventory?.activeItem;
-    if (!p) {
-        return;
-    }
-    // Ammo
-    {
+const ui = new uiManager();
+ui.add({
+    name: "ammo",
+    create(container) {
+        const cont = makeElement("div", "ui-ammo-cont", `ui ammo`), ammo = makeElement("div", "ui-ammo-counter-main", `ui ammo`), resAmmo = makeElement("div", "ui-ammo-counter-res", `ui ammo`);
+        container.appendChild(cont).append(ammo, resAmmo);
+    },
+    update(p, i) {
         const ammo = $("ui-ammo-counter-main"), resAmmo = $("ui-ammo-counter-res");
         if (!i) {
             ammo.style.display = resAmmo.style.display = "none";
@@ -35,9 +54,36 @@ function drawUI() {
             ammo.textContent = `${Number.isFinite(i.ammo) ? i.ammo : "∞"}`;
             resAmmo.textContent = "∞";
         }
-    }
-    // Reloading
-    {
+    },
+}, {
+    name: "HP",
+    create(container) {
+        const doc = new DocumentFragment(), cont = makeElement("div", "ui-hp-cont", `hud hp`), innerCont = makeElement("div", "ui-hp-inner-cont", `hud hp`), bar = makeElement("div", "ui-hp-bar", `hud hp`), lag = makeElement("div", "ui-hp-bar-lag", `hud hp`);
+        doc.appendChild(cont).appendChild(innerCont).appendChild(bar);
+        innerCont.appendChild(lag);
+        container.appendChild(doc);
+    },
+    update(p) {
+        const lag = $("ui-hp-bar-lag"), bar = $("ui-hp-bar"), percent = p.health == Infinity ? 100 : Math.max(0, 100 * p.health / p.maxHealth);
+        lag.style.width = bar.style.width = `${percent}%`;
+        bar.style.animation = "";
+        if (percent == 100) {
+            bar.style.backgroundColor = "";
+        }
+        else if (percent <= 24) {
+            bar.style.backgroundColor = "#F00";
+            bar.style.animation = "HP-critical 0.5s ease-out alternate infinite";
+        }
+        else if (percent <= 75) {
+            bar.style.backgroundColor = `rgb(255, ${255 * (percent - 24) / 51}, ${255 * (percent - 24) / 51})`;
+        }
+        else {
+            bar.style.backgroundColor = "#FFF";
+        }
+    },
+}, {
+    name: "reloading",
+    update(p, i) {
         if (p.state.reloading) {
             if (!$("ui-reload-cont")) {
                 const cont = makeElement("div", "ui-reload-cont", `ui reload`), canvas = makeElement("canvas", "ui-reload-spin", `ui reload`), text = makeElement("div", "ui-reload-text", `ui reload`);
@@ -70,28 +116,10 @@ function drawUI() {
         else {
             $("ui-reload-cont")?.remove?.();
         }
-    }
-    // HP
-    {
-        const lag = $("ui-hp-bar-lag"), bar = $("ui-hp-bar"), percent = gamespace.player.health == Infinity ? 100 : Math.max(0, 100 * gamespace.player.health / gamespace.player.maxHealth);
-        lag.style.width = bar.style.width = `${percent}%`;
-        bar.style.animation = "";
-        if (percent == 100) {
-            bar.style.backgroundColor = "";
-        }
-        else if (percent <= 24) {
-            bar.style.backgroundColor = "#F00";
-            bar.style.animation = "HP-critical 0.5s ease-out alternate infinite";
-        }
-        else if (percent <= 75) {
-            bar.style.backgroundColor = `rgb(255, ${255 * (percent - 24) / 51}, ${255 * (percent - 24) / 51})`;
-        }
-        else {
-            bar.style.backgroundColor = "#FFF";
-        }
-    }
-    // Killfeed
-    {
+    },
+}, {
+    name: "killfeed",
+    update(p, i) {
         if (gamespace.kills.length) {
             if (!$("killfeed-container")) {
                 const cont = makeElement("div", "killfeed-container");
@@ -122,5 +150,5 @@ function drawUI() {
         else {
             $("killfeed-container")?.remove?.();
         }
-    }
-}
+    },
+});

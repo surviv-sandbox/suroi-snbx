@@ -53,10 +53,9 @@ h1#title {
 .surviv-purple-button {
   background-color: #874c90;
   border-radius: calc(25vw / 72);
+  text-shadow: 0 calc(1vh / 9) calc(2vh / 9) rgb(0 0 0 / 25%);
   border: none;
-  border-bottom-width: calc(4vh / 9);
-  border-bottom-style: solid;
-  border-bottom-color: #664053;
+  border-bottom: calc(4vh / 9) solid #664053;
   font-family: "roboto", "Helvetica", monospace;
   font-size: calc(25vw / 12);
   font-weight: bolder;
@@ -72,7 +71,6 @@ h1#title {
 .surviv-purple-button:active {
   background-color: #5E3564;
   border-bottom-width: calc(4vh / 9);
-  border-bottom-style: solid;
   border-bottom-color: #5E3564;
   transition-duration: 100ms;
 }
@@ -80,10 +78,9 @@ h1#title {
 .surviv-blue-button {
   background-color: #50AFAB;
   border-radius: calc(25vw / 72);
+  text-shadow: 0 calc(1vh / 9) calc(2vh / 9) rgb(0 0 0 / 25%);
   border: none;
-  border-bottom-width: calc(4% / 9);
-  border-bottom-style: solid;
-  border-bottom-color: #387C79;
+  border-bottom: calc(4vh / 9) solid #387C89;
   font-family: "roboto", "Helvetica", monospace;
   font-size: calc(35vw / 36);
 }
@@ -97,7 +94,6 @@ h1#title {
 .surviv-blue-button:active {
   background-color: #387A77;
   border-bottom-width: calc(4vh / 9);
-  border-bottom-style: solid;
   border-bottom-color: #387A77;
   transition-duration: 100ms;
 }
@@ -105,10 +101,9 @@ h1#title {
 .surviv-grey-button {
   background-color: #7A7A7A;
   border-radius: calc(25vw / 72);
+  text-shadow: 0 calc(1vh / 9) calc(2vh / 9) rgb(0 0 0 / 25%);
   border: none;
-  border-bottom-width: calc(4vh / 9);
-  border-bottom-style: solid;
-  border-bottom-color: #626262;
+  border-bottom: calc(4vh / 9) solid #626262;
   font-family: "roboto", "Helvetica", monospace;
   font-size: calc(25vw / 12);
   font-weight: bolder;
@@ -124,7 +119,6 @@ h1#title {
 .surviv-grey-button:active {
   background-color: #666;
   border-bottom-width: calc(4vh / 9);
-  border-bottom-style: solid;
   border-bottom-color: #666;
   transition-duration: 100ms;
 }
@@ -210,6 +204,7 @@ div#name-field {
   width: 10%;
   height: 5%;
   outline: none;
+  overflow: scroll;
 }
 
 div#name-field:hover {
@@ -439,6 +434,48 @@ img.killfeed-image {
   height: 1em;
   transform: translate(0, 15%);
 }
+
+div#pause-menu-cont {
+  position: absolute;
+  background-color: #0008;
+  border-radius: calc(25vw / 72);
+  transform: translate(-50%, -50%);
+  width: calc(875% / 36);
+  height: 55%;
+  left: 50%;
+  top: 50%;
+}
+
+button#exit-game {
+  width: calc(640% / 7);
+  height: calc(41vh / 9);
+  transform: translate(-50%, 0);
+  font-family: roboto, Arial, sans-serif;
+  color: white;
+  font-size: calc(16vh / 9);
+  left: 50%;
+  bottom: calc(85vh / 9);
+  background-image: url("./assets/gui/quit.svg");
+  background-repeat: no-repeat;
+  background-size: calc(220vw / 72);
+  background-position: calc(-5vw / 36) calc(-1vh / 3);
+}
+
+button#resume-game {
+  width: calc(640% / 7);
+  height: calc(41vh / 9);
+  transform: translate(-50%, 0);
+  font-family: roboto, Arial, sans-serif;
+  color: white;
+  font-size: calc(16vh / 9);
+  left: 50%;
+  bottom: calc(138vh / 81);
+  background-image: url("./assets/gui/resume.svg");
+  background-repeat: no-repeat;
+  background-size: calc(220vw / 72);
+  background-position: calc(-5vw / 36) calc(-1vh / 3);
+}
+
 
 /* CUSTOM FONTS */
 

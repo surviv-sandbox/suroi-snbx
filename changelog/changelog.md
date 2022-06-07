@@ -1,3 +1,15 @@
+<h2>v0.0.1 (build 06-06-2022)</h2>
+<h3>June 6<sup>rd</sup> 2022</h3>
+
+<ul>
+<li> Restructuring, housekeeping
+<li> Fixed 'prev_item' not working correctly
+<li> Fixed and re-added distance-based rendering
+<li> Added pause menu, functionality to gracefully exit a level
+<li> Binded 'cancel' to x
+<li> Minor styling updates
+</ul>
+
 <h2>v0.0.1 (build 06-01-2022)</h2>
 <h3>June 1<sup>st</sup> 2022</h3>
 

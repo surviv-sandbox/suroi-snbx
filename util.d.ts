@@ -6,6 +6,7 @@ declare type JSONObject = {
 };
 declare type JSONArray = JSONObject["string"][];
 declare type JSONContent = JSONValue | JSONObject | JSONArray;
+declare type timestamp = number;
 declare type JSONLevel = {
     obstacles: (({
         type: "rectangle";
@@ -301,3 +302,7 @@ declare function meanDevPM_random(mean: Decimal.Value, deviation: Decimal.Value,
     useNativeMath: boolean;
 }): string | number | import("./libraries/decimaljs/decimal.global").default;
 declare function clone<T extends JSONContent>(object: T): T;
+declare function getDecimalPlaces(n: number | Decimal): number;
+declare function sliceToDecimalPlaces(number: number | Decimal, decimalPlaces: number): number;
+declare const getRenderDistFromView: (view: number) => number;
+declare function loadJSONBasedGamespaceFields(): Promise<void>;
