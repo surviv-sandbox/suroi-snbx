@@ -4,7 +4,7 @@ function makeMenu(first) {
         {
             const s = memoryManager.getItem("settings");
             if (s) {
-                gamespace.settings = s;
+                gamespace.settings = overrideObject(gamespace.settings, s);
             }
             else {
                 memoryManager.setItem("settings", gamespace.settings);

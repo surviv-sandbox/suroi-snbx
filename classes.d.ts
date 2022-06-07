@@ -62,11 +62,12 @@ declare class playerLike {
         base: number;
     };
     timers: {
+        anticipatedReload: false | number;
+        firing: false | number;
         reloading: {
             timer: false | number;
             all: boolean;
         };
-        anticipatedReload: false | number;
     };
     get view(): number;
     set view(v: number);
@@ -83,6 +84,17 @@ declare class playerLike {
     destroy(): void;
     move(w: boolean, a: boolean, s: boolean, d: boolean): void;
     switchSlots(index: 0 | 1): void;
+}
+declare class player extends playerLike {
+    constructor(body: Matter.Body, angle: number, health: number, loadout: {
+        guns: string[];
+        activeIndex: number;
+    }, options: {
+        friction: number;
+        restitution: number;
+        inertia?: number;
+        density: number;
+    }, view: number);
 }
 declare class inventory {
     #private;
@@ -402,6 +414,7 @@ declare const gamespace: {
             tints: {
                 normal: string;
                 saturated: string;
+                saturated_alt?: string;
                 chambered: string;
             };
             spawnVar: {
@@ -422,7 +435,7 @@ declare const gamespace: {
         };
     };
     camera: import("p5").Camera;
-    cleanUp(p5: import("p5"), options?: {
+    cleanUp(options?: {
         reloadJSONBasedFields?: boolean;
         reloadFontsAndImages?: boolean;
         clearEvents?: boolean;
@@ -525,6 +538,7 @@ declare const gamespace: {
             damage_numbers_stack: boolean;
             headshots_use_saturated_tracers: boolean;
             show_damage_numbers: boolean;
+            use_interpolated_saturated_tracers: boolean;
         };
         ui: boolean;
     };

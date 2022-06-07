@@ -147,7 +147,7 @@ function parseLevelData(data: JSONLevel): { obstacles: obstacle[]; players: play
             );
         }),
         players: data.players.map(
-            p => new playerLike(
+            (p, i) => new (i ? playerLike : player)(
                 (() => {
                     const body = Matter.Bodies.circle(p.x, p.y, 50, p.options);
                     body.mass = body.inverseMass = 1;
@@ -171,7 +171,9 @@ function parseLevelData(data: JSONLevel): { obstacles: obstacle[]; players: play
                     8: 3230,
                     15: 4940
                 })[p.scope],
-                `BOT ${["Flavie", "Mathis", "Sarah", "Juliette", "Emma", "Lexie", "Oceane", "Maeva", "Sophia", "Charles", "Jeanne", "Laurent", "Theo", "Eli", "Edouard", "Axel", "Leonie", "Mayson", "Louis", "William", "Laurence", "Sophie", "Charlie", "Charlotte", "Beatrice", "Jayden", "Clara", "Felix", "Ellie", "James", "Ethan", "Milan", "Rosalie", "Hubert", "Lea", "Amelia", "Olivia", "Noah", "Emile", "Florence", "Simone", "Adele", "Mia", "Elizabeth", "Ophelie", "Flora", "Gabriel", "Victoria", "Logan", "Raphael", "Arnaud", "Victor", "Benjamin", "Livia", "Alicia", "Arthur", "Anna", "Lily", "Henri", "Nathan", "Romy", "Thomas", "Alice", "Lucas", "Theodore", "Liam", "Jules", "Chloe", "Camille", "Leonard", "Antoine", "Nolan", "Elliot", "Jackson", "Jake", "Zoe", "Samuel", "Eleonore", "Julia", "Maelie", "Alexis", "Mila", "Eloi", "Noelie", "Matheo", "Elena", "Jacob", "Jade", "Leo", "Jasmine", "Raphaelle", "Rose", "Adam", "Eva", "Olivier", "Xavier", "Loic", "Sofia", "Zachary", "Zack"][Math.floor(Math.random() * 100)]}`
+                i
+                    ? `BOT ${["Flavie", "Mathis", "Sarah", "Juliette", "Emma", "Lexie", "Oceane", "Maeva", "Sophia", "Charles", "Jeanne", "Laurent", "Theo", "Eli", "Edouard", "Axel", "Leonie", "Mayson", "Louis", "William", "Laurence", "Sophie", "Charlie", "Charlotte", "Beatrice", "Jayden", "Clara", "Felix", "Ellie", "James", "Ethan", "Milan", "Rosalie", "Hubert", "Lea", "Amelia", "Olivia", "Noah", "Emile", "Florence", "Simone", "Adele", "Mia", "Elizabeth", "Ophelie", "Flora", "Gabriel", "Victoria", "Logan", "Raphael", "Arnaud", "Victor", "Benjamin", "Livia", "Alicia", "Arthur", "Anna", "Lily", "Henri", "Nathan", "Romy", "Thomas", "Alice", "Lucas", "Theodore", "Liam", "Jules", "Chloe", "Camille", "Leonard", "Antoine", "Nolan", "Elliot", "Jackson", "Jake", "Zoe", "Samuel", "Eleonore", "Julia", "Maelie", "Alexis", "Mila", "Eloi", "Noelie", "Matheo", "Elena", "Jacob", "Jade", "Leo", "Jasmine", "Raphaelle", "Rose", "Adam", "Eva", "Olivier", "Xavier", "Loic", "Sofia", "Zachary", "Zack"][Math.floor(Math.random() * 100)]}`
+                    : void 0
             )
         )
     };
@@ -637,6 +639,23 @@ function clone<T extends JSONContent>(object: T): T {
     }
 
     return copy as T;
+}
+
+function overrideObject<T extends JSONObject, U extends JSONObject>(o1: Extract<T, U> & Partial<T>, o2: Extract<T, U> & Partial<U>) {
+    o1 = clone(o1);
+    o2 = clone(o2);
+
+    type keyT = keyof (Extract<T, U> & Partial<T>);
+
+    for (const key in o2) {
+        if (typeof o2[key] == "object" && o2[key] !== null) {
+            o1[key as keyT] = overrideObject(o1[key] as any, o2[key] as any);
+        } else {
+            o1[key as keyT] = ((o2[key] as JSONContent | void) ?? o1[key as keyT] as JSONValue) as any;
+        }
+    }
+
+    return o1;
 }
 
 function getDecimalPlaces(n: number | Decimal) {

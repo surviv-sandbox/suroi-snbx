@@ -80,11 +80,12 @@ class playerLike {
         base: 12
     };
     timers = {
+        anticipatedReload: false,
+        firing: false,
         reloading: {
             timer: false,
             all: false
-        },
-        anticipatedReload: false
+        }
     };
     #view;
     get view() { return this.#view; }
@@ -194,6 +195,11 @@ class playerLike {
         }
     }
 }
+class player extends playerLike {
+    constructor(body, angle, health, loadout, options, view) {
+        super(body, angle, health, loadout, options, view, gamespace.settings.name);
+    }
+}
 class inventory {
     #parent;
     get parent() { return this.#parent; }
@@ -298,9 +304,12 @@ class gun {
     }
     primary(shooter) {
         const p = shooter, b = p.body, ip = this.#proto, fire = this.activeFireMode, burst = !!fire.match(/(auto-)?burst-/);
-        if ((gamespace._currentUpdate - p.state.lastShot[p.inventory.activeIndex]) >= (burst ? (ip.burstProps.burstDelay ?? ip.delay) : ip.delay) && this.#ammo && !shooter.state.frozen) {
+        if ((gamespace._currentUpdate - p.state.lastShot[p.inventory.activeIndex]) >= (burst ? (ip.burstProps.burstDelay ?? ip.delay) : ip.delay) &&
+            this.#ammo &&
+            !shooter.state.frozen &&
+            !shooter.timers.firing) {
             p.state.fired = 0;
-            const timer = setTimeout(function a(weapon) {
+            shooter.timers.firing = setTimeout(function a(weapon) {
                 const exceed = p.state.fired >= +fire.replace(/(auto-)?burst-/, "");
                 if (!gamespace.objects.players.find(p => p.body.id == b.id) ||
                     (p.state.reloading && p.timers.reloading.all) ||
@@ -311,7 +320,15 @@ class gun {
                     shooter.state.frozen) {
                     p.state.fired = 0;
                     p.state.firing = false;
-                    clearTimeout(timer);
+                    clearTimeout(shooter.timers.firing);
+                    shooter.timers.firing = false;
+                    if ((p.state.reloading && p.timers.reloading.all) ||
+                        (gamespace._currentUpdate - p.state.lastSwitch < p.state.eSwitchDelay)) {
+                        shooter.timers.firing = setTimeout(() => {
+                            shooter.timers.firing = false;
+                            shooter.inventory.activeItem.primary(shooter);
+                        }, (p.state.reloading && p.timers.reloading.all) ? weapon.#proto[`${weapon.#proto.altReload && !weapon.#ammo ? "altR" : "r"}eload`].duration - (gamespace._currentUpdate - p.state.reloading) : p.state.eSwitchDelay - (gamespace._currentUpdate - p.state.lastSwitch));
+                    }
                     return;
                 }
                 if (burst && fire.startsWith("auto-burst-") && exceed) {
@@ -358,9 +375,10 @@ class gun {
                 }
                 if (fire == "semi") {
                     shooter.state.firing = false;
+                    shooter.timers.firing = false;
                     return;
                 }
-                setTimeout(a, fire == "automatic" ? weapon.#proto.delay : weapon.#proto.burstProps.shotDelay, weapon);
+                shooter.timers.firing = setTimeout(a, fire == "automatic" ? weapon.#proto.delay : weapon.#proto.burstProps.shotDelay, weapon);
             }, 0, this);
         }
     }
@@ -370,6 +388,7 @@ class gun {
         }
         shooter.events.dispatchEvent("reloading", this);
         shooter.state.firing = false;
+        shooter.timers.firing = false;
         shooter.state.reloading = gamespace._currentUpdate;
         const reloadToUse = this.#proto[`${this.#proto.altReload && !this.#ammo ? "altR" : "r"}eload`];
         shooter.timers.reloading.timer && clearTimeout(shooter.timers.reloading.timer);
@@ -381,8 +400,10 @@ class gun {
                 }
                 else {
                     setTimeout(() => {
-                        for (let i = 0; i < this.#proto.magazineCapacity.normal; i++, this.makeCasing(shooter))
-                            ;
+                        if (shooter.inventory.activeItem.#proto.name == this.#proto.name) {
+                            for (let i = 0; i < this.#proto.magazineCapacity.normal; i++, this.makeCasing(shooter))
+                                ;
+                        }
                     }, this.#proto.casing.spawnDelay);
                 }
             }
@@ -545,7 +566,7 @@ class bullet {
             p5.push();
             p5.translate(bd.position.x, bd.position.y);
             p5.rotate(this.angle);
-            const c = p5.color(gamespace.bulletInfo[this.#emitter.caliber]?.tints?.[this.#crit && gamespace.settings.bonus_features.headshots_use_saturated_tracers ? "saturated" : "normal"] ?? "#FFF");
+            const c = p5.color(gamespace.bulletInfo[this.#emitter.caliber]?.tints?.[this.#crit && gamespace.settings.bonus_features.headshots_use_saturated_tracers ? (gamespace.settings.bonus_features.use_interpolated_saturated_tracers && gamespace.bulletInfo[this.#emitter.caliber]?.tints?.saturated_alt) ? "saturated_alt" : "saturated" : "normal"] ?? "#FFF");
             c.setAlpha(this.#emitter.suppressed ? 128 : 255);
             p5.tint(c);
             const l = Math.min(992 /* oooooh, mystery constant */, +distance(bd.position, this.#start));
@@ -673,20 +694,22 @@ class customEvent {
     }
 }
 const gamespace = {
-    get version() { return `0.0.1 (build 06-06-2022)`; },
+    get version() { return `0.0.1 (build 07-06-2022)`; },
     bots: [],
     bulletInfo: {},
     camera: void 0,
     created: 0,
-    cleanUp(p5, options) {
+    cleanUp(options) {
         const t = setTimeout(() => { });
         for (let i = 0; i < t; i++) {
             clearTimeout(i);
         }
-        p5.noLoop();
-        p5.draw = void 0;
+        gamespace.p5.remove();
         gamespace.bots = [];
         gamespace._currentUpdate = 0;
+        if (gamespace._frozen) {
+            unfreezeInputs();
+        }
         (async () => { gamespace._currentLevel.levelData = parseLevelData(await (await fetch(gamespace._currentLevel.jsonPath)).json()); })();
         gamespace._currentLevel = void 0;
         gamespace.created = 0;
@@ -770,7 +793,8 @@ const gamespace = {
             csgo_style_killfeed: false,
             damage_numbers_stack: true,
             headshots_use_saturated_tracers: true,
-            show_damage_numbers: true
+            show_damage_numbers: true,
+            use_interpolated_saturated_tracers: true
         },
         ui: true
     },

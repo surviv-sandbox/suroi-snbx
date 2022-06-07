@@ -6,7 +6,7 @@ function makeMenu(first: boolean) {
             const s = memoryManager.getItem("settings") as void | JSONObject;
 
             if (s) {
-                gamespace.settings = s as any;
+                gamespace.settings = overrideObject(gamespace.settings, s as any);
             } else {
                 memoryManager.setItem("settings", gamespace.settings);
             }

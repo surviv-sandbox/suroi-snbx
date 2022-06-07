@@ -1,5 +1,17 @@
+<h2>v0.0.1 (build 07-06-2022)</h2>
+<h3>June 7<sup>th</sup> 2022</h3>
+
+<ul>
+<li> Fixed a typo in the changelog
+<li> Holding attack either while the weapon is reloading or while the weapon isn't ready to fire will allow the weapon to fire when it is ready to do so again
+<li> For ammo types that lack distinct saturated tracer colors (9mm, 12 gauge and 5.56mm), a new option allows the game to create new values based on ammo types that have distinct saturated tracers.
+<li> Fixed a bug where presets wouldn't apply correctly when re-entering the 'Bot 1v1' level
+<li> Fixed a bug where exiting 'Bot 1v1' would prevent re-entering the level with fatal crashes
+<li> Fixed a bug where levels' event listeners weren't being cleaned up properly
+</ul>
+
 <h2>v0.0.1 (build 06-06-2022)</h2>
-<h3>June 6<sup>rd</sup> 2022</h3>
+<h3>June 6<sup>th</sup> 2022</h3>
 
 <ul>
 <li> Restructuring, housekeeping

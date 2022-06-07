@@ -154,7 +154,7 @@ const keyBindings: {
                                                 }
                                             });
                                             cont.remove();
-                                            gamespace.cleanUp(gamespace.p5, { clearEvents: true });
+                                            gamespace.cleanUp({ clearEvents: true });
                                             Array.from(document.body.children).forEach(n => n.remove());
                                             makeMenu(true);
                                         }
@@ -162,7 +162,6 @@ const keyBindings: {
 
                                     uiContainer.appendChild(cont).append(resume, exit);
                                 } else {
-
                                     $("pause-menu-cont")?.remove?.();
                                 }
                             },

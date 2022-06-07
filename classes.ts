@@ -105,17 +105,19 @@ class playerLike {
         base: 12
     };
     timers: {
+        anticipatedReload: false | number,
+        firing: false | number,
         reloading: {
             timer: false | number,
             all: boolean;
-        },
-        anticipatedReload: false | number;
+        };
     } = {
+            anticipatedReload: false,
+            firing: false,
             reloading: {
                 timer: false,
                 all: false
-            },
-            anticipatedReload: false
+            }
         };
     #view: number;
     get view() { return this.#view; }
@@ -269,6 +271,12 @@ class playerLike {
         } else {
             return this.speed.base + this.inventory.activeItem.proto.moveSpeedPenalties.active - 1;
         }
+    }
+}
+
+class player extends playerLike {
+    constructor(body: Matter.Body, angle: number, health: number, loadout: { guns: string[]; activeIndex: number; }, options: { friction: number; restitution: number; inertia?: number; density: number; }, view: number) {
+        super(body, angle, health, loadout, options, view, gamespace.settings.name);
     }
 }
 
@@ -543,9 +551,13 @@ class gun {
             fire = this.activeFireMode,
             burst = !!fire.match(/(auto-)?burst-/);
 
-        if ((gamespace._currentUpdate - p.state.lastShot[p.inventory.activeIndex]) >= (burst ? (ip.burstProps.burstDelay ?? ip.delay) : ip.delay) && this.#ammo && !shooter.state.frozen) {
+        if ((gamespace._currentUpdate - p.state.lastShot[p.inventory.activeIndex]) >= (burst ? (ip.burstProps.burstDelay ?? ip.delay) : ip.delay) &&
+            this.#ammo &&
+            !shooter.state.frozen &&
+            !shooter.timers.firing
+        ) {
             p.state.fired = 0;
-            const timer = setTimeout(function a(weapon: gun) {
+            shooter.timers.firing = setTimeout(function a(weapon: gun) {
                 const exceed = p.state.fired >= +fire.replace(/(auto-)?burst-/, "");
                 if (
                     !gamespace.objects.players.find(p => p.body.id == b.id) ||
@@ -558,7 +570,17 @@ class gun {
                 ) {
                     p.state.fired = 0;
                     p.state.firing = false;
-                    clearTimeout(timer);
+                    clearTimeout(shooter.timers.firing as number);
+                    shooter.timers.firing = false;
+                    if (
+                        (p.state.reloading && p.timers.reloading.all) ||
+                        (gamespace._currentUpdate - p.state.lastSwitch < p.state.eSwitchDelay)
+                    ) {
+                        shooter.timers.firing = setTimeout(() => {
+                            shooter.timers.firing = false;
+                            shooter.inventory.activeItem.primary(shooter);
+                        }, (p.state.reloading && p.timers.reloading.all) ? weapon.#proto[`${weapon.#proto.altReload && !weapon.#ammo ? "altR" : "r"}eload`].duration - (gamespace._currentUpdate - p.state.reloading) : p.state.eSwitchDelay - (gamespace._currentUpdate - p.state.lastSwitch)) as any as number;
+                    }
                     return;
                 }
 
@@ -620,17 +642,19 @@ class gun {
 
                 if (fire == "semi") {
                     shooter.state.firing = false;
+                    shooter.timers.firing = false;
                     return;
                 }
 
-                setTimeout(a, fire == "automatic" ? weapon.#proto.delay : weapon.#proto.burstProps.shotDelay, weapon);
-            }, 0, this);
+                shooter.timers.firing = setTimeout(a, fire == "automatic" ? weapon.#proto.delay : weapon.#proto.burstProps.shotDelay, weapon) as any as number;
+            }, 0, this) as any as number;
         }
     }
     reload(shooter: playerLike) {
         if (this.#ammo == this.#proto.magazineCapacity.normal || shooter.state.reloading) { return; }
         shooter.events.dispatchEvent("reloading", this);
         shooter.state.firing = false;
+        shooter.timers.firing = false;
         shooter.state.reloading = gamespace._currentUpdate;
         const reloadToUse = this.#proto[`${this.#proto.altReload && !this.#ammo ? "altR" : "r"}eload`];
 
@@ -642,7 +666,9 @@ class gun {
                     for (let i = 0; i < this.#proto.magazineCapacity.normal; i++, this.makeCasing(shooter));
                 } else {
                     setTimeout(() => {
-                        for (let i = 0; i < this.#proto.magazineCapacity.normal; i++, this.makeCasing(shooter));
+                        if (shooter.inventory.activeItem.#proto.name == this.#proto.name) {
+                            for (let i = 0; i < this.#proto.magazineCapacity.normal; i++, this.makeCasing(shooter));
+                        }
                     }, this.#proto.casing.spawnDelay);
                 }
             } catch { }
@@ -855,7 +881,8 @@ class bullet {
             p5.push();
             p5.translate(bd.position.x, bd.position.y);
             p5.rotate(this.angle);
-            const c = p5.color(gamespace.bulletInfo[this.#emitter.caliber]?.tints?.[this.#crit && gamespace.settings.bonus_features.headshots_use_saturated_tracers ? "saturated" : "normal"] ?? "#FFF");
+            const c = p5.color(gamespace.bulletInfo[this.#emitter.caliber]?.tints?.[this.#crit && gamespace.settings.bonus_features.headshots_use_saturated_tracers ? (gamespace.settings.bonus_features.use_interpolated_saturated_tracers && gamespace.bulletInfo[this.#emitter.caliber]?.tints?.saturated_alt) ? "saturated_alt" : "saturated" : "normal"] ?? "#FFF");
+
             c.setAlpha(this.#emitter.suppressed ? 128 : 255);
             p5.tint(c);
 
@@ -1019,6 +1046,7 @@ const gamespace: {
             tints: {
                 normal: string,
                 saturated: string,
+                saturated_alt?: string,
                 chambered: string;
             },
             spawnVar: {
@@ -1039,7 +1067,7 @@ const gamespace: {
         };
     },
     camera: import("p5").Camera,
-    cleanUp(p5: import("p5"), options?: { reloadJSONBasedFields?: boolean, reloadFontsAndImages?: boolean, clearEvents?: boolean; }): void,
+    cleanUp(options?: { reloadJSONBasedFields?: boolean, reloadFontsAndImages?: boolean, clearEvents?: boolean; }): void,
     _currentLevel: {
         color?: string,
         description: string,
@@ -1129,26 +1157,28 @@ const gamespace: {
             csgo_style_killfeed: boolean,
             damage_numbers_stack: boolean,
             headshots_use_saturated_tracers: boolean,
-            show_damage_numbers: boolean;
+            show_damage_numbers: boolean,
+            use_interpolated_saturated_tracers: boolean;
         },
         ui: boolean;
     },
     update: (p5: import("p5")) => void,
     world: Matter.Composite;
 } = {
-    get version() { return `0.0.1 (build 06-06-2022)`; },
+    get version() { return `0.0.1 (build 07-06-2022)`; },
     bots: [],
     bulletInfo: {},
     camera: void 0,
     created: 0,
-    cleanUp(p5, options: { reloadJSONBasedFields: boolean, reloadFontsAndImages: boolean, clearEvents: boolean; }) {
+    cleanUp(options: { reloadJSONBasedFields: boolean, reloadFontsAndImages: boolean, clearEvents: boolean; }) {
         const t = (setTimeout(() => { }) as any as number);
         for (let i = 0; i < t; i++) { clearTimeout(i); }
 
-        p5.noLoop();
-        p5.draw = void 0;
+        gamespace.p5.remove();
         gamespace.bots = [];
         gamespace._currentUpdate = 0;
+
+        if (gamespace._frozen) { unfreezeInputs(); }
 
         (async () => { gamespace._currentLevel.levelData = parseLevelData(await (await fetch(gamespace._currentLevel.jsonPath)).json()); })();
 
@@ -1238,7 +1268,8 @@ const gamespace: {
             csgo_style_killfeed: false,
             damage_numbers_stack: true,
             headshots_use_saturated_tracers: true,
-            show_damage_numbers: true
+            show_damage_numbers: true,
+            use_interpolated_saturated_tracers: true
         },
         ui: true
     },
@@ -1345,15 +1376,9 @@ const gamespace: {
                     };
 
                 p5.push();
-                p5.translate(
-                    pos.x,
-                    pos.y
-                );
+                p5.translate(pos.x, pos.y);
 
-                p5.textAlign(
-                    "center",
-                    "center"
-                );
+                p5.textAlign("center", "center");
 
                 p5.textSize(d.lethal ? 90 : 80);
 

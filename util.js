@@ -59,7 +59,7 @@ function parseLevelData(data) {
             const d = o.details;
             return new obstacle(body, o.options.angle, loadImg(d.image), { width: d.imageWidth, height: d.imageHeight }, d.tint, d.layer, { x: d.xOffset, y: d.yOffset, angle: d.angleOffset * Math.PI / 180 }, d.imageMode);
         }),
-        players: data.players.map(p => new playerLike((() => {
+        players: data.players.map((p, i) => new (i ? playerLike : player)((() => {
             const body = Matter.Bodies.circle(p.x, p.y, 50, p.options);
             body.mass = body.inverseMass = 1;
             body.frictionAir = 1;
@@ -75,7 +75,9 @@ function parseLevelData(data) {
             4: 2359,
             8: 3230,
             15: 4940
-        })[p.scope], `BOT ${["Flavie", "Mathis", "Sarah", "Juliette", "Emma", "Lexie", "Oceane", "Maeva", "Sophia", "Charles", "Jeanne", "Laurent", "Theo", "Eli", "Edouard", "Axel", "Leonie", "Mayson", "Louis", "William", "Laurence", "Sophie", "Charlie", "Charlotte", "Beatrice", "Jayden", "Clara", "Felix", "Ellie", "James", "Ethan", "Milan", "Rosalie", "Hubert", "Lea", "Amelia", "Olivia", "Noah", "Emile", "Florence", "Simone", "Adele", "Mia", "Elizabeth", "Ophelie", "Flora", "Gabriel", "Victoria", "Logan", "Raphael", "Arnaud", "Victor", "Benjamin", "Livia", "Alicia", "Arthur", "Anna", "Lily", "Henri", "Nathan", "Romy", "Thomas", "Alice", "Lucas", "Theodore", "Liam", "Jules", "Chloe", "Camille", "Leonard", "Antoine", "Nolan", "Elliot", "Jackson", "Jake", "Zoe", "Samuel", "Eleonore", "Julia", "Maelie", "Alexis", "Mila", "Eloi", "Noelie", "Matheo", "Elena", "Jacob", "Jade", "Leo", "Jasmine", "Raphaelle", "Rose", "Adam", "Eva", "Olivier", "Xavier", "Loic", "Sofia", "Zachary", "Zack"][Math.floor(Math.random() * 100)]}`))
+        })[p.scope], i
+            ? `BOT ${["Flavie", "Mathis", "Sarah", "Juliette", "Emma", "Lexie", "Oceane", "Maeva", "Sophia", "Charles", "Jeanne", "Laurent", "Theo", "Eli", "Edouard", "Axel", "Leonie", "Mayson", "Louis", "William", "Laurence", "Sophie", "Charlie", "Charlotte", "Beatrice", "Jayden", "Clara", "Felix", "Ellie", "James", "Ethan", "Milan", "Rosalie", "Hubert", "Lea", "Amelia", "Olivia", "Noah", "Emile", "Florence", "Simone", "Adele", "Mia", "Elizabeth", "Ophelie", "Flora", "Gabriel", "Victoria", "Logan", "Raphael", "Arnaud", "Victor", "Benjamin", "Livia", "Alicia", "Arthur", "Anna", "Lily", "Henri", "Nathan", "Romy", "Thomas", "Alice", "Lucas", "Theodore", "Liam", "Jules", "Chloe", "Camille", "Leonard", "Antoine", "Nolan", "Elliot", "Jackson", "Jake", "Zoe", "Samuel", "Eleonore", "Julia", "Maelie", "Alexis", "Mila", "Eloi", "Noelie", "Matheo", "Elena", "Jacob", "Jade", "Leo", "Jasmine", "Raphaelle", "Rose", "Adam", "Eva", "Olivier", "Xavier", "Loic", "Sofia", "Zachary", "Zack"][Math.floor(Math.random() * 100)]}`
+            : void 0))
     };
 }
 function parseGunData(gunData) {
@@ -330,6 +332,19 @@ function clone(object) {
         copy[key] = value;
     }
     return copy;
+}
+function overrideObject(o1, o2) {
+    o1 = clone(o1);
+    o2 = clone(o2);
+    for (const key in o2) {
+        if (typeof o2[key] == "object" && o2[key] !== null) {
+            o1[key] = overrideObject(o1[key], o2[key]);
+        }
+        else {
+            o1[key] = (o2[key] ?? o1[key]);
+        }
+    }
+    return o1;
 }
 function getDecimalPlaces(n) {
     if (n instanceof Decimal) {

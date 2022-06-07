@@ -258,6 +258,7 @@ declare function parseAmmoData(data: {
         tints: {
             normal: string;
             saturated: string;
+            saturated_alt?: string;
             chambered: string;
         };
         spawnVar: {
@@ -302,6 +303,7 @@ declare function meanDevPM_random(mean: Decimal.Value, deviation: Decimal.Value,
     useNativeMath: boolean;
 }): string | number | import("./libraries/decimaljs/decimal.global").default;
 declare function clone<T extends JSONContent>(object: T): T;
+declare function overrideObject<T extends JSONObject, U extends JSONObject>(o1: Extract<T, U> & Partial<T>, o2: Extract<T, U> & Partial<U>): Extract<T, U> & Partial<T>;
 declare function getDecimalPlaces(n: number | Decimal): number;
 declare function sliceToDecimalPlaces(number: number | Decimal, decimalPlaces: number): number;
 declare const getRenderDistFromView: (view: number) => number;
