@@ -47,7 +47,8 @@ class AI {
             `strafeDirection: ${this.#memory.strafe.dir}`,
             `ammo: ${this.#player.inventory.activeItem.ammo}`,
             `reloading: ${this.#player.state.reloading}`,
-            `activeWeapon: ${this.#player.inventory.activeItem.proto.name}`]
+            `activeWeapon: ${this.#player.inventory.activeItem.proto.name}`,
+            `activeIndex: ${this.#player.inventory.activeIndex}`]
             .join("\n");
     }
     update() {
@@ -69,7 +70,7 @@ class AI {
                 else if (!this.#memory.weaponLoadState[1 - pl.inventory.activeIndex]) {
                     pl.switchSlots(1 - pl.inventory.activeIndex);
                 }
-                if (this.#memory.wanderTarget && sqauredDist(this.#memory.wanderTarget, this.#player.body.position) >= 6000) {
+                if (this.#memory.wanderTarget && squaredDist(this.#memory.wanderTarget, this.#player.body.position) >= 6000) {
                     this.#moveTowardsPoint(this.#memory.wanderTarget);
                     this.#lookInDirection(Math.atan2(this.#memory.lastPosition.y - this.#player.body.position.y, this.#memory.lastPosition.x - this.#player.body.position.x) - Math.PI / 2);
                     this.#memory.lastPosition = { ...this.#player.body.position };
@@ -97,14 +98,14 @@ class AI {
                     this.#state = "idle";
                     break;
                 }
-                const d = +sqauredDist(this.#player.body.position, this.#target.body.position), pos = this.#target.body.position, f = () => !!Math.round(Math.random()), r = ip[`${ip.altReload && !i.ammo ? "altR" : "r"}eload`].duration;
+                const d = +squaredDist(this.#player.body.position, this.#target.body.position), pos = this.#target.body.position, f = () => !!Math.round(Math.random()), r = ip[`${ip.altReload && !i.ammo ? "altR" : "r"}eload`].duration;
                 if (pl.state.reloading) {
+                    this.#memory.weaponLoadState[pl.inventory.activeIndex] = false;
                     if ((d < (ip.summary.class == "sniper_rifle" ? 1000 : 750) ** 2 || (this.#memory.cancelReloadOnSpot && r - gamespace._currentUpdate + pl.state.reloading >= 1500))
                         && r >= 1000
                         && this.#memory.weaponLoadState[1 - pl.inventory.activeIndex]) {
-                        this.#memory.weaponLoadState[pl.inventory.activeIndex] = false;
-                        i.stopReload(pl);
                         if (this.#memory.cancelReloadOnSpot && i.ammo) {
+                            i.stopReload(pl);
                         }
                         else {
                             pl.switchSlots(1 - pl.inventory.activeIndex);
@@ -116,13 +117,15 @@ class AI {
                     }
                 }
                 else if (this.#subState == "reloading") {
-                    this.#memory.weaponLoadState[pl.inventory.activeIndex] = true;
-                    if (d >= 2000 ** 2 && r >= 1000 && !this.#memory.weaponLoadState[1 - pl.inventory.activeIndex]) {
+                    if (d >= 2000 ** 2 && r >= 1000 && this.#memory.weaponLoadState[1 - pl.inventory.activeIndex]) {
                         pl.switchSlots(1 - pl.inventory.activeIndex);
                     }
                     else {
                         this.#subState = "default";
                     }
+                }
+                else {
+                    this.#memory.weaponLoadState[pl.inventory.activeIndex] = true;
                 }
                 if (gamespace._currentUpdate - this.#memory.strafe.timestamp >= (this.#subState == "reloading" ? (Math.random() * 500 + 100) : (Math.random() * 1000 + 250))) {
                     const dy = Math.round((pl.body.position.y - this.#target.body.position.y) / 10) * 10, dx = Math.round((pl.body.position.x - this.#target.body.position.x) / 10) * 10, r = this.#subState == "reloading";
@@ -137,7 +140,8 @@ class AI {
                     };
                 }
                 if (["shotgun", "sniper_rifle", "semi_pistol_move"].includes(ip.summary.class) ||
-                    ["strafe", "reloading"].includes(this.#subState)) {
+                    ["strafe", "reloading"].includes(this.#subState) &&
+                        !["moveTowards", "moveAway"].includes(this.#subState)) {
                     this.#player.move(...this.#memory.strafe.dir);
                 }
                 if (this.#subState == "noslow") {
@@ -158,8 +162,8 @@ class AI {
                 this.#lookAtPoint(pos);
                 if (this.#subState != "moveTowards" && this.#subState != "strafe") {
                     this.#lookAtPoint(this.#target.state.moving ? {
-                        // x: pos.x + Math.sign(pos.x - this.#memory.lastTargetPos?.x ?? pos.x) * (Math.sqrt(d) / ip.ballistics.velocity) * 1000 * Math.abs((pos.x - this.#memory.lastTargetPos?.x ?? pos.x) / gamespace.deltaTime),
-                        // y: pos.y + Math.sign(pos.y - this.#memory.lastTargetPos?.y ?? pos.y) * (Math.sqrt(d) / ip.ballistics.velocity) * 1000 * Math.abs((pos.y - this.#memory.lastTargetPos?.y ?? pos.y) / gamespace.deltaTime)
+                        // x: pos.x + Math.sign(pos.x - this.#memory.lastTargetPos?.x ?? pos.x) * (d / (ip.ballistics.velocity ** 2)) * 1000 * Math.abs((pos.x - this.#memory.lastTargetPos?.x ?? pos.x) / gamespace.deltaTime),
+                        // y: pos.y + Math.sign(pos.y - this.#memory.lastTargetPos?.y ?? pos.y) * (d / (ip.ballistics.velocity ** 2)) * 1000 * Math.abs((pos.y - this.#memory.lastTargetPos?.y ?? pos.y) / gamespace.deltaTime)
                         x: pos.x,
                         y: pos.y
                     } : pos);
@@ -217,14 +221,14 @@ class AI {
             pl.switchSlots(+(range1 > range0));
             return;
         }
-        const d = +sqauredDist(pl.body.position, t.body.position), r0 = (weapon0.summary.engagementDistance.max / 2) ** 2 - d, r1 = (weapon1.summary.engagementDistance.max / 2) ** 2 - d;
+        const d = +squaredDist(pl.body.position, t.body.position), r0 = (weapon0.summary.engagementDistance.max / 2) ** 2 - d, r1 = (weapon1.summary.engagementDistance.max / 2) ** 2 - d;
         pl.switchSlots(+(r1 > r0));
     }
     #resolveTargets() {
         const candidate = gamespace.objects.players
             .filter(b => b.body.id != this.#player.body.id && !b.aiIgnore && !b.state.frozen)
-            .map(b => ({ player: b, dist: +sqauredDist(this.#player.body.position, b.body.position) }))
-            .sort((a, b) => a.dist - b.dist)[0], t = this.#target, d = t?.body ? +sqauredDist(t.body.position, this.#player.body.position) : Infinity;
+            .map(b => ({ player: b, dist: +squaredDist(this.#player.body.position, b.body.position) }))
+            .sort((a, b) => a.dist - b.dist)[0], t = this.#target, d = t?.body ? +squaredDist(t.body.position, this.#player.body.position) : Infinity;
         if (!candidate) {
             this.#state = "wander";
             return;

@@ -1,0 +1,79 @@
+{
+    "explosion_frag": {
+        "damage": 125,
+        "obstacleMult": 1.1,
+        "radii": {
+            "visual": {
+                "min": {
+                    "givenIn": "scale",
+                    "value": 2.5
+                },
+                "max": {
+                    "givenIn": "scale",
+                    "value": 6.5
+                }
+            },
+            "damage": {
+                "min": {
+                    "givenIn": "scale",
+                    "value": 5
+                },
+                "max": {
+                    "givenIn": "scale",
+                    "value": 12
+                }
+            }
+        },
+        "lifetime": {
+            "givenIn": "ms",
+            "value": 500
+        },
+        "color": [
+            130,
+            37,
+            0
+        ],
+        "decal": {
+            "img": "assets/decals/map-barrel-res-01.svg",
+            "width": {
+                "givenIn": "absolute",
+                "value": 200
+            },
+            "height": {
+                "givenIn": "absolute",
+                "value": 200
+            },
+            "tint": "#000000CC"
+        },
+        "shrapnel": {
+            "count": 12,
+            "damage": 20,
+            "color": "#333",
+            "img": "assets/items/ammo/tracer.png",
+            "velocity": {
+                "givenIn": "scale",
+                "value": 20
+            },
+            "range": {
+                "givenIn": "scale",
+                "value": 8,
+                "variation": {
+                    "givenIn": "ratio",
+                    "value": 1.5,
+                    "plusOrMinus": false
+                }
+            },
+            "falloff": 1,
+            "tracer": {
+                "width": {
+                    "givenIn": "scale",
+                    "value": 0.25
+                },
+                "height": {
+                    "givenIn": "scale",
+                    "value": 10
+                }
+            }
+        }
+    }
+}

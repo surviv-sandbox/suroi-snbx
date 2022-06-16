@@ -2,14 +2,13 @@ import std_setup from "../../scripts/std_level_setup.js";
 export const level = await (async () => {
     const json: JSONLevel = await (await fetch("assets/levels/level2/data.json")).json();
 
-    const levelData = parseLevelData(json),
-        name = "Deathmatch",
+    const name = "Deathmatch",
         path = ["levels", `level-${name}`],
         level = {
             name: name,
             jsonPath: "assets/levels/level2/data.json",
             description: "Fight bots for 5 minutes.",
-            levelData: levelData,
+            levelData: parseLevelData(json),
             world: {
                 width: 15000,
                 height: 15000,
@@ -102,9 +101,10 @@ export const level = await (async () => {
                                         case "dmr": return 4;
                                         case "burst_ar": return 6;
                                         case "semi_pistol_move": return 6;
+                                        case "grenade_launcher": return 7;
                                         default: return 1;
                                     }
-                                })(gamespace.guns.find(g => g.name == d.weapon).summary.class);
+                                })((gamespace.guns.find(g => g.name == d.weapon) as gunPrototype).summary.class);
                                 p.state.custom.deaths = (d.killer.state.custom.deaths ?? 0) as number + 1;
 
                                 teleportToRandomPos(p);
@@ -145,7 +145,7 @@ export const level = await (async () => {
                             },
                             update() {
                                 gamespace.objects.players.map(p => ({ score: p.state.custom.score as number ?? 0, name: p.name })).sort((a, b) => b.score - a.score).slice(0, 10).forEach((s, i) => {
-                                    const ele = $(`deathmatch-scoreboard-entry-${i}`),
+                                    const ele = $(`deathmatch-scoreboard-entry-${i}`) as HTMLDivElement,
                                         isPlayer = s.name == gamespace.player.name;
 
                                     ele.innerText = `${s.name}\n${s.score}`;
@@ -181,7 +181,7 @@ export const level = await (async () => {
                                     uiContainer.appendChild(timer);
                                 },
                                 update() {
-                                    const e = $("deathmatch-countdown"),
+                                    const e = $("deathmatch-countdown") as HTMLDivElement,
                                         d = 300000 - (gamespace._currentUpdate - gamespace.created),
                                         m = Math.floor(d / 60000),
                                         s = Math.ceil((d - 60000 * m) / 1000);
@@ -191,7 +191,8 @@ export const level = await (async () => {
                                     (s <= 10 && !m) && (e.style.color = "red");
                                 },
                                 callCreateImmediately: true
-                            });
+                            }
+                        );
                     };
 
                     p5.draw = function () {
@@ -206,7 +207,7 @@ export const level = await (async () => {
                         if (gamespace._currentUpdate - gamespace.created >= 300000) {
                             gamespace.freeze();
                             p5.noLoop();
-                            p5.draw = void 0;
+                            p5.draw = void 0 as badCodeDesign;
 
                             const leaderbord = makeElement("table", "leaderboard"),
                                 body = makeElement("tbody");
@@ -251,10 +252,11 @@ export const level = await (async () => {
 
                             document.body.appendChild(leaderbord);
 
-                            document.addEventListener("keydown", e => {
+                            document.addEventListener("keydown", function exit(e) {
                                 if (e.key == "Escape") {
+                                    document.removeEventListener("keydown", exit);
                                     e.preventDefault();
-                                    gamespace.cleanUp(gamespace.p5, { clearEvents: true });
+                                    gamespace.cleanUp({ clearEvents: true });
                                     Array.from(document.body.children).forEach(n => n.remove());
                                     makeMenu(true);
                                 }
@@ -263,7 +265,7 @@ export const level = await (async () => {
                     };
                 };
 
-                new p5(s, void 0);
+                new p5(s, void 0 as badCodeDesign);
             }
         };
     return level;

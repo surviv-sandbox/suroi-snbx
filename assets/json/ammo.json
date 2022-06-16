@@ -3,19 +3,37 @@
         "tints": {
             "normal": "#FEDCDC",
             "saturated": "#FEDCDC",
+            "saturated_alt": "#FEBEAD",
             "chambered": "#FF8000"
+        },
+        "alpha": {
+            "rate": 0.92,
+            "min": 0.14,
+            "max": 1
         },
         "spawnVar": {
             "mean": 0,
             "variation": 0,
             "plusOrMinus": false
         },
+        "imageOffset": {
+            "parr": 0.5,
+            "perp": 0
+        },
+        "projectileInfo": {
+            "type": "bullet",
+            "img": "assets/items/ammo/tracer.png"
+        },
         "casing": {
-            "img": "assets/items/ammo/shell-9mm.png",
-            "despawnDist": {
-                "mean": 100,
-                "variation": 10,
-                "plusOrMinus": true
+            "img": "assets/items/ammo/9mm/shell-9mm.png",
+            "lifetime": {
+                "givenIn": "s",
+                "value": 1,
+                "variation": {
+                    "givenIn": "ratio",
+                    "value": 0.3,
+                    "plusOrMinus": true
+                }
             },
             "width": 8.4090909091,
             "height": 20
@@ -25,19 +43,37 @@
         "tints": {
             "normal": "#FEDCDC",
             "saturated": "#FEDCDC",
+            "saturated_alt": "#FEC0C1",
             "chambered": "#FF0000"
+        },
+        "alpha": {
+            "rate": 0.92,
+            "min": 0.14,
+            "max": 1
         },
         "spawnVar": {
             "mean": 0,
-            "variation": 50,
+            "variation": 0,
             "plusOrMinus": true
         },
+        "imageOffset": {
+            "parr": 0.5,
+            "perp": 0
+        },
+        "projectileInfo": {
+            "type": "bullet",
+            "img": "assets/items/ammo/tracer.png"
+        },
         "casing": {
-            "img": "assets/items/ammo/shell-12gauge.png",
-            "despawnDist": {
-                "mean": 100,
-                "variation": 10,
-                "plusOrMinus": true
+            "img": "assets/items/ammo/12 gauge/shell-12gauge.png",
+            "lifetime": {
+                "givenIn": "s",
+                "value": 1,
+                "variation": {
+                    "givenIn": "ratio",
+                    "value": 0.3,
+                    "plusOrMinus": true
+                }
             },
             "width": 10.5,
             "height": 30
@@ -47,19 +83,37 @@
         "tints": {
             "normal": "#A9FF92",
             "saturated": "#A9FF92",
+            "saturated_alt": "#7EFF5C",
             "chambered": "#36FF00"
+        },
+        "alpha": {
+            "rate": 0.92,
+            "min": 0.14,
+            "max": 1
         },
         "spawnVar": {
             "mean": 0,
             "variation": 0,
             "plusOrMinus": false
         },
+        "imageOffset": {
+            "parr": 0.5,
+            "perp": 0
+        },
+        "projectileInfo": {
+            "type": "bullet",
+            "img": "assets/items/ammo/tracer.png"
+        },
         "casing": {
-            "img": "assets/items/ammo/shell-556mm.png",
-            "despawnDist": {
-                "mean": 100,
-                "variation": 10,
-                "plusOrMinus": true
+            "img": "assets/items/ammo/556mm/shell-556mm.png",
+            "lifetime": {
+                "givenIn": "s",
+                "value": 1,
+                "variation": {
+                    "givenIn": "ratio",
+                    "value": 0.3,
+                    "plusOrMinus": true
+                }
             },
             "width": 15.4736842105,
             "height": 46
@@ -71,17 +125,34 @@
             "saturated": "#ABC4FF",
             "chambered": "#004CFF"
         },
+        "alpha": {
+            "rate": 0.94,
+            "min": 0.2,
+            "max": 1
+        },
         "spawnVar": {
             "mean": 0,
             "variation": 0,
             "plusOrMinus": false
         },
+        "imageOffset": {
+            "parr": 0.5,
+            "perp": 0
+        },
+        "projectileInfo": {
+            "type": "bullet",
+            "img": "assets/items/ammo/tracer.png"
+        },
         "casing": {
-            "img": "assets/items/ammo/shell-762mm.png",
-            "despawnDist": {
-                "mean": 100,
-                "variation": 10,
-                "plusOrMinus": true
+            "img": "assets/items/ammo/762mm/shell-762mm.png",
+            "lifetime": {
+                "givenIn": "s",
+                "value": 1,
+                "variation": {
+                    "givenIn": "ratio",
+                    "value": 0.3,
+                    "plusOrMinus": true
+                }
             },
             "width": 13.2544378698,
             "height": 40
@@ -93,17 +164,34 @@
             "saturated": "#ABC4FF",
             "chambered": "#004CFF"
         },
+        "alpha": {
+            "rate": 0.94,
+            "min": 0.2,
+            "max": 1
+        },
         "spawnVar": {
             "mean": 0,
             "variation": 0,
             "plusOrMinus": false
         },
+        "imageOffset": {
+            "parr": 0.5,
+            "perp": 0
+        },
+        "projectileInfo": {
+            "type": "bullet",
+            "img": "assets/items/ammo/tracer.png"
+        },
         "casing": {
-            "img": "assets/items/ammo/shell-762mm.png",
-            "despawnDist": {
-                "mean": 100,
-                "variation": 10,
-                "plusOrMinus": true
+            "img": "assets/items/ammo/762mm/shell-762mm.png",
+            "lifetime": {
+                "givenIn": "s",
+                "value": 1,
+                "variation": {
+                    "givenIn": "ratio",
+                    "value": 0.3,
+                    "plusOrMinus": true
+                }
             },
             "width": 13.2544378698,
             "height": 40
@@ -115,17 +203,34 @@
             "saturated": "#ABC4FF",
             "chambered": "#004CFF"
         },
+        "alpha": {
+            "rate": 0.94,
+            "min": 0.2,
+            "max": 1
+        },
         "spawnVar": {
             "mean": 0,
             "variation": 0,
             "plusOrMinus": false
         },
+        "imageOffset": {
+            "parr": 0.5,
+            "perp": 0
+        },
+        "projectileInfo": {
+            "type": "bullet",
+            "img": "assets/items/ammo/tracer.png"
+        },
         "casing": {
-            "img": "assets/items/ammo/shell-762mm.png",
-            "despawnDist": {
-                "mean": 100,
-                "variation": 10,
-                "plusOrMinus": true
+            "img": "assets/items/ammo/762mm/shell-762mm.png",
+            "lifetime": {
+                "givenIn": "s",
+                "value": 1,
+                "variation": {
+                    "givenIn": "ratio",
+                    "value": 0.3,
+                    "plusOrMinus": true
+                }
             },
             "width": 13.2544378698,
             "height": 40
@@ -137,20 +242,87 @@
             "saturated": "#ABC4FF",
             "chambered": "#004CFF"
         },
+        "alpha": {
+            "rate": 0.94,
+            "min": 0.2,
+            "max": 1
+        },
         "spawnVar": {
             "mean": 0,
             "variation": 0,
             "plusOrMinus": false
         },
+        "imageOffset": {
+            "parr": 0.5,
+            "perp": 0
+        },
+        "projectileInfo": {
+            "type": "bullet",
+            "img": "assets/items/ammo/tracer.png"
+        },
         "casing": {
-            "img": "assets/items/ammo/shell-762mm.png",
-            "despawnDist": {
-                "mean": 100,
-                "variation": 10,
-                "plusOrMinus": true
+            "img": "assets/items/ammo/762mm/shell-762mm.png",
+            "lifetime": {
+                "givenIn": "s",
+                "value": 1,
+                "variation": {
+                    "givenIn": "ratio",
+                    "value": 0.3,
+                    "plusOrMinus": true
+                }
             },
             "width": 13.2544378698,
             "height": 40
+        }
+    },
+    "40mm": {
+        "tints": {
+            "normal": "#FFFFFF",
+            "saturated": "#FFFFFF",
+            "chambered": "#FFFFFF"
+        },
+        "alpha": {
+            "rate": 0.94,
+            "min": 0.2,
+            "max": 1
+        },
+        "spawnVar": {
+            "mean": 0,
+            "variation": 0,
+            "plusOrMinus": false
+        },
+        "imageOffset": {
+            "parr": 0,
+            "perp": 0
+        },
+        "projectileInfo": {
+            "type": "explosive",
+            "explosionType": "explosion_frag",
+            "img": "assets/items/ammo/40mm/40mm.png",
+            "spinVel": {
+                "givenIn": "turns",
+                "value": 2.5
+            },
+            "heightPeak": 5,
+            "explodeOnContact": true,
+            "maxDist": {
+                "givenIn": "scale",
+                "value": 18
+            }
+        },
+        "casing": {
+            "img": "assets/items/ammo/40mm/shell-40mm.png",
+            "lifetime": {
+                "givenIn": "s",
+                "value": 1,
+                "variation": {
+                    "givenIn": "ratio",
+                    "value": 0.3,
+                    "plusOrMinus": true
+                }
+            },
+            "width": 14.8484848485,
+            "height": 20
         }
     }
 }

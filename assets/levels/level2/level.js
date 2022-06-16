@@ -1,11 +1,11 @@
 import std_setup from "../../scripts/std_level_setup.js";
 export const level = await (async () => {
     const json = await (await fetch("assets/levels/level2/data.json")).json();
-    const levelData = parseLevelData(json), name = "Deathmatch", path = ["levels", `level-${name}`], level = {
+    const name = "Deathmatch", path = ["levels", `level-${name}`], level = {
         name: name,
         jsonPath: "assets/levels/level2/data.json",
         description: "Fight bots for 5 minutes.",
-        levelData: levelData,
+        levelData: parseLevelData(json),
         world: {
             width: 15000,
             height: 15000,
@@ -197,10 +197,11 @@ export const level = await (async () => {
                         });
                         leaderbord.innerHTML += `<tfoot><tr><th colspan="4" style="font-size: calc(12vh / 9);">Press Escape to restart.</th></tr></tfoot>`;
                         document.body.appendChild(leaderbord);
-                        document.addEventListener("keydown", e => {
+                        document.addEventListener("keydown", function exit(e) {
                             if (e.key == "Escape") {
+                                document.removeEventListener("keydown", exit);
                                 e.preventDefault();
-                                gamespace.cleanUp(gamespace.p5, { clearEvents: true });
+                                gamespace.cleanUp({ clearEvents: true });
                                 Array.from(document.body.children).forEach(n => n.remove());
                                 makeMenu(true);
                             }

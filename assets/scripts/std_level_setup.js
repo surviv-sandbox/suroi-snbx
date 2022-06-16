@@ -57,7 +57,6 @@ function std_setup(engine, world, p5, level, font) {
     gamespace.objects.obstacles = level.levelData.obstacles;
     gamespace.bots = gamespace.objects.players.slice(1).map(p => new AI(p));
     gamespace.player = gamespace.objects.players[0];
-    gamespace.player.name = gamespace.settings.name;
     gamespace.player.angle = Math.PI / 2 + Math.atan2(p5.mouseY - p5.height / 2, p5.mouseX - p5.width / 2);
     $("defaultCanvas0").style.display = "";
     ui.create();

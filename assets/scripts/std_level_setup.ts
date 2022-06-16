@@ -12,7 +12,7 @@ function std_setup(engine: Matter.Engine, world: Matter.World, p5: import("p5"),
     p5.createCanvas(p5.windowWidth, p5.windowHeight, p5.WEBGL);
     gamespace.camera = (p5 as any)._elements[0]._curCamera;
 
-    $("defaultCanvas0").style.display = "none";
+    ($("defaultCanvas0") as HTMLCanvasElement).style.display = "none";
 
     gamespace.created = gamespace.lastUpdate = gamespace._currentUpdate = Date.now();
 
@@ -73,10 +73,9 @@ function std_setup(engine: Matter.Engine, world: Matter.World, p5: import("p5"),
     gamespace.bots = gamespace.objects.players.slice(1).map(p => new AI(p));
 
     gamespace.player = gamespace.objects.players[0];
-    gamespace.player.name = gamespace.settings.name;
     gamespace.player.angle = Math.PI / 2 + Math.atan2(p5.mouseY - p5.height / 2, p5.mouseX - p5.width / 2);
 
-    $("defaultCanvas0").style.display = "";
+    ($("defaultCanvas0") as HTMLCanvasElement).style.display = "";
     ui.create();
 }
 

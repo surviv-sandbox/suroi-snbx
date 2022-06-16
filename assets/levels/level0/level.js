@@ -1,11 +1,11 @@
 import std_setup from "../../scripts/std_level_setup.js";
 export const level = await (async () => {
     const json = await (await fetch("assets/levels/level0/data.json")).json();
-    const levelData = parseLevelData(json), name = "Bot 1v1", path = ["levels", `level-${name}`], level = {
+    const name = "Bot 1v1", path = ["levels", `level-${name}`], level = {
         name: name,
         jsonPath: "assets/levels/level0/data.json",
         description: "Fight a very advanced and totally state-of-the art bot.",
-        levelData: levelData,
+        levelData: parseLevelData(json),
         world: {
             width: 5000,
             height: 5000,
@@ -23,7 +23,7 @@ export const level = await (async () => {
                 }), world = engine.world;
                 p5.setup = function () {
                     std_setup(engine, world, p5, level, { font: "assets/fonts/RobotoCondensed-Bold.ttf", size: 80 });
-                    //@ts-ignore
+                    // @ts-ignore
                     Matter.Body.setPosition(gamespace.objects.players[1].body, {
                         x: Math.random() * level.world.width,
                         y: Math.random() * level.world.height
@@ -35,7 +35,7 @@ export const level = await (async () => {
                 let w, doAI = true;
                 p5.draw = function () {
                     gamespace.update(p5);
-                    if (gamespace.objects.players.length == 1) {
+                    if (gamespace.objects.players.length < 2) {
                         gamespace.freeze();
                         p5.noLoop();
                         p5.draw = void 0;
@@ -51,13 +51,16 @@ export const level = await (async () => {
                         winBanner.style.pointerEvents = "none";
                         winBanner.style.userSelect = "none";
                         winBanner.style.textAlign = "center";
-                        winBanner.innerHTML = `You ${gamespace.player.body ? "win!" : "lose."} Remaining HP: ${gamespace.objects.players[0].health}<br><span style="font-size: calc(200vw / 72)">${w[0][0]}/${w[0][1]} vs ${w[1][0]}/${w[1][1]}</span>`;
+                        winBanner.innerHTML = (gamespace.objects.players.length
+                            ? `You ${gamespace.player ? "win!" : "lose."} Remaining HP: ${gamespace.objects.players[0].health}`
+                            : `Stalemate; you all lose`) + `<br><span style="font-size: calc(200vw / 72)">${w[0][0]}/${w[0][1]} vs ${w[1][0]}/${w[1][1]}</span>`;
                         setTimeout(() => {
                             winBanner.innerHTML += `<br><span style="font-size: calc(180vw / 72)">Press Escape to restart.</span>`;
-                            document.addEventListener("keydown", e => {
+                            document.addEventListener("keydown", function exit(e) {
                                 if (e.key == "Escape") {
+                                    document.removeEventListener("keydown", exit);
                                     e.preventDefault();
-                                    gamespace.cleanUp(gamespace.p5, { clearEvents: true });
+                                    gamespace.cleanUp({ clearEvents: true });
                                     Array.from(document.body.children).forEach(n => n.remove());
                                     makeMenu(true);
                                 }
@@ -118,7 +121,7 @@ export const level = await (async () => {
                     makeElement("div", "player-weapon-secondary-cont")
                 ], buttons = [[], [], [], []], inputs = [];
                 for (let i = 0; i <= 1; i++) {
-                    const entity = levelData.players[1 - i];
+                    const entity = level.levelData.players[1 - i];
                     for (let h = 0; h <= 1; h++) {
                         const hCopy = h, s = memoryManager.getItem([...path, "weapon-presets", i ? "player" : "bot", `${h}`]);
                         if (s) {
@@ -219,7 +222,7 @@ export const level = await (async () => {
                     b.append(...buttons[i]);
                 });
                 const scopes = makeElement("div", "player-scope-cont"), preset = memoryManager.getItem([...path, "player-scope-pref"], "number") ?? 1;
-                levelData.players[0].view = ({
+                level.levelData.players[0].view = ({
                     1: 1330,
                     2: 1680,
                     4: 2359,
@@ -240,7 +243,7 @@ export const level = await (async () => {
                         Array.from(scopes.children).forEach(b => b.style.backgroundColor = b.style.borderColor = "");
                         button.style.borderColor = "#0F0";
                         button.style.backgroundColor = "#0108";
-                        levelData.players[0].view = ({
+                        level.levelData.players[0].view = ({
                             1: 1330,
                             2: 1680,
                             4: 2359,
