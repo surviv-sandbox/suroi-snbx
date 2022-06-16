@@ -77,7 +77,7 @@ class manager {
 
         const v = clone(o[key]);
 
-        return ({ string: String, number: Number, boolean: (x: unknown) => typeof x == "string" ? x != "false" : Boolean(x), none: <T>(x: T) => x })[coerce](v) as { string: string, number: number, boolean: boolean, none: JSONContent; }[T];
+        return ({ string: String, number: Number, boolean: (x: unknown) => typeof x == "string" ? x != "false" : Boolean(x), none: <T>(x: T) => x })[coerce as badCodeDesign](v) as { string: string, number: number, boolean: boolean, none: JSONContent; }[T];
     }
 
     /**
@@ -144,7 +144,7 @@ class manager {
     }
 
     #initialize() {
-        const s = localStorage.getItem("surviv_sandbox");
+        const s = localStorage.getItem("surviv_sandbox") ?? "";
 
         try {
             this.#cache = JSON.parse(s) ?? {};

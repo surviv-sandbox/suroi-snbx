@@ -35,14 +35,16 @@ function makeMenu(first: boolean) {
         if (!gamespace.levels.length) {
             play.disabled = true;
             play.style.opacity = "0.5";
+            play.style.pointerEvents = "none";
 
-            gamespace.events.addEventListener("levelsLoaded", (ev, ...args) => {
+            gamespace.events.addEventListener("levelsLoaded", () => {
+                play.style.pointerEvents = "";
                 play.disabled = false;
                 play.style.opacity = "";
             }, { once: true });
         }
 
-        (first ? document.body.appendChild(container) : $("menu-container")).append(
+        (first ? document.body.appendChild(container) : $("menu-container")!).append(
             title,
             play,
             settings,
@@ -57,16 +59,16 @@ function makeMenu(first: boolean) {
         nameField.addEventListener("keydown", e => e.key == "Enter" && nameField.blur());
 
         nameField.addEventListener("blur", () => {
-            gamespace.settings.name = nameField.textContent;
+            gamespace.settings.name = nameField.textContent as string;
             memoryManager.setItem("settings", gamespace.settings);
         });
 
         play.addEventListener("click", e => {
             if (!e.button) {
-                const menu = $("menu-container"),
+                const menu = $("menu-container") as HTMLDivElement,
                     back = makeElement("button", "back", "surviv-blue-button"),
                     can = makeElement("canvas", "levelsel-bg"),
-                    ctx = can.getContext("2d");
+                    ctx = can.getContext("2d") as CanvasRenderingContext2D;
 
                 Array.from(menu.children).forEach(e => e.remove());
                 $("settings-cont")?.remove();
@@ -111,7 +113,7 @@ function makeMenu(first: boolean) {
         // I'll have to re-do this when there are like, actual settings, but this'll do for now
         settings.addEventListener("click", e => void (!e.button && (() => {
             if ($("settings-cont")) {
-                return $("settings-cont").remove();
+                return $("settings-cont")!.remove();
             }
 
             const doc = new DocumentFragment(),

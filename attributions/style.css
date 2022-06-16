@@ -4,7 +4,7 @@ body {
     font-family: "jura", "Menlo", monospace;
 }
 
-table {
+table#assets {
     position: relative;
     top: 7vh;
     width: 100%;
@@ -77,9 +77,22 @@ p#attr {
     top: 7vh;
 }
 
+div#table-cont {
+    overflow: scroll;
+}
+
+table#frameworks {
+    width: max-content;
+}
+
+td.td-center {
+    text-align: center;
+}
+
 table,
 tr,
-td {
+td,
+thead {
     border: 1px solid #888;
 }
 

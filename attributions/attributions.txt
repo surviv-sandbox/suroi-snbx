@@ -11,9 +11,10 @@
 "pkp.png" taken and adapted from [Creator Kit](https://drive.google.com/drive/folders/1qhaDdNCsisBu_7gvMNmyn_zkG4kyAZix) (Renamed)
 "m4a1s.png" taken from [Creator Kit](https://drive.google.com/drive/folders/1qhaDdNCsisBu_7gvMNmyn_zkG4kyAZix) (Renamed)
 "p30l.png" taken from [Creator Kit](https://drive.google.com/drive/folders/1qhaDdNCsisBu_7gvMNmyn_zkG4kyAZix) (Renamed)
-"famas.png" taken from [Creator Kit](https://drive.google.com/drive/folders/1qhaDdNCsisBu_7gvMNmyn_zkG4kyAZix) (Renamed)
+"famas.png" taken from [surviv.io](https://surviv.io/guns/gun-famas-01.svg) (Renamed)
 "ots38.png" taken from [Creator Kit](https://drive.google.com/drive/folders/1qhaDdNCsisBu_7gvMNmyn_zkG4kyAZix) (Renamed)
-"m134.png" taken from [Creator Kit](https://drive.google.com/drive/folders/1qhaDdNCsisBu_7gvMNmyn_zkG4kyAZix) (Renamed)
+"m134.svg" taken from [surviv.io](https://surviv.io/img/guns/gun-m134-01.svg) (Renamed)
+"m79.png" taken from [surviv.io](https://surviv.io/img/guns/gun-m79-01.svg) (Renamed)
 "loot-weapon-ak.svg" taken from [surviv.io](https://surviv.io/img/loot/loot-weapon-ak.svg)
 "loot-weapon-mosin.svg" taken from [surviv.io](https://surviv.io/img/loot/loot-weapon-mosin.svg)
 "loot-weapon-m870.svg" taken from [surviv.io](https://surviv.io/img/loot/loot-weapon-m870.svg)
@@ -30,6 +31,7 @@
 "loot-weapon-ots38.svg" taken from [surviv.io](https://surviv.io/img/loot/loot-weapon-ots38.svg)
 "loot-weapon-ots38-dual.svg" taken from [surviv.io](https://surviv.io/img/loot/loot-weapon-ots38-dual.svg)
 "loot-weapon-m134.svg" taken from [surviv.io](https://surviv.io/img/loot/loot-weapon-m134.svg)
+"loot-weapon-m79.svg" taken from [surviv.io](https://surviv.io/img/loot/loot-weapon-m79.svg)
 "loot-scope-01.svg" taken from [surviv.io](https://surviv.io/img/loot/loot-scope-00.svg) (Renamed)
 "loot-scope-02.svg" taken from [surviv.io](https://surviv.io/img/loot/loot-scope-01.svg) (Renamed)
 "loot-scope-04.svg" taken from [surviv.io](https://surviv.io/img/loot/loot-scope-02.svg) (Renamed)
@@ -37,12 +39,15 @@
 "loot-scope-15.svg" taken from [surviv.io](https://surviv.io/img/loot/loot-scope-04.svg) (Renamed)
 "quit.svg" taken from [surviv.io](https://surviv.io/img/gui/quit.svg)
 "resume.svg" taken from [surviv.io](https://surviv.io/img/gui/resume.svg)
+"map-barrel-res-01.svg" taken from [surviv.io](https://surviv.io/img/map/map-barrel-res-01.svg)
 
 - Sources
 [surviv.io wiki](https://survivio.fandom.com/wiki/Surviv.io_Wiki)
 [Eyyy's weapon stats spreadsheet](https://docs.google.com/spreadsheets/d/1dbShn7L_RjX34mmiwP6W7at5XH8IXszsAgnJshx-cj8/edit)
 [This mini-paper about quickswitch and switch delays](https://github.com/surviv-underclock/docs)
 [surviv.io Official Creator Kit](https://drive.google.com/drive/folders/1qhaDdNCsisBu_7gvMNmyn_zkG4kyAZix)
+
+- Frameworks used
 
 - Special thanks
 Justin, Nick and Kongregate for creating and maintaining surviv.io.

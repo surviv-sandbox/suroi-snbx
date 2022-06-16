@@ -22,7 +22,9 @@ function makeMenu(first) {
         if (!gamespace.levels.length) {
             play.disabled = true;
             play.style.opacity = "0.5";
-            gamespace.events.addEventListener("levelsLoaded", (ev, ...args) => {
+            play.style.pointerEvents = "none";
+            gamespace.events.addEventListener("levelsLoaded", () => {
+                play.style.pointerEvents = "";
                 play.disabled = false;
                 play.style.opacity = "";
             }, { once: true });

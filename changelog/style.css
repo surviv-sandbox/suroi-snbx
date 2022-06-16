@@ -45,21 +45,40 @@ p#main {
     position: absolute;
     color: white;
     font-family: jura;
-    font-size: calc(10vw / 9);
+    font-size: calc(15vh / 9);
     width: 87.5%;
     margin: 0 2.5% 0 10%;
     top: 10%;
 }
 
-a {
+title {
+    position: absolute;
+    display: block;
+    color: white;
+    font-family: jura;
+    font-size: calc(45vh / 9);
+    left: 50%;
+    top: 3%;
+    transform: translate(-50%, 0);
+}
+
+h2 {
+    margin: calc(20vh / 9) 0 0 0;
+}
+
+h3 {
+    margin: 0;
+}
+
+a:not([class="no-style"]) {
     color: rgb(117, 165, 255);
 }
 
-a:hover {
+a:not([class="no-style"]):hover {
     color: hsl(356, 100%, 73%);
 }
 
-a:visited {
+a:not([class="no-style"]):visited {
     color: hsl(309, 100%, 73%);
 }
 

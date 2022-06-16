@@ -2,6 +2,7 @@ class uiManager {
     static #initialized = false;
     #elements = [];
     get elements() { return Object.values(this.#elements).map(e => e.name); }
+    #core = [];
     constructor() {
         if (uiManager.#initialized) {
             throw new Error(`uiManager already initialized.`);
@@ -14,10 +15,15 @@ class uiManager {
                 i.create?.($("ui-container"));
             }
         });
-        this.#elements.push(...items.map(i => (delete i.callCreateImmediately, i)));
+        const itemsMapped = items.map(i => (delete i.callCreateImmediately, i));
+        this.#elements.push(...itemsMapped);
+        this.#core.push(...itemsMapped.filter(v => v.core));
     }
     remove(item) {
         this.#elements = this.#elements.filter(e => e.name != item);
+    }
+    clear() {
+        this.#elements = [...this.#core.map(v => ({ ...v }))];
     }
     create() {
         const p = gamespace.player;
@@ -55,6 +61,7 @@ ui.add({
             resAmmo.textContent = "∞";
         }
     },
+    core: true
 }, {
     name: "HP",
     create(container) {
@@ -81,6 +88,7 @@ ui.add({
             bar.style.backgroundColor = "#FFF";
         }
     },
+    core: true
 }, {
     name: "reloading",
     update(p, i) {
@@ -117,6 +125,7 @@ ui.add({
             $("ui-reload-cont")?.remove?.();
         }
     },
+    core: true
 }, {
     name: "killfeed",
     update(p, i) {
@@ -151,4 +160,5 @@ ui.add({
             $("killfeed-container")?.remove?.();
         }
     },
+    core: true
 });

@@ -7,6 +7,27 @@ declare type JSONObject = {
 declare type JSONArray = JSONObject["string"][];
 declare type JSONContent = JSONValue | JSONObject | JSONArray;
 declare type timestamp = number;
+declare type badCodeDesign = any;
+declare type hexColor = `#${string}`;
+declare type RGBColor = [number, number, number];
+declare type RGBAColor = [number, number, number, number];
+declare type HSLColor = {
+    hue: number;
+    saturation: number;
+    luminosity: number;
+};
+declare type HSBColor = {
+    hue: number;
+    saturation: number;
+    brightness: number;
+};
+declare type HSLAColor = HSLColor & {
+    alpha: number;
+};
+declare type HSBAColor = HSBColor & {
+    alpha: number;
+};
+declare type colorModes = hexColor | RGBColor | RGBAColor | HSLColor | HSLAColor | HSBColor | HSBAColor;
 declare type JSONLevel = {
     obstacles: (({
         type: "rectangle";
@@ -84,7 +105,7 @@ declare const generateId: Generator<number, never, unknown>;
 declare function loadImg(path: string): import("p5").Image;
 declare function loadFnt(path: string): import("p5").Font;
 declare function makeElement<K extends keyof HTMLElementTagNameMap>(tag: K, id?: string, className?: string): HTMLElementTagNameMap[K];
-declare function sqauredDist(ptA: {
+declare function squaredDist(ptA: {
     x: number;
     y: number;
 }, ptB: {
@@ -176,6 +197,7 @@ declare type JSONGun = {
     suppressed: boolean;
     caliber: string;
     firingDelay: timeModes;
+    deployGroup: number;
     accuracy: {
         default: angleModes;
         moving: angleModes;
@@ -188,7 +210,7 @@ declare type JSONGun = {
     dimensions: {
         width: scaleOrAbsolute;
         height: scaleOrAbsolute;
-        above: boolean;
+        layer: 0 | 1 | 2;
     };
     reload: {
         duration: timeModes;
@@ -233,20 +255,38 @@ declare type ammoData = {
     tints: {
         normal: string;
         saturated: string;
+        saturated_alt?: string;
         chambered: string;
+    };
+    alpha: {
+        rate: number;
+        min: number;
+        max: number;
     };
     spawnVar: {
         mean: number;
         variation: number;
         plusOrMinus: boolean;
     };
+    imageOffset: {
+        parr: number;
+        perp: number;
+    };
+    projectileInfo: ({
+        type: "explosive";
+        explosionType: string;
+        explodeOnContact: boolean;
+        maxDist: scaleOrAbsolute;
+        heightPeak: number;
+    } | {
+        type: "bullet";
+    }) & {
+        img: string;
+        spinVel?: angleModes;
+    };
     casing: {
         img: string;
-        despawnDist: {
-            mean: number;
-            variation: number;
-            plusOrMinus: boolean;
-        };
+        lifetime: timeModes & variataion;
         width: number;
         height: number;
     };
@@ -261,15 +301,36 @@ declare function parseAmmoData(data: {
             saturated_alt?: string;
             chambered: string;
         };
+        alpha: {
+            rate: number;
+            min: number;
+            max: number;
+        };
         spawnVar: {
             mean: number;
             variation: number;
             plusOrMinus: boolean;
         };
+        imageOffset: {
+            parr: number;
+            perp: number;
+        };
+        projectileInfo: ({
+            type: "explosive";
+            explosionType: string;
+            explodeOnContact: boolean;
+            maxDist: number;
+            heightPeak: number;
+        } | {
+            type: "bullet";
+        }) & {
+            img: import("p5").Image;
+            spinVel: number;
+        };
         casing: {
             img: import("p5").Image;
-            despawnDist: {
-                mean: number;
+            lifetime: {
+                value: number;
                 variation: number;
                 plusOrMinus: boolean;
             };
@@ -278,10 +339,92 @@ declare function parseAmmoData(data: {
         };
     };
 };
+declare type explosionData = {
+    damage: number;
+    obstacleMult: number;
+    radii: {
+        visual: {
+            min: scaleOrAbsolute;
+            max: scaleOrAbsolute;
+        };
+        damage: {
+            min: scaleOrAbsolute;
+            max: scaleOrAbsolute;
+        };
+    };
+    lifetime: timeModes;
+    color: colorModes;
+    decal: {
+        img: string;
+        width: scaleOrAbsolute;
+        height: scaleOrAbsolute;
+        tint: colorModes;
+    };
+    shrapnel: {
+        count: number;
+        damage: number;
+        color: colorModes;
+        img: string;
+        velocity: scaleOrAbsolute;
+        range: scaleOrAbsolute & variataion;
+        falloff: number;
+        tracer: {
+            width: scaleOrAbsolute;
+            height: scaleOrAbsolute;
+        };
+    };
+};
+declare function parseExplosionData(data: {
+    [key: string]: explosionData;
+}): {
+    [key: string]: {
+        damage: number;
+        obstacleMult: number;
+        radii: {
+            visual: {
+                min: number;
+                max: number;
+            };
+            damage: {
+                min: number;
+                max: number;
+            };
+        };
+        lifetime: number;
+        color: [number, number, number];
+        decal: {
+            img: import("p5").Image;
+            width: number;
+            height: number;
+            tint: `#${string}`;
+        };
+        shrapnel: {
+            count: number;
+            damage: number;
+            color: `#${string}`;
+            img: import("p5").Image;
+            velocity: number;
+            range: {
+                value: number;
+                variation: {
+                    value: number;
+                    plusOrMinus: boolean;
+                };
+            };
+            falloff: number;
+            tracer: {
+                width: number;
+                height: number;
+            };
+        };
+    };
+};
 declare function $(ele: string): HTMLElement | null;
 declare function average(options: {
     useNativeMath: boolean;
 }, ...args: Decimal.Value[]): number | import("./libraries/decimaljs/decimal.global").default;
+declare function toMS(val: timeModes): number;
+declare function toRad(val: angleModes): number;
 declare function stdDev(options: {
     useNativeMath: boolean;
 }, ...arr: Decimal.Value[]): number | import("./libraries/decimaljs/decimal.global").default;
@@ -290,10 +433,10 @@ declare function checkBounds(value: Decimal | number, lowerBound: Decimal | numb
         lower?: boolean;
         upper?: boolean;
     };
-    useNativeMath?: boolean;
+    useNativeMath: boolean;
 }): boolean;
 declare function clamp(value: Decimal.Value, min?: Decimal.Value, max?: Decimal.Value, options?: {
-    useNativeMath?: boolean;
+    useNativeMath: boolean;
 }): number | import("./libraries/decimaljs/decimal.global").default;
 declare function normalizeAngle(a: Decimal.Value, options?: {
     useNativeMath?: boolean;
@@ -306,5 +449,73 @@ declare function clone<T extends JSONContent>(object: T): T;
 declare function overrideObject<T extends JSONObject, U extends JSONObject>(o1: Extract<T, U> & Partial<T>, o2: Extract<T, U> & Partial<U>): Extract<T, U> & Partial<T>;
 declare function getDecimalPlaces(n: number | Decimal): number;
 declare function sliceToDecimalPlaces(number: number | Decimal, decimalPlaces: number): number;
+declare function sigFigIshMult(a: number, b: number): number;
 declare const getRenderDistFromView: (view: number) => number;
+declare function hexToRGB(hex: hexColor, options?: {
+    useNativeMath: boolean;
+}): RGBAColor;
+declare function RGBToHex(rgb: RGBAColor, options?: {
+    useNativeMath: boolean;
+}): hexColor;
+declare function hexToHSL(hex: hexColor, options?: {
+    useNativeMath: boolean;
+}): {
+    hue: number;
+    saturation: number;
+    luminosity: number;
+    alpha: number;
+};
+declare function RGBToHSL(rgb: RGBAColor, options?: {
+    useNativeMath: boolean;
+}): {
+    hue: number;
+    saturation: number;
+    luminosity: number;
+    alpha: number;
+};
+declare function HSLToRGB(hsl: {
+    hue: number;
+    saturation: number;
+    luminosity: number;
+    alpha?: number;
+}, options: {
+    useNativeMath: boolean;
+}): RGBAColor;
+declare function HSLToHex(hsl: HSLAColor, options?: {
+    useNativeMath: boolean;
+}): `#${string}`;
+declare function HSBToRGB(hsb: HSBAColor, options?: {
+    useNativeMath: boolean;
+}): RGBAColor;
+declare function HSBToHex(hsb: HSBAColor, options?: {
+    useNativeMath: boolean;
+}): `#${string}`;
+declare function HSLToHSB(hsl: HSLAColor, options?: {
+    useNativeMath: boolean;
+}): HSBAColor;
+declare function HSBToHSL(hsb: HSBAColor, options?: {
+    useNativeMath: boolean;
+}): HSLAColor;
+declare function parseColor(color: string): {
+    type: `rgb${"a" | ""}`;
+    value: RGBAColor;
+} | {
+    type: `hsl${"a" | ""}`;
+    value: HSLAColor;
+} | {
+    type: `hsb${"a" | ""}`;
+    value: HSBAColor;
+} | {
+    type: "hex";
+    value: hexColor;
+} | {
+    type: "keyword";
+    value: string;
+};
+declare function toRGB(color: colorModes, options?: {
+    useNativeMath: boolean;
+}): RGBAColor;
+declare function toHex(color: colorModes, options?: {
+    useNativeMath: boolean;
+}): `#${string}`;
 declare function loadJSONBasedGamespaceFields(): Promise<void>;

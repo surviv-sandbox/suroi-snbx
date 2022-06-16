@@ -1,4 +1,17 @@
-<h2>v0.0.1 (build 07-06-2022)</h2>
+<h2>v0.6.0</h2>
+<h3>June 15<sup>th</sup> 2022</h3>
+
+<ul>
+<li> Adjusted tracer opacity for suppressed weapons
+<li> Adjusted casing spawns
+<li> Changed some animation values (recoil impulse lengths and magnitudes)
+<li> Retroactively renamed all versions to comply with the <a href="https://semver.org">SemVer</a> (Semantic Versioning) specification
+<li> Made the changelog prettier
+<li> Fixed some bad links on the attributions page
+<li> Fixed a bug with shooting at an invalid time
+</ul>
+
+<h2>v0.5.1</h2>
 <h3>June 7<sup>th</sup> 2022</h3>
 
 <ul>
@@ -10,7 +23,7 @@
 <li> Fixed a bug where levels' event listeners weren't being cleaned up properly
 </ul>
 
-<h2>v0.0.1 (build 06-06-2022)</h2>
+<h2>v0.5.0</h2>
 <h3>June 6<sup>th</sup> 2022</h3>
 
 <ul>
@@ -22,7 +35,7 @@
 <li> Minor styling updates
 </ul>
 
-<h2>v0.0.1 (build 06-01-2022)</h2>
+<h2>v0.4.0</h2>
 <h3>June 1<sup>st</sup> 2022</h3>
 
 <ul>
@@ -44,7 +57,7 @@
 <li> Headshot kills are indicated with a red glow in the alternate killfeed
 </ul>
 
-<h2>v0.0.1 (build 05-29-2022)</h2>
+<h2>v0.3.0</h2>
 <h3>May 29<sup>th</sup> 2022</h3>
 
 <ul>
@@ -58,7 +71,7 @@
 <li> Added support for mouse wheel key binds
 </ul>
 
-<h2>v0.0.1 (build 05-25-2022)</h2>
+<h2>v0.2.0</h2>
 <h3>May 25<sup>th</sup> 2022</h3>
 
 <ul>
@@ -77,8 +90,8 @@
 <li> Option to disable AI added
 </ul>
 
-<h2>v0.0.1 (build 05-24-2022)</h2>
-<h3>May 24<sup>rd</sup> 2022</h3>
+<h2>v0.1.0</h2>
+<h3>May 24<sup>th</sup> 2022</h3>
 
 <ul>
 <li> Changelog created

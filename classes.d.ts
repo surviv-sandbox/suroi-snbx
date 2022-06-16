@@ -1,10 +1,11 @@
+/// <reference types="p5" />
 declare class obstacle {
     #private;
     get body(): Matter.Body;
     events: customEvent;
     image: import("p5").Image;
-    imageWidth: number;
-    imageHeight: number;
+    width: number;
+    height: number;
     tint: string;
     angle: number;
     layer: number;
@@ -22,6 +23,25 @@ declare class obstacle {
         y: number;
         angle: number;
     }, imageMode: import("p5").IMAGE_MODE);
+    draw(): void;
+}
+declare class decal {
+    image: import("p5").Image;
+    width: number;
+    height: number;
+    tint: string;
+    angle: number;
+    position: {
+        x: number;
+        y: number;
+    };
+    constructor(angle: number, image: import("p5").Image, dimensions: {
+        width: number;
+        height: number;
+    }, tint: string, position: {
+        x: number;
+        y: number;
+    });
     draw(): void;
 }
 declare class playerLike {
@@ -84,6 +104,7 @@ declare class playerLike {
     destroy(): void;
     move(w: boolean, a: boolean, s: boolean, d: boolean): void;
     switchSlots(index: 0 | 1): void;
+    damage(amount: number, source: bullet | explosion | shrapnel): void;
 }
 declare class player extends playerLike {
     constructor(body: Matter.Body, angle: number, health: number, loadout: {
@@ -120,17 +141,17 @@ declare class gunPrototype {
     dual: boolean;
     images: {
         loot: {
-            img: import("p5").Image;
+            img: import("p5").Image | void;
             src: string | false;
-        };
+        } | void;
         held: {
-            img: import("p5").Image;
+            img: import("p5").Image | void;
             src: string | false;
-        };
+        } | void;
         silhouette: {
-            img: import("p5").Image;
+            img: import("p5").Image | void;
             src: string | false;
-        };
+        } | void;
     };
     ballistics: {
         damage: number;
@@ -159,7 +180,7 @@ declare class gunPrototype {
     dimensions: {
         width: number;
         height: number;
-        above: boolean;
+        layer: 0 | 1 | 2;
     };
     switchDelay: number;
     hands: {
@@ -237,6 +258,7 @@ declare class gunPrototype {
         active: number;
         firing: number;
     };
+    deployGroup: number;
     constructor(name: string, summary: {
         class: string;
         engagementDistance: {
@@ -247,17 +269,17 @@ declare class gunPrototype {
         role: "primary" | "secondary";
     }, dual: boolean, images: {
         loot: {
-            img: import("p5").Image;
+            img: import("p5").Image | void;
             src: string | false;
-        };
+        } | void;
         held: {
-            img: import("p5").Image;
+            img: import("p5").Image | void;
             src: string | false;
-        };
+        } | void;
         silhouette: {
-            img: import("p5").Image;
+            img: import("p5").Image | void;
             src: string | false;
-        };
+        } | void;
     }, tint: string, ballistics: {
         damage: number;
         velocity: number;
@@ -280,7 +302,7 @@ declare class gunPrototype {
     }, dimensions: {
         width: number;
         height: number;
-        above: boolean;
+        layer: 0 | 1 | 2;
     }, hands: {
         lefthand: {
             x: number;
@@ -310,7 +332,7 @@ declare class gunPrototype {
     }, switchDelay: number, casing: typeof gunPrototype.prototype.casing, moveSpeedPenalties: {
         active: number;
         firing: number;
-    }, altReload?: {
+    }, deployGroup: number, altReload?: {
         duration: number;
         ammoReloaded: number | "all";
         chain: boolean;
@@ -337,21 +359,180 @@ declare class bullet {
     get shooter(): playerLike;
     get emitter(): gunPrototype;
     get angle(): number;
+    get trajectory(): number;
     get start(): {
         x: number;
         y: number;
     };
     get created(): number;
-    get length(): number;
     get crit(): boolean;
-    squaredDistance: number;
+    get alpha(): number;
+    get info(): {
+        tints: {
+            normal: string;
+            saturated: string;
+            saturated_alt?: string;
+            chambered: string;
+        };
+        alpha: {
+            rate: number;
+            min: number;
+            max: number;
+        };
+        spawnVar: {
+            mean: number;
+            variation: number;
+            plusOrMinus: boolean;
+        };
+        imageOffset: {
+            parr: number;
+            perp: number;
+        };
+        projectileInfo: ({
+            type: "explosive";
+            explosionType: string;
+            explodeOnContact: boolean;
+            maxDist: number;
+            heightPeak: number;
+        } | {
+            type: "bullet";
+        }) & {
+            img: import("p5").Image;
+            spinVel: number;
+        };
+        casing: {
+            img: import("p5").Image;
+            lifetime: {
+                value: number;
+                variation: number;
+                plusOrMinus: boolean;
+            };
+            width: number;
+            height: number;
+        };
+    };
+    get type(): "explosive" | "bullet";
+    get sqauredDistance(): number;
+    get damage(): number;
     constructor(body: Matter.Body, shooter: playerLike, emitter: gunPrototype, angle: number, start: {
         x: number;
         y: number;
-    }, created: number, length: number, crit: boolean);
+    }, created: number, crit: boolean, type: typeof bullet.prototype.type);
     update(): void;
     draw(): void;
     destroy(): void;
+}
+declare class shrapnel {
+    #private;
+    get body(): Matter.Body;
+    get shooter(): playerLike;
+    get emitter(): gunPrototype;
+    get angle(): number;
+    get trajectory(): number;
+    get origin(): {
+        x: number;
+        y: number;
+    };
+    get start(): {
+        x: number;
+        y: number;
+    };
+    get created(): number;
+    get crit(): boolean;
+    get range(): number;
+    get info(): {
+        count: number;
+        damage: number;
+        color: `#${string}`;
+        img: import("p5").Image;
+        velocity: number;
+        range: {
+            value: number;
+            variation: {
+                value: number;
+                plusOrMinus: boolean;
+            };
+        };
+        falloff: number;
+        tracer: {
+            width: number;
+            height: number;
+        };
+    };
+    get sqauredDistance(): number;
+    get damage(): number;
+    constructor(body: Matter.Body, shooter: playerLike, emitter: gunPrototype, angle: number, origin: {
+        x: number;
+        y: number;
+    }, start: {
+        x: number;
+        y: number;
+    }, created: number, crit: boolean);
+    update(): void;
+    draw(): void;
+    destroy(): void;
+}
+declare class explosion {
+    #private;
+    get origin(): {
+        x: number;
+        y: number;
+    };
+    get createdAt(): number;
+    get shooter(): playerLike;
+    get emitter(): gunPrototype;
+    get crit(): boolean;
+    get damage(): number;
+    get id(): number;
+    get info(): {
+        damage: number;
+        obstacleMult: number;
+        radii: {
+            visual: {
+                min: number;
+                max: number;
+            };
+            damage: {
+                min: number;
+                max: number;
+            };
+        };
+        lifetime: number;
+        color: [number, number, number];
+        decal: {
+            img: import("p5").Image;
+            width: number;
+            height: number;
+            tint: `#${string}`;
+        };
+        shrapnel: {
+            count: number;
+            damage: number;
+            color: `#${string}`;
+            img: import("p5").Image;
+            velocity: number;
+            range: {
+                value: number;
+                variation: {
+                    value: number;
+                    plusOrMinus: boolean;
+                };
+            };
+            falloff: number;
+            tracer: {
+                width: number;
+                height: number;
+            };
+        };
+    };
+    get steps(): number;
+    get alpha(): number;
+    constructor(origin: {
+        x: number;
+        y: number;
+    }, shooter: playerLike, emitter: gunPrototype, crit: boolean);
+    update(): void;
+    draw(): void;
 }
 declare class casing {
     #private;
@@ -359,6 +540,7 @@ declare class casing {
     get emitter(): gunPrototype;
     get angle(): number;
     get trajectory(): number;
+    get lifetime(): number;
     get start(): {
         x: number;
         y: number;
@@ -383,7 +565,7 @@ declare class casing {
 }
 interface listener {
     event: string;
-    callback: (this: customEvent, event?: Event, ...args: any[]) => any;
+    callback: (this: customEvent, event: Event, ...args: any[]) => any;
     name: string;
     once?: boolean;
 }
@@ -392,7 +574,7 @@ declare class customEvent {
     get listenerCount(): number;
     get listeners(): {
         event: string;
-        callback: (this: customEvent, event?: Event, ...args: any[]) => any;
+        callback: (this: customEvent, event: Event, ...args: any[]) => any;
         name: string;
         once?: boolean;
     }[];
@@ -417,15 +599,36 @@ declare const gamespace: {
                 saturated_alt?: string;
                 chambered: string;
             };
+            alpha: {
+                rate: number;
+                min: number;
+                max: number;
+            };
             spawnVar: {
                 mean: number;
                 variation: number;
                 plusOrMinus: boolean;
             };
+            imageOffset: {
+                parr: number;
+                perp: number;
+            };
+            projectileInfo: ({
+                type: "explosive";
+                explosionType: string;
+                explodeOnContact: boolean;
+                maxDist: number;
+                heightPeak: number;
+            } | {
+                type: "bullet";
+            }) & {
+                img: import("p5").Image;
+                spinVel: number;
+            };
             casing: {
                 img: import("p5").Image;
-                despawnDist: {
-                    mean: number;
+                lifetime: {
+                    value: number;
                     variation: number;
                     plusOrMinus: boolean;
                 };
@@ -452,7 +655,7 @@ declare const gamespace: {
             width: number;
             height: number;
             color: string;
-            gridColor: `#${string}`;
+            gridColor: hexColor;
         };
     };
     created: timestamp;
@@ -461,6 +664,49 @@ declare const gamespace: {
     deltaTime: number;
     engine: Matter.Engine;
     events: customEvent;
+    explosionInfo: {
+        [key: string]: {
+            damage: number;
+            obstacleMult: number;
+            radii: {
+                visual: {
+                    min: number;
+                    max: number;
+                };
+                damage: {
+                    min: number;
+                    max: number;
+                };
+            };
+            lifetime: number;
+            color: [number, number, number];
+            decal: {
+                img: import("p5").Image;
+                width: number;
+                height: number;
+                tint: hexColor;
+            };
+            shrapnel: {
+                count: number;
+                damage: number;
+                color: hexColor;
+                img: import("p5").Image;
+                velocity: number;
+                range: {
+                    value: number;
+                    variation: {
+                        value: number;
+                        plusOrMinus: boolean;
+                    };
+                };
+                falloff: number;
+                tracer: {
+                    width: number;
+                    height: number;
+                };
+            };
+        };
+    };
     fonts: {
         [key: string]: {
             src: string;
@@ -501,11 +747,11 @@ declare const gamespace: {
             width: number;
             height: number;
             color: string;
-            gridColor: `#${string}`;
+            gridColor: hexColor;
         };
     }[];
     objects: {
-        bullets: bullet[];
+        bullets: (bullet | shrapnel)[];
         casings: casing[];
         damageNumbers: {
             amount: number;
@@ -522,6 +768,8 @@ declare const gamespace: {
             };
             targetId: number;
         }[];
+        decals: decal[];
+        explosions: explosion[];
         obstacles: obstacle[];
         players: playerLike[];
     };

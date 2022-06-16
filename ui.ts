@@ -1,12 +1,17 @@
+interface uiElement {
+    readonly name: string;
+    readonly create?: ((uiContainer: HTMLDivElement) => void);
+    readonly update?: ((player: playerLike, activeItem: gun) => void);
+    readonly core?: boolean;
+}
+
 class uiManager {
     static #initialized = false;
 
-    #elements: {
-        readonly name: string,
-        readonly create?: ((uiContainer: HTMLDivElement) => void),
-        readonly update?: ((player: playerLike, activeItem: gun) => void);
-    }[] = [];
+    #elements: uiElement[] = [];
     get elements() { return Object.values(this.#elements).map(e => e.name); }
+
+    #core: (uiElement & { core: true; })[] = [];
 
     constructor() {
         if (uiManager.#initialized) {
@@ -16,22 +21,23 @@ class uiManager {
         uiManager.#initialized = true;
     }
 
-    add(...items: {
-        readonly name: string,
-        readonly create?: ((uiContainer: HTMLDivElement) => void),
-        readonly update?: ((player: playerLike, activeItem: gun) => void),
-        callCreateImmediately?: boolean;
-    }[]) {
+    add(...items: (uiElement & { callCreateImmediately?: boolean; })[]) {
         items.forEach(i => {
             if (i.callCreateImmediately) {
                 i.create?.($("ui-container") as HTMLDivElement);
             }
         });
 
-        this.#elements.push(...items.map(i => (delete i.callCreateImmediately, i)));
+        const itemsMapped = items.map(i => (delete i.callCreateImmediately, i)) as uiElement[];
+
+        this.#elements.push(...itemsMapped);
+        this.#core.push(...itemsMapped.filter(v => v.core as boolean) as badCodeDesign);
     }
     remove(item: string) {
         this.#elements = this.#elements.filter(e => e.name != item);
+    }
+    clear() {
+        this.#elements = [...this.#core.map(v => ({ ...v }))];
     }
     create() {
         const p = gamespace.player;
@@ -66,8 +72,8 @@ ui.add(
             container.appendChild(cont).append(ammo, resAmmo);
         },
         update(p, i) {
-            const ammo = $("ui-ammo-counter-main"),
-                resAmmo = $("ui-ammo-counter-res");
+            const ammo = $("ui-ammo-counter-main") as HTMLDivElement,
+                resAmmo = $("ui-ammo-counter-res") as HTMLDivElement;
 
             if (!i) {
                 ammo.style.display = resAmmo.style.display = "none";
@@ -79,6 +85,7 @@ ui.add(
                 resAmmo.textContent = "∞";
             }
         },
+        core: true
     },
     {
         name: "HP",
@@ -94,8 +101,8 @@ ui.add(
             container.appendChild(doc);
         },
         update(p: playerLike) {
-            const lag = $("ui-hp-bar-lag"),
-                bar = $("ui-hp-bar"),
+            const lag = $("ui-hp-bar-lag") as HTMLDivElement,
+                bar = $("ui-hp-bar") as HTMLDivElement,
                 percent = p.health == Infinity ? 100 : Math.max(0, 100 * p.health / p.maxHealth);
 
             lag.style.width = bar.style.width = `${percent}%`;
@@ -112,6 +119,7 @@ ui.add(
                 bar.style.backgroundColor = "#FFF";
             }
         },
+        core: true
     },
     {
         name: "reloading",
@@ -126,11 +134,11 @@ ui.add(
 
                     text.textContent = "Reloading";
 
-                    $("ui-container").appendChild(cont).append(canvas, text);
+                    $("ui-container")!.appendChild(cont).append(canvas, text);
                 }
 
                 const can = $("ui-reload-spin") as HTMLCanvasElement,
-                    ctx = can.getContext("2d");
+                    ctx = can.getContext("2d") as CanvasRenderingContext2D;
 
                 ctx.clearRect(0, 0, 850, 850);
 
@@ -142,7 +150,7 @@ ui.add(
                 ctx.beginPath();
                 ctx.lineWidth = 70;
                 ctx.strokeStyle = "#FFF";
-                ctx.arc(425, 425, 390, -Math.PI / 2, ((gamespace._currentUpdate - p.state.reloading as number) / i.proto[i.proto.altReload && !i.ammo ? "altReload" : "reload"].duration) * 2 * Math.PI - Math.PI / 2);
+                ctx.arc(425, 425, 390, -Math.PI / 2, ((gamespace._currentUpdate - p.state.reloading as number) / i.proto[i.proto.altReload && !i.ammo ? "altReload" : "reload"]!.duration) * 2 * Math.PI - Math.PI / 2);
                 ctx.stroke();
 
                 ctx.beginPath();
@@ -155,7 +163,7 @@ ui.add(
 
 
                 const a = gamespace.player.inventory.activeItem,
-                    t = Math.round((a.proto[`${a.proto.altReload && !a.ammo ? "altR" : "r"}eload`].duration - (gamespace._currentUpdate - p.state.reloading)) / 100) / 10,
+                    t = Math.round((a.proto[`${a.proto.altReload && !a.ammo ? "altR" : "r"}eload`!].duration - (gamespace._currentUpdate - p.state.reloading)) / 100) / 10,
                     s = t % 1 ? `${t}` : `${t}.0`;
                 ctx.strokeText(s, 425, 600);
                 ctx.fillText(s, 425, 600);
@@ -163,6 +171,7 @@ ui.add(
                 $("ui-reload-cont")?.remove?.();
             }
         },
+        core: true
     },
     {
         name: "killfeed",
@@ -171,7 +180,7 @@ ui.add(
                 if (!$("killfeed-container")) {
                     const cont = makeElement("div", "killfeed-container");
 
-                    $("ui-container").appendChild(cont);
+                    $("ui-container")!.appendChild(cont);
                 }
 
                 gamespace.kills.filter(k => gamespace._currentUpdate - k.timestamp > 2000).forEach(k => $(`killfeed-kill-${k.id}`)?.remove?.());
@@ -185,7 +194,7 @@ ui.add(
 
                     if (!$(`killfeed-kill-${k.id}`)) {
                         if (gamespace.settings.bonus_features.csgo_style_killfeed) {
-                            p.innerHTML = `${k.killer}&nbsp;&nbsp;&nbsp;<img src="${gamespace.guns.find(g => g.name == k.weapon).images.silhouette.src}" class="killfeed-image"${k.crit ? ` style="background: content-box radial-gradient(#f00, transparent);"` : ""}/>&nbsp;&nbsp;&nbsp;${k.killed}`;
+                            p.innerHTML = `${k.killer}&nbsp;&nbsp;&nbsp;<img src="${(gamespace.guns.find(g => g.name == k.weapon)!.images.silhouette as { src: string; }).src}" class="killfeed-image"${k.crit ? ` style="background: content-box radial-gradient(#f00, transparent);"` : ""}/>&nbsp;&nbsp;&nbsp;${k.killed}`;
 
                             p.style.backgroundColor = k.killed == gamespace.settings.name ? "#8008" : "";
                             p.style.outline = k.killer == gamespace.settings.name ? "calc(2vh / 9) solid #C00" : "";
@@ -202,10 +211,11 @@ ui.add(
                     p.style.opacity = `${gamespace._currentUpdate - k.timestamp >= 1250 ? 1 - (((gamespace._currentUpdate - k.timestamp) - 1250) / 750) : 1}`;
                 });
 
-                $("killfeed-container").appendChild(doc);
+                $("killfeed-container")!.appendChild(doc);
             } else {
                 $("killfeed-container")?.remove?.();
             }
         },
+        core: true
     }
 );

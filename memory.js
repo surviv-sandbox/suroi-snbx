@@ -119,7 +119,7 @@ class manager {
         this.#cache = {};
     }
     #initialize() {
-        const s = localStorage.getItem("surviv_sandbox");
+        const s = localStorage.getItem("surviv_sandbox") ?? "";
         try {
             this.#cache = JSON.parse(s) ?? {};
         }

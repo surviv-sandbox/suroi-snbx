@@ -76,13 +76,13 @@ const perf: {
             logger.style.userSelect = "none";
 
             logger.innerHTML = `${`<span style="background-color: #00F2">TPS: 0<br>AVG: 0 ± 0</span>`.repeat(+!!tpsMode)}${"<br><br>".repeat(+!!((tpsMode as number) + (fpsMode as number)))}${`<span style="background-color: #FF02">FPS: 0<br>AVG: 0 ± 0</span>`.repeat(+!!fpsMode)}`;
-            $("debug-div").appendChild(logger);
+            $("debug-div")!.appendChild(logger);
             return logger;
         }
 
         function createGraph(div: HTMLDivElement) {
             const g = makeElement("canvas", "perf-graph"),
-                gx = g.getContext("2d");
+                gx = g.getContext("2d") as CanvasRenderingContext2D;
 
             g.style.pointerEvents = "none";
             g.style.position = "absolute";
@@ -122,23 +122,23 @@ const perf: {
                 const crt = +(perf._data.ticks < perf.config.critical_tickrate),
                     crf = +(perf._data.frames < perf.config.critical_framerate),
                     tickrate = `<span style="background-color: #00F2">TPS: ${crt ? `<span class="critical">` : ""}${perf._data.ticks}${crt ? "</span>" : ""}`,
-                    aT = +average(void 0, ...perf._data.tps),
-                    sT = +stdDev(void 0, ...perf._data.tps),
+                    aT = +average((void 0)!, ...perf._data.tps),
+                    sT = +stdDev((void 0)!, ...perf._data.tps),
                     avgT = `AVG: ${Math.round(100 * aT) / 100} ± ${Math.round(100 * sT) / 100}</span>`,
                     framerate = `<span style="background-color: #FF02">FPS: ${crf ? `<span class="critical">` : ""}${perf._data.frames}${crf ? "</span>" : ""}`,
-                    aF = +average(void 0, ...perf._data.fps),
-                    sF = +stdDev(void 0, ...perf._data.fps),
+                    aF = +average((void 0)!, ...perf._data.fps),
+                    sF = +stdDev((void 0)!, ...perf._data.fps),
                     avgF = `AVG: ${Math.round(100 * aF) / 100} ± ${Math.round(100 * sF) / 100}</span>`;
 
                 logging.innerHTML = `${`${tickrate}<br>${avgT}`.repeat(+!!perf.mode.tps)}${"<br>".repeat(2 * +!!(perf.mode.tps * perf.mode.fps))}${`${framerate}<br>${avgF}`.repeat(+!!perf.mode.fps)}`;
                 if (perf.mode.tps == 2 || perf.mode.fps == 2) {
                     const g = $("perf-graph") as HTMLCanvasElement,
-                        gx = g.getContext("2d"),
+                        gx = g.getContext("2d") as CanvasRenderingContext2D,
                         max = Math.max(...perf._data.tps, ...perf._data.fps),
                         lt = perf._data.tps.length,
                         lf = perf._data.fps.length,
-                        grdt = perf.mode.tps == 2 ? gx.createLinearGradient(0, g.height - (g.height * 2 * (perf.config.critical_tickrate / (1.5 * (max || 1)))), 0, g.height - (g.height * (perf.config.critical_tickrate / (1.5 * (max || 1))))) : void 0,
-                        grdf = perf.mode.fps == 2 ? gx.createLinearGradient(0, g.height - (g.height * 2 * (perf.config.critical_framerate / (1.5 * (max || 1)))), 0, g.height - (g.height * (perf.config.critical_framerate / (1.5 * (max || 1))))) : void 0;
+                        grdt = perf.mode.tps == 2 ? gx.createLinearGradient(0, g.height - (g.height * 2 * (perf.config.critical_tickrate / (1.5 * (max || 1)))), 0, g.height - (g.height * (perf.config.critical_tickrate / (1.5 * (max || 1))))) : (void 0)!,
+                        grdf = perf.mode.fps == 2 ? gx.createLinearGradient(0, g.height - (g.height * 2 * (perf.config.critical_framerate / (1.5 * (max || 1)))), 0, g.height - (g.height * (perf.config.critical_framerate / (1.5 * (max || 1))))) : (void 0)!;
 
                     gx.clearRect(0, 0, g.width, g.height);
                     gx.strokeStyle = "#FFF";
@@ -164,7 +164,7 @@ const perf: {
                         perf._data.tps.forEach((t, i) => {
                             gx[`${i ? "lin" : "mov"}eTo`](i * g.width / lt, g.height - (g.height * ((i ? perf._data.tps[i - 1] : t) / (1.5 * max))));
                         });
-                        gx.lineTo(g.width, g.height - (g.height * (perf._data.tps.at(-1) / (1.5 * max))));
+                        gx.lineTo(g.width, g.height - (g.height * (perf._data.tps.at(-1)! / (1.5 * max))));
                         gx.stroke();
                     }
 
@@ -184,7 +184,7 @@ const perf: {
                         perf._data.fps.forEach((f, i) => {
                             gx[`${i ? "lin" : "mov"}eTo`](i * g.width / lf, g.height - (g.height * ((i ? perf._data.fps[i - 1] : f) / (1.5 * max))));
                         });
-                        gx.lineTo(g.width, g.height - (g.height * (perf._data.fps.at(-1) / (1.5 * max))));
+                        gx.lineTo(g.width, g.height - (g.height * ((perf._data.fps.at(-1) as badCodeDesign) / (1.5 * max))));
                         gx.stroke();
                     }
                 }
@@ -202,7 +202,7 @@ const perf: {
             c: (tpsMode || fpsMode) ? perf._timers.c : perf._timers.c && clearInterval(perf._timers.c)
         };
 
-        const p = $("perf");
+        const p = $("perf") as HTMLParagraphElement;
 
         if (!$("perf-graph") && (fpsMode == 2 || tpsMode == 2)) {
             p.style.top = "12.5%";
