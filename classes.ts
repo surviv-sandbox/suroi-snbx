@@ -1663,7 +1663,7 @@ const gamespace: {
     update: (p5: import("p5")) => void,
     world: Matter.Composite;
 } = {
-    get version() { return `0.6.0`; },
+    get version() { return "0.6.1"; },
     bots: [],
     bulletInfo: {},
     camera: void 0 as badCodeDesign,

@@ -1,3 +1,10 @@
+<h2>v0.6.1</h2>
+<h3>June 21<sup>st</sup> 2022</h3>
+
+<ul>
+<li> Fixed a typo inside <code>util.ts</code>. (variataion => variation)
+</ul>
+
 <h2>v0.6.0</h2>
 <h3>June 15<sup>th</sup> 2022</h3>
 

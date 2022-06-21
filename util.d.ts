@@ -150,14 +150,14 @@ declare type offsetData = {
     perp: scaleOrAbsolute;
     parr: scaleOrAbsolute;
 };
-declare type variataion = {
+declare type variation = {
     variation: ratioOrAbsolute & {
         plusOrMinus: boolean;
     };
 };
 declare type offsetDataVariation = offsetData & {
-    parr: variataion;
-    perp: variataion;
+    parr: variation;
+    perp: variation;
 };
 declare type JSONGun = {
     name: string;
@@ -176,7 +176,7 @@ declare type JSONGun = {
         held: false | string;
         silhouette: false | string;
     };
-    tint: string;
+    tint: colorModes;
     ballistics: {
         damage: number;
         velocity: scaleOrAbsolute;
@@ -235,7 +235,7 @@ declare type JSONGun = {
     casings: {
         spawnOffset: offsetData;
         velocity: offsetDataVariation & {
-            angular: angleModes & variataion;
+            angular: angleModes & variation;
         };
         spawnOn: "fire" | "reload";
         spawnDelay: timeModes;
@@ -244,7 +244,7 @@ declare type JSONGun = {
         direction: offsetData;
         duration: timeModes;
     };
-    possibleFireModes: ("automatic" | "semi" | `burst-${number}`)[];
+    possibleFireModes: ("automatic" | "semi" | `${"auto-" | ""}burst-${number}`)[];
     burstProps?: {
         shotDelay: timeModes;
         burstDelay: timeModes;
@@ -286,7 +286,7 @@ declare type ammoData = {
     };
     casing: {
         img: string;
-        lifetime: timeModes & variataion;
+        lifetime: timeModes & variation;
         width: number;
         height: number;
     };
@@ -366,7 +366,7 @@ declare type explosionData = {
         color: colorModes;
         img: string;
         velocity: scaleOrAbsolute;
-        range: scaleOrAbsolute & variataion;
+        range: scaleOrAbsolute & variation;
         falloff: number;
         tracer: {
             width: scaleOrAbsolute;

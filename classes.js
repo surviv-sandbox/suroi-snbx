@@ -10,7 +10,7 @@ class obstacle {
     layer;
     offset = { x: 0, y: 0, angle: 0 };
     imageMode;
-    constructor(body, angle, image, imageDimensions, tint, layer, offset, imageMode) {
+    constructor (body, angle, image, imageDimensions, tint, layer, offset, imageMode) {
         this.#body = body;
         this.angle = angle;
         this.image = image;
@@ -55,7 +55,7 @@ class decal {
     tint;
     angle;
     position = { x: 0, y: 0 };
-    constructor(angle, image, dimensions, tint, position) {
+    constructor (angle, image, dimensions, tint, position) {
         this.angle = angle;
         this.image = image;
         this.width = dimensions?.width ?? 1;
@@ -124,7 +124,7 @@ class playerLike {
         this.#view = v;
         this.#renderDist = getRenderDistFromView(v);
     }
-    constructor(body, angle, health, loadout, options, view, name) {
+    constructor (body, angle, health, loadout, options, view, name) {
         this.#body = body;
         this.#body.angle = angle;
         this.angle = angle;
@@ -288,7 +288,7 @@ class playerLike {
     #determineMoveSpeed() {
         if (this.state.firing ||
             gamespace._currentUpdate - this.state.lastShot[this.inventory.activeIndex] < (!!this.inventory.activeItem.activeFireMode.match(/(auto-)?burst-/) ? this.inventory.activeItem.proto.burstProps.burstDelay : this.inventory.activeItem.proto.delay)
-                && !this.state.noSlow) {
+            && !this.state.noSlow) {
             return (this.speed.base + this.inventory.activeItem.proto.moveSpeedPenalties.firing) / 2;
         }
         else {
@@ -297,7 +297,7 @@ class playerLike {
     }
 }
 class player extends playerLike {
-    constructor(body, angle, health, loadout, options, view) {
+    constructor (body, angle, health, loadout, options, view) {
         super(body, angle, health, loadout, options, view, gamespace.settings.name);
     }
 }
@@ -314,7 +314,7 @@ class inventory {
     slot0;
     slot1;
     get activeItem() { return this[`slot${this.#activeIndex}`]; }
-    constructor(parent) {
+    constructor (parent) {
         this.#parent = parent;
     }
 }
@@ -356,7 +356,7 @@ class gunPrototype {
     magazineCapacity;
     moveSpeedPenalties;
     deployGroup;
-    constructor(name, summary, dual, images, tint, ballistics, caliber, delay, accuracy, offset, dimensions, hands, spawnOffset, suppressed, recoilImpulse, fireMode, burstProps, reload, capacity, switchDelay, casing, moveSpeedPenalties, deployGroup, altReload) {
+    constructor (name, summary, dual, images, tint, ballistics, caliber, delay, accuracy, offset, dimensions, hands, spawnOffset, suppressed, recoilImpulse, fireMode, burstProps, reload, capacity, switchDelay, casing, moveSpeedPenalties, deployGroup, altReload) {
         this.name = name;
         this.summary = summary;
         this.dual = dual;
@@ -399,7 +399,7 @@ class gun {
     get ammo() { return this.#ammo; }
     set ammo(v) { this.#ammo = Math.max(0, v); }
     recoilImpulseParity;
-    constructor(proto) {
+    constructor (proto) {
         this.#proto = proto;
         this.#activeFireMode = proto.fireMode[this.activeFireModeIndex];
         this.ammo = proto.magazineCapacity.normal;
@@ -579,7 +579,7 @@ class bullet {
     #damage;
     get damage() { return this.#damage; }
     #lastFalloffStep = 0;
-    constructor(body, shooter, emitter, angle, start, created, crit, type) {
+    constructor (body, shooter, emitter, angle, start, created, crit, type) {
         this.#body = body;
         this.#shooter = shooter;
         this.#emitter = emitter;
@@ -707,7 +707,7 @@ class shrapnel {
     #damage;
     get damage() { return this.#damage; }
     #lastFalloffStep = 0;
-    constructor(body, shooter, emitter, angle, origin, start, created, crit) {
+    constructor (body, shooter, emitter, angle, origin, start, created, crit) {
         this.#body = body;
         this.#shooter = shooter;
         this.#emitter = emitter;
@@ -826,7 +826,7 @@ class explosion {
     }
     static #alpha = 16;
     get alpha() { return explosion.#alpha; }
-    constructor(origin, shooter, emitter, crit) {
+    constructor (origin, shooter, emitter, crit) {
         this.#origin = origin;
         this.#createdAt = gamespace._currentUpdate;
         this.#id = generateId.next().value;
@@ -841,9 +841,9 @@ class explosion {
             .filter(p => p.dist <= 600 ** 2)
             .sort((a, b) => b.dist - a.dist)
             .forEach(p => {
-            const d = this.#info.damage * (p.dist < this.#info.radii.damage.min ? 1 : (1 - (p.dist / (this.#info.radii.damage.max ** 2)))), target = p.player;
-            target.damage(d, this);
-        });
+                const d = this.#info.damage * (p.dist < this.#info.radii.damage.min ? 1 : (1 - (p.dist / (this.#info.radii.damage.max ** 2)))), target = p.player;
+                target.damage(d, this);
+            });
         const s = this.#info.shrapnel, count = s.count, r = this.#info.radii.visual.min, body = (ang, mag) => {
             return Matter.Bodies.rectangle(origin.x + mag * Math.sin(ang), origin.y - mag * Math.cos(ang), s.tracer.width, s.tracer.height / 10, { isStatic: false, friction: 1, restitution: 0, density: 1, angle: ang });
         };
@@ -893,7 +893,7 @@ class casing {
     #velocities;
     get velocities() { return this.#velocities; }
     #info;
-    constructor(body, emitter, angle, start, created, vel) {
+    constructor (body, emitter, angle, start, created, vel) {
         this.#body = body;
         this.#emitter = emitter;
         this.#angle = this.#trajectory = angle;
@@ -984,7 +984,7 @@ class customEvent {
     }
 }
 const gamespace = {
-    get version() { return `0.6.0`; },
+    get version() { return "0.6.1"; },
     bots: [],
     bulletInfo: {},
     camera: void 0,
@@ -1204,4 +1204,4 @@ loadJSONBasedGamespaceFields();
 
     tsc assets/scripts/std_level_setup.ts classes.d.ts main.d.ts perf.d.ts util.d.ts input.d.ts ui.d.ts memory.d.ts libraries/p5/types/index.d.ts libraries/p5/types/global.d.ts libraries/matter/types/index.d.ts libraries/decimaljs/decimal.global.d.ts --target esnext --declaratio
 
-*/ 
+*/
