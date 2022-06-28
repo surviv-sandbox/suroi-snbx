@@ -52,7 +52,7 @@ export const level = await (async () => {
                         winBanner.style.userSelect = "none";
                         winBanner.style.textAlign = "center";
                         winBanner.innerHTML = (gamespace.objects.players.length
-                            ? `You ${gamespace.player ? "win!" : "lose."} Remaining HP: ${gamespace.objects.players[0].health}`
+                            ? `You ${gamespace.player ? "win!" : "lose."} Remaining HP: ${Math.round(100 * gamespace.objects.players[0].health) / 100}`
                             : `Stalemate; you all lose`) + `<br><span style="font-size: calc(200vw / 72)">${w[0][0]}/${w[0][1]} vs ${w[1][0]}/${w[1][1]}</span>`;
                         setTimeout(() => {
                             winBanner.innerHTML += `<br><span style="font-size: calc(180vw / 72)">Press Escape to restart.</span>`;
@@ -60,9 +60,7 @@ export const level = await (async () => {
                                 if (e.key == "Escape") {
                                     document.removeEventListener("keydown", exit);
                                     e.preventDefault();
-                                    gamespace.cleanUp({ clearEvents: true });
-                                    Array.from(document.body.children).forEach(n => n.remove());
-                                    makeMenu(true);
+                                    gamespace.exitLevel();
                                 }
                             });
                         }, 250);
@@ -71,7 +69,7 @@ export const level = await (async () => {
                     }
                     gamespace.bots.forEach(b => {
                         if (b.player.body !== void 0 && b.player.body.id != gamespace.player.body.id && doAI) {
-                            gamespace.settings.bonus_features.bot_debug && b.debug();
+                            gamespace.settings.bonusFeatures.botDebug && b.debug();
                             b.update();
                         }
                     });
@@ -141,7 +139,7 @@ export const level = await (async () => {
                             b.style.borderColor = (currentlySelected || (s + g.name) == "RandomRandom") ? "#0F0" : "";
                             b.style.backgroundColor = (currentlySelected || (s + g.name) == "RandomRandom") ? "#0108" : "";
                             b.style.position = "absolute";
-                            b.style.left = `${(j % 5) * 20 + 1}%`;
+                            b.style.left = `${(j % 5) * 20 + 0.5}%`;
                             b.style.width = `19%`;
                             b.style.height = `${76 / 3}%`;
                             b.style.top = `${(76 / 3 + 1) * Math.floor(j / 5)}%`;
@@ -177,10 +175,10 @@ export const level = await (async () => {
                     input.style.borderRadius = "calc(25vw / 72)";
                     input.style.outline = "none";
                     entity.maxHealth = Math.max(100, entity.health = +input.value);
-                    input.addEventListener("input", () => {
-                        const v = +input.value;
-                        if (!checkBounds(v, 1, "inf")) {
-                            input.value = `${clamp(v, 1)}`;
+                    input.addEventListener("change", () => {
+                        const v = +(input.value || Infinity);
+                        if (!checkBounds(v, 0, "inf", { inclusion: { lower: false } })) {
+                            input.value = `${Number.isFinite(v) ? clamp(v, 0) : Number.MAX_VALUE}`;
                         }
                         memoryManager.setItem([...path, `health-${i ? "player" : "bot"}-preset`], input.value, true);
                         entity.maxHealth = Math.max(100, entity.health = v);
@@ -221,7 +219,7 @@ export const level = await (async () => {
                     b.style.top = `${30 * Math.floor(i / 2) + 10}%`;
                     b.append(...buttons[i]);
                 });
-                const scopes = makeElement("div", "player-scope-cont"), preset = memoryManager.getItem([...path, "player-scope-pref"], "number") ?? 1;
+                const scopes = makeElement("div", "player-scope-cont"), p = (memoryManager.getItem([...path, "player-scope-pref"], "number")), preset = Number.isNaN(p) ? 1 : p;
                 level.levelData.players[0].view = ({
                     1: 1330,
                     2: 1680,

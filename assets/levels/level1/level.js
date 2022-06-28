@@ -64,9 +64,7 @@ export const level = await (async () => {
                                 if (e.key == "Escape") {
                                     document.removeEventListener("keydown", exit);
                                     e.preventDefault();
-                                    gamespace.cleanUp({ clearEvents: true });
-                                    Array.from(document.body.children).forEach(n => n.remove());
-                                    makeMenu(true);
+                                    gamespace.exitLevel();
                                 }
                             });
                         }, 250);

@@ -1,12 +1,102 @@
+@media (prefers-color-scheme: light) {
+    body {
+        background-color: #e0e0e0;
+        color: black;
+    }
+
+    a {
+        color: hsl(240, 100%, 47%);
+    }
+
+    a:hover {
+        color: hsl(0, 100%, 41%);
+    }
+
+    a:visited {
+        color: hsl(271, 68%, 32%);
+    }
+
+    table,
+    tr,
+    td,
+    thead {
+        border: 1px solid #444;
+    }
+
+    span.yes {
+        color: #0C0;
+    }
+
+    span.no {
+        color: #C00;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #1e1e1e;
+        color: white;
+    }
+
+    a {
+        color: rgb(117, 165, 255);
+    }
+
+    a:hover {
+        color: hsl(356, 100%, 73%);
+    }
+
+    a:visited {
+        color: hsl(309, 100%, 73%);
+    }
+
+    table,
+    tr,
+    td,
+    thead {
+        border: 1px solid #888;
+    }
+
+    span.yes {
+        color: #8F8;
+    }
+
+    span.no {
+        color: #F88;
+    }
+
+    td.major-up {
+        background-color: #1e4e1e;
+    }
+
+    td.minor-up {
+        color: #0F0;
+    }
+
+    td.patch-up {
+        color: #AFA;
+    }
+
+    td.major-down {
+        background-color: #4e1e1e;
+    }
+
+    td.minor-down {
+        color: #F00;
+    }
+
+    td.patch-down {
+        color: #FAA;
+    }
+}
+
 body {
-    background-color: #222;
-    color: white;
     font-family: "jura", "Menlo", monospace;
 }
 
 table#assets {
     position: relative;
-    top: 7vh;
+    top: 63px;
     width: 100%;
 }
 
@@ -20,24 +110,12 @@ h1 {
     left: 0;
     top: 0;
     width: 100%;
-    font-size: calc(20vw / 9);
+    font-size: 32px;
 }
 
 span.category {
     font-family: "roboto", "Helvetica", monospace;
-    font-size: calc(25vw / 18);
-}
-
-a {
-    color: rgb(117, 165, 255);
-}
-
-a:hover {
-    color: hsl(356, 100%, 73%);
-}
-
-a:visited {
-    color: hsl(309, 100%, 73%);
+    font-size: 20px;
 }
 
 button#back {
@@ -47,11 +125,11 @@ button#back {
     border: none;
     border-bottom-style: solid;
     border-bottom-color: #387C79;
-    border-bottom-width: calc(5vw / 18);
-    border-radius: calc(25vw / 72);
+    border-bottom-width: 4px;
+    border-radius: 5px;
     font-family: "roboto", "Helvetica", monospace;
-    text-shadow: 0 calc(1vh / 9) calc(2vh / 9) rgb(0 0 0 / 25%);
-    font-size: calc(35vw / 36);
+    text-shadow: 0 1px 2px rgb(0 0 0 / 25%);
+    font-size: 14px;
     width: 5%;
     height: 5%;
     left: 0.5%;
@@ -72,9 +150,9 @@ button#back:active {
 }
 
 p#attr {
-    font-size: calc(10vw / 9);
+    font-size: 16px;
     position: relative;
-    top: 7vh;
+    top: 63px;
 }
 
 div#table-cont {
@@ -87,13 +165,6 @@ table#frameworks {
 
 td.td-center {
     text-align: center;
-}
-
-table,
-tr,
-td,
-thead {
-    border: 1px solid #888;
 }
 
 @font-face {

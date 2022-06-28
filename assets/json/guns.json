@@ -89,7 +89,7 @@
             },
             "parr": {
                 "givenIn": "scale",
-                "value": -1.5
+                "value": 1.5
             }
         },
         "dimensions": {
@@ -127,7 +127,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -0.85
+                    "value": 0.85
                 }
             },
             "rightHand": {
@@ -137,7 +137,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -1.875
+                    "value": 1.875
                 }
             }
         },
@@ -148,7 +148,7 @@
             },
             "parr": {
                 "givenIn": "absolute",
-                "value": 40
+                "value": 0
             }
         },
         "casings": {
@@ -165,7 +165,7 @@
             "velocity": {
                 "perp": {
                     "givenIn": "absolute",
-                    "value": -350,
+                    "value": -200,
                     "variation": {
                         "givenIn": "ratio",
                         "value": 0.7,
@@ -205,7 +205,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -0.1
+                    "value": 0.1
                 }
             },
             "duration": {
@@ -317,7 +317,7 @@
             },
             "parr": {
                 "givenIn": "scale",
-                "value": -1.5
+                "value": 1.5
             }
         },
         "dimensions": {
@@ -363,7 +363,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -0.85
+                    "value": 0.85
                 }
             },
             "rightHand": {
@@ -373,7 +373,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -1.875
+                    "value": 1.875
                 }
             }
         },
@@ -384,7 +384,7 @@
             },
             "parr": {
                 "givenIn": "absolute",
-                "value": 40
+                "value": 0
             }
         },
         "casings": {
@@ -401,7 +401,7 @@
             "velocity": {
                 "perp": {
                     "givenIn": "absolute",
-                    "value": -300,
+                    "value": -200,
                     "variation": {
                         "givenIn": "ratio",
                         "value": 0.9,
@@ -441,7 +441,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -0.2
+                    "value": 0.2
                 }
             },
             "duration": {
@@ -553,7 +553,7 @@
             },
             "parr": {
                 "givenIn": "scale",
-                "value": -1.5
+                "value": 1.5
             }
         },
         "dimensions": {
@@ -591,7 +591,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -0.85
+                    "value": 0.85
                 }
             },
             "rightHand": {
@@ -601,7 +601,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -2.14
+                    "value": 2.14
                 }
             }
         },
@@ -612,7 +612,7 @@
             },
             "parr": {
                 "givenIn": "absolute",
-                "value": 40
+                "value": 0
             }
         },
         "casings": {
@@ -629,7 +629,7 @@
             "velocity": {
                 "perp": {
                     "givenIn": "absolute",
-                    "value": -350,
+                    "value": -250,
                     "variation": {
                         "givenIn": "ratio",
                         "value": 0.3,
@@ -669,7 +669,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -0.25
+                    "value": 0.25
                 }
             },
             "duration": {
@@ -781,7 +781,7 @@
             },
             "parr": {
                 "givenIn": "scale",
-                "value": -1.9
+                "value": 1.9
             }
         },
         "dimensions": {
@@ -819,7 +819,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -0.85
+                    "value": 0.85
                 }
             },
             "rightHand": {
@@ -829,7 +829,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -2.2
+                    "value": 2.2
                 }
             }
         },
@@ -840,7 +840,7 @@
             },
             "parr": {
                 "givenIn": "absolute",
-                "value": 40
+                "value": 0
             }
         },
         "casings": {
@@ -857,7 +857,7 @@
             "velocity": {
                 "perp": {
                     "givenIn": "absolute",
-                    "value": 370,
+                    "value": 220,
                     "variation": {
                         "givenIn": "ratio",
                         "value": 0.7,
@@ -866,11 +866,11 @@
                 },
                 "parr": {
                     "givenIn": "absolute",
-                    "value": -30,
+                    "value": -50,
                     "variation": {
                         "givenIn": "ratio",
                         "value": 1,
-                        "plusOrMinus": false
+                        "plusOrMinus": true
                     }
                 },
                 "angular": {
@@ -897,7 +897,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -0.1
+                    "value": 0.1
                 }
             },
             "duration": {
@@ -1009,7 +1009,7 @@
             },
             "parr": {
                 "givenIn": "scale",
-                "value": -1.9
+                "value": 1.9
             }
         },
         "dimensions": {
@@ -1047,7 +1047,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -0.85
+                    "value": 0.85
                 }
             },
             "rightHand": {
@@ -1057,7 +1057,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -2.2
+                    "value": 2.2
                 }
             }
         },
@@ -1068,7 +1068,7 @@
             },
             "parr": {
                 "givenIn": "absolute",
-                "value": 40
+                "value": 0
             }
         },
         "casings": {
@@ -1085,7 +1085,7 @@
             "velocity": {
                 "perp": {
                     "givenIn": "absolute",
-                    "value": -350,
+                    "value": -250,
                     "variation": {
                         "givenIn": "ratio",
                         "value": 0.7,
@@ -1094,11 +1094,11 @@
                 },
                 "parr": {
                     "givenIn": "absolute",
-                    "value": -30,
+                    "value": -50,
                     "variation": {
                         "givenIn": "ratio",
-                        "value": 1,
-                        "plusOrMinus": false
+                        "value": 0.5,
+                        "plusOrMinus": true
                     }
                 },
                 "angular": {
@@ -1106,8 +1106,8 @@
                     "value": 2,
                     "variation": {
                         "givenIn": "ratio",
-                        "value": 1,
-                        "plusOrMinus": false
+                        "value": 0.7,
+                        "plusOrMinus": true
                     }
                 }
             },
@@ -1125,7 +1125,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -0.05
+                    "value": 0.05
                 }
             },
             "duration": {
@@ -1179,7 +1179,7 @@
             },
             "range": {
                 "givenIn": "absolute",
-                "value": 8250
+                "value": 5000
             },
             "tracer": {
                 "width": {
@@ -1237,7 +1237,7 @@
             },
             "parr": {
                 "givenIn": "scale",
-                "value": -1.35
+                "value": 1.35
             }
         },
         "dimensions": {
@@ -1275,7 +1275,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -0.85
+                    "value": 0.85
                 }
             }
         },
@@ -1286,7 +1286,7 @@
             },
             "parr": {
                 "givenIn": "absolute",
-                "value": 10
+                "value": 0
             }
         },
         "casings": {
@@ -1297,13 +1297,13 @@
                 },
                 "parr": {
                     "givenIn": "absolute",
-                    "value": 40
+                    "value": 20
                 }
             },
             "velocity": {
                 "perp": {
                     "givenIn": "absolute",
-                    "value": -200,
+                    "value": -100,
                     "variation": {
                         "givenIn": "ratio",
                         "value": 0.4,
@@ -1315,7 +1315,7 @@
                     "value": 0,
                     "variation": {
                         "givenIn": "absolute",
-                        "value": 20,
+                        "value": 40,
                         "plusOrMinus": true
                     }
                 },
@@ -1343,7 +1343,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -0.08
+                    "value": 0.08
                 }
             },
             "duration": {
@@ -1397,7 +1397,7 @@
             },
             "range": {
                 "givenIn": "absolute",
-                "value": 8250
+                "value": 5000
             },
             "tracer": {
                 "width": {
@@ -1455,7 +1455,7 @@
             },
             "parr": {
                 "givenIn": "scale",
-                "value": -1.35
+                "value": 1.35
             }
         },
         "dimensions": {
@@ -1479,7 +1479,7 @@
         },
         "magazineCapacity": {
             "normal": 30,
-            "firepower": 60
+            "firepower": 40
         },
         "switchDelay": {
             "givenIn": "ms",
@@ -1493,7 +1493,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -0.95
+                    "value": 0.95
                 }
             },
             "rightHand": {
@@ -1503,7 +1503,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -0.95
+                    "value": 0.95
                 }
             }
         },
@@ -1514,24 +1514,24 @@
             },
             "parr": {
                 "givenIn": "absolute",
-                "value": 10
+                "value": 0
             }
         },
         "casings": {
             "spawnOffset": {
                 "perp": {
-                    "givenIn": "absolute",
-                    "value": 0
+                    "givenIn": "scale",
+                    "value": 0.525
                 },
                 "parr": {
                     "givenIn": "absolute",
-                    "value": 40
+                    "value": 20
                 }
             },
             "velocity": {
                 "perp": {
                     "givenIn": "absolute",
-                    "value": -200,
+                    "value": -100,
                     "variation": {
                         "givenIn": "ratio",
                         "value": 0.4,
@@ -1543,7 +1543,7 @@
                     "value": 0,
                     "variation": {
                         "givenIn": "absolute",
-                        "value": 20,
+                        "value": 40,
                         "plusOrMinus": true
                     }
                 },
@@ -1571,7 +1571,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -0.08
+                    "value": 0.08
                 }
             },
             "duration": {
@@ -1683,7 +1683,7 @@
             },
             "parr": {
                 "givenIn": "scale",
-                "value": -1.5
+                "value": 1.5
             }
         },
         "dimensions": {
@@ -1721,7 +1721,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -0.85
+                    "value": 0.85
                 }
             },
             "rightHand": {
@@ -1731,7 +1731,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -1.875
+                    "value": 1.875
                 }
             }
         },
@@ -1742,7 +1742,7 @@
             },
             "parr": {
                 "givenIn": "absolute",
-                "value": 40
+                "value": 0
             }
         },
         "casings": {
@@ -1759,7 +1759,7 @@
             "velocity": {
                 "perp": {
                     "givenIn": "absolute",
-                    "value": -320,
+                    "value": -200,
                     "variation": {
                         "givenIn": "ratio",
                         "value": 0.8,
@@ -1780,8 +1780,8 @@
                     "value": 1.7,
                     "variation": {
                         "givenIn": "ratio",
-                        "value": 1,
-                        "plusOrMinus": false
+                        "value": 0.6,
+                        "plusOrMinus": true
                     }
                 }
             },
@@ -1799,7 +1799,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -0.2
+                    "value": 0.2
                 }
             },
             "duration": {
@@ -1911,7 +1911,7 @@
             },
             "parr": {
                 "givenIn": "scale",
-                "value": -1.4
+                "value": 1.4
             }
         },
         "dimensions": {
@@ -1949,7 +1949,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -0.85
+                    "value": 0.85
                 }
             },
             "rightHand": {
@@ -1959,7 +1959,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -1.5
+                    "value": 1.5
                 }
             }
         },
@@ -1970,7 +1970,7 @@
             },
             "parr": {
                 "givenIn": "absolute",
-                "value": 20
+                "value": 0
             }
         },
         "casings": {
@@ -1981,16 +1981,16 @@
                 },
                 "parr": {
                     "givenIn": "absolute",
-                    "value": 40
+                    "value": 10
                 }
             },
             "velocity": {
                 "perp": {
                     "givenIn": "absolute",
-                    "value": -350,
+                    "value": -200,
                     "variation": {
                         "givenIn": "ratio",
-                        "value": 0.6,
+                        "value": 0.4,
                         "plusOrMinus": true
                     }
                 },
@@ -1999,7 +1999,7 @@
                     "value": -50,
                     "variation": {
                         "givenIn": "ratio",
-                        "value": 0.4,
+                        "value": 0.5,
                         "plusOrMinus": true
                     }
                 },
@@ -2027,7 +2027,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -0.15
+                    "value": 0.15
                 }
             },
             "duration": {
@@ -2139,7 +2139,7 @@
             },
             "parr": {
                 "givenIn": "scale",
-                "value": -1.5
+                "value": 1.5
             }
         },
         "dimensions": {
@@ -2177,7 +2177,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -0.85
+                    "value": 0.85
                 }
             },
             "rightHand": {
@@ -2187,7 +2187,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -1.875
+                    "value": 1.875
                 }
             }
         },
@@ -2198,7 +2198,7 @@
             },
             "parr": {
                 "givenIn": "absolute",
-                "value": 40
+                "value": 0
             }
         },
         "casings": {
@@ -2209,16 +2209,16 @@
                 },
                 "parr": {
                     "givenIn": "absolute",
-                    "value": 40
+                    "value": 20
                 }
             },
             "velocity": {
                 "perp": {
                     "givenIn": "absolute",
-                    "value": -350,
+                    "value": -220,
                     "variation": {
                         "givenIn": "ratio",
-                        "value": 0.7,
+                        "value": 0.5,
                         "plusOrMinus": true
                     }
                 },
@@ -2228,7 +2228,7 @@
                     "variation": {
                         "givenIn": "ratio",
                         "value": 0.6,
-                        "plusOrMinus": false
+                        "plusOrMinus": true
                     }
                 },
                 "angular": {
@@ -2236,8 +2236,8 @@
                     "value": 2,
                     "variation": {
                         "givenIn": "ratio",
-                        "value": 1,
-                        "plusOrMinus": false
+                        "value": 0.6,
+                        "plusOrMinus": true
                     }
                 }
             },
@@ -2255,7 +2255,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -0.1
+                    "value": 0.1
                 }
             },
             "duration": {
@@ -2288,7 +2288,7 @@
                 },
                 "max": {
                     "givenIn": "absolute",
-                    "value": 2000
+                    "value": 2500
                 }
             },
             "shouldNoslow": false,
@@ -2367,7 +2367,7 @@
             },
             "parr": {
                 "givenIn": "scale",
-                "value": -1.45
+                "value": 1.45
             }
         },
         "dimensions": {
@@ -2405,7 +2405,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -0.85
+                    "value": 0.85
                 }
             }
         },
@@ -2416,24 +2416,24 @@
             },
             "parr": {
                 "givenIn": "absolute",
-                "value": 10
+                "value": 0
             }
         },
         "casings": {
             "spawnOffset": {
                 "perp": {
                     "givenIn": "scale",
-                    "value": 0.525
+                    "value": 0
                 },
                 "parr": {
                     "givenIn": "absolute",
-                    "value": 30
+                    "value": 20
                 }
             },
             "velocity": {
                 "perp": {
                     "givenIn": "absolute",
-                    "value": -150,
+                    "value": -100,
                     "variation": {
                         "givenIn": "ratio",
                         "value": 0.4,
@@ -2445,7 +2445,7 @@
                     "value": 0,
                     "variation": {
                         "givenIn": "absolute",
-                        "value": 20,
+                        "value": 40,
                         "plusOrMinus": true
                     }
                 },
@@ -2455,7 +2455,7 @@
                     "variation": {
                         "givenIn": "ratio",
                         "value": 0.6,
-                        "plusOrMinus": false
+                        "plusOrMinus": true
                     }
                 }
             },
@@ -2473,7 +2473,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -0.08
+                    "value": 0.08
                 }
             },
             "duration": {
@@ -2506,7 +2506,7 @@
                 },
                 "max": {
                     "givenIn": "absolute",
-                    "value": 1500
+                    "value": 2500
                 }
             },
             "shouldNoslow": false,
@@ -2585,7 +2585,7 @@
             },
             "parr": {
                 "givenIn": "scale",
-                "value": -1.45
+                "value": 1.45
             }
         },
         "dimensions": {
@@ -2623,7 +2623,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -0.95
+                    "value": 0.95
                 }
             },
             "rightHand": {
@@ -2633,7 +2633,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -0.95
+                    "value": 0.95
                 }
             }
         },
@@ -2644,7 +2644,7 @@
             },
             "parr": {
                 "givenIn": "absolute",
-                "value": 10
+                "value": 0
             }
         },
         "casings": {
@@ -2661,7 +2661,7 @@
             "velocity": {
                 "perp": {
                     "givenIn": "absolute",
-                    "value": -150,
+                    "value": -100,
                     "variation": {
                         "givenIn": "ratio",
                         "value": 0.4,
@@ -2673,7 +2673,7 @@
                     "value": 0,
                     "variation": {
                         "givenIn": "absolute",
-                        "value": 20,
+                        "value": 40,
                         "plusOrMinus": true
                     }
                 },
@@ -2683,7 +2683,7 @@
                     "variation": {
                         "givenIn": "ratio",
                         "value": 0.6,
-                        "plusOrMinus": false
+                        "plusOrMinus": true
                     }
                 }
             },
@@ -2701,7 +2701,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -0.08
+                    "value": 0.08
                 }
             },
             "duration": {
@@ -2813,7 +2813,7 @@
             },
             "parr": {
                 "givenIn": "scale",
-                "value": -1.95
+                "value": 1.95
             }
         },
         "dimensions": {
@@ -2851,7 +2851,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -1.45
+                    "value": 1.45
                 }
             },
             "rightHand": {
@@ -2861,7 +2861,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -2.4
+                    "value": 2.4
                 }
             }
         },
@@ -2872,7 +2872,7 @@
             },
             "parr": {
                 "givenIn": "absolute",
-                "value": 40
+                "value": 0
             }
         },
         "casings": {
@@ -2883,13 +2883,13 @@
                 },
                 "parr": {
                     "givenIn": "absolute",
-                    "value": 30
+                    "value": 10
                 }
             },
             "velocity": {
                 "perp": {
                     "givenIn": "absolute",
-                    "value": -350,
+                    "value": -220,
                     "variation": {
                         "givenIn": "ratio",
                         "value": 0.6,
@@ -2898,11 +2898,11 @@
                 },
                 "parr": {
                     "givenIn": "absolute",
-                    "value": -30,
+                    "value": -60,
                     "variation": {
                         "givenIn": "ratio",
-                        "value": 1,
-                        "plusOrMinus": false
+                        "value": 0.6,
+                        "plusOrMinus": true
                     }
                 },
                 "angular": {
@@ -2910,8 +2910,8 @@
                     "value": 2,
                     "variation": {
                         "givenIn": "ratio",
-                        "value": 1,
-                        "plusOrMinus": false
+                        "value": 0.6,
+                        "plusOrMinus": true
                     }
                 }
             },
@@ -2929,7 +2929,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -0.08
+                    "value": 0.08
                 }
             },
             "duration": {
@@ -3041,7 +3041,7 @@
             },
             "parr": {
                 "givenIn": "scale",
-                "value": -1.4
+                "value": 1.4
             }
         },
         "dimensions": {
@@ -3079,7 +3079,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -0.85
+                    "value": 0.85
                 }
             }
         },
@@ -3090,14 +3090,14 @@
             },
             "parr": {
                 "givenIn": "absolute",
-                "value": 10
+                "value": 0
             }
         },
         "casings": {
             "spawnOffset": {
                 "perp": {
-                    "givenIn": "scale",
-                    "value": 0.525
+                    "givenIn": "absolute",
+                    "value": 0
                 },
                 "parr": {
                     "givenIn": "absolute",
@@ -3110,13 +3110,13 @@
                     "value": 0,
                     "variation": {
                         "givenIn": "absolute",
-                        "value": 400,
+                        "value": -300,
                         "plusOrMinus": true
                     }
                 },
                 "parr": {
                     "givenIn": "absolute",
-                    "value": 300,
+                    "value": -200,
                     "variation": {
                         "givenIn": "scale",
                         "value": 0.5,
@@ -3147,7 +3147,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -0.08
+                    "value": 0.08
                 }
             },
             "duration": {
@@ -3259,7 +3259,7 @@
             },
             "parr": {
                 "givenIn": "scale",
-                "value": -1.4
+                "value": 1.4
             }
         },
         "dimensions": {
@@ -3297,7 +3297,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -0.85
+                    "value": 0.85
                 }
             },
             "rightHand": {
@@ -3307,7 +3307,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -0.85
+                    "value": 0.85
                 }
             }
         },
@@ -3318,14 +3318,14 @@
             },
             "parr": {
                 "givenIn": "absolute",
-                "value": 10
+                "value": 0
             }
         },
         "casings": {
             "spawnOffset": {
                 "perp": {
                     "givenIn": "scale",
-                    "value": 0.525
+                    "value": 0
                 },
                 "parr": {
                     "givenIn": "absolute",
@@ -3338,13 +3338,13 @@
                     "value": 0,
                     "variation": {
                         "givenIn": "absolute",
-                        "value": 400,
+                        "value": -300,
                         "plusOrMinus": true
                     }
                 },
                 "parr": {
                     "givenIn": "absolute",
-                    "value": 300,
+                    "value": -200,
                     "variation": {
                         "givenIn": "scale",
                         "value": 0.5,
@@ -3375,7 +3375,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -0.08
+                    "value": 0.08
                 }
             },
             "duration": {
@@ -3487,7 +3487,7 @@
             },
             "parr": {
                 "givenIn": "scale",
-                "value": -3
+                "value": 3
             }
         },
         "dimensions": {
@@ -3525,7 +3525,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -0.85
+                    "value": 0.85
                 }
             },
             "rightHand": {
@@ -3535,7 +3535,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -3
+                    "value": 3
                 }
             }
         },
@@ -3546,7 +3546,7 @@
             },
             "parr": {
                 "givenIn": "absolute",
-                "value": 60
+                "value": 0
             }
         },
         "casings": {
@@ -3557,13 +3557,13 @@
                 },
                 "parr": {
                     "givenIn": "absolute",
-                    "value": 30
+                    "value": 40
                 }
             },
             "velocity": {
                 "perp": {
                     "givenIn": "absolute",
-                    "value": 400,
+                    "value": 240,
                     "variation": {
                         "givenIn": "ratio",
                         "value": 0.7,
@@ -3575,8 +3575,8 @@
                     "value": -70,
                     "variation": {
                         "givenIn": "ratio",
-                        "value": 1,
-                        "plusOrMinus": false
+                        "value": 0.6,
+                        "plusOrMinus": true
                     }
                 },
                 "angular": {
@@ -3584,8 +3584,8 @@
                     "value": -2,
                     "variation": {
                         "givenIn": "ratio",
-                        "value": 1,
-                        "plusOrMinus": false
+                        "value": 0.6,
+                        "plusOrMinus": true
                     }
                 }
             },
@@ -3603,7 +3603,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -0.1
+                    "value": 0.1
                 }
             },
             "duration": {
@@ -3628,7 +3628,7 @@
     {
         "name": "M79",
         "summary": {
-            "class": "grenade_laucher",
+            "class": "grenade_launcher",
             "engagementDistance": {
                 "min": {
                     "givenIn": "absolute",
@@ -3715,7 +3715,7 @@
             },
             "parr": {
                 "givenIn": "scale",
-                "value": -0.625
+                "value": 0.625
             }
         },
         "dimensions": {
@@ -3753,7 +3753,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -0.13
+                    "value": 0.13
                 }
             },
             "rightHand": {
@@ -3763,7 +3763,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -1.6
+                    "value": 1.6
                 }
             }
         },
@@ -3774,7 +3774,7 @@
             },
             "parr": {
                 "givenIn": "absolute",
-                "value": -10
+                "value": -5
             }
         },
         "casings": {
@@ -3831,7 +3831,7 @@
                 },
                 "parr": {
                     "givenIn": "scale",
-                    "value": -0.3
+                    "value": 0.3
                 }
             },
             "duration": {
@@ -3846,6 +3846,680 @@
             "shotDelay": {
                 "givenIn": "RPM",
                 "value": 10
+            },
+            "burstDelay": {
+                "givenIn": "ms",
+                "value": 0
+            }
+        }
+    },
+    {
+        "name": "MP220",
+        "summary": {
+            "class": "shotgun",
+            "engagementDistance": {
+                "min": {
+                    "givenIn": "absolute",
+                    "value": 300
+                },
+                "max": {
+                    "givenIn": "absolute",
+                    "value": 1000
+                }
+            },
+            "shouldNoslow": true,
+            "role": "secondary"
+        },
+        "dual": false,
+        "images": {
+            "loot": "assets/items/firearms/MP220/loot-weapon-mp220.svg",
+            "held": "assets/items/firearms/MP220/mp220.svg",
+            "silhouette": "assets/items/firearms/MP220/mp220-silhouette.png"
+        },
+        "tint": "#FFFFFF",
+        "ballistics": {
+            "damage": 12.5,
+            "velocity": {
+                "givenIn": "absolute",
+                "value": 3300
+            },
+            "range": {
+                "givenIn": "absolute",
+                "value": 1350
+            },
+            "tracer": {
+                "width": {
+                    "givenIn": "scale",
+                    "value": 0.15
+                },
+                "height": {
+                    "givenIn": "scale",
+                    "value": 17.7777777
+                }
+            },
+            "obstacleMult": 1,
+            "headshotMult": 1.5,
+            "fsa": {
+                "enabled": false,
+                "rechargeTime": {
+                    "givenIn": "s",
+                    "value": 1e10
+                }
+            },
+            "falloff": 0.3,
+            "projectiles": 9
+        },
+        "suppressed": false,
+        "caliber": "12 gauge (buckshot)",
+        "firingDelay": {
+            "givenIn": "ms",
+            "value": 200
+        },
+        "deployGroup": 0,
+        "accuracy": {
+            "default": {
+                "givenIn": "degrees",
+                "value": 10
+            },
+            "moving": {
+                "givenIn": "degrees",
+                "value": 12
+            }
+        },
+        "moveSpeedPenalties": {
+            "active": {
+                "givenIn": "scale",
+                "value": 0
+            },
+            "firing": {
+                "givenIn": "scale",
+                "value": 0
+            }
+        },
+        "imageOffset": {
+            "perp": {
+                "givenIn": "scale",
+                "value": 0
+            },
+            "parr": {
+                "givenIn": "scale",
+                "value": 1.55
+            }
+        },
+        "dimensions": {
+            "width": {
+                "givenIn": "scale",
+                "value": 0.5908414977
+            },
+            "height": {
+                "givenIn": "scale",
+                "value": 2
+            },
+            "layer": 0
+        },
+        "reload": {
+            "duration": {
+                "givenIn": "s",
+                "value": 2.7
+            },
+            "ammoReloaded": "all",
+            "chain": false
+        },
+        "magazineCapacity": {
+            "normal": 2,
+            "firepower": 2
+        },
+        "switchDelay": {
+            "givenIn": "ms",
+            "value": 900
+        },
+        "handPositions": {
+            "leftHand": {
+                "perp": {
+                    "givenIn": "scale",
+                    "value": 0.1
+                },
+                "parr": {
+                    "givenIn": "scale",
+                    "value": 0.85
+                }
+            },
+            "rightHand": {
+                "perp": {
+                    "givenIn": "scale",
+                    "value": 0.325
+                },
+                "parr": {
+                    "givenIn": "scale",
+                    "value": 1.7
+                }
+            }
+        },
+        "projectileSpawnOffset": {
+            "perp": {
+                "givenIn": "absolute",
+                "value": 0
+            },
+            "parr": {
+                "givenIn": "absolute",
+                "value": 20
+            }
+        },
+        "casings": {
+            "spawnOffset": {
+                "perp": {
+                    "givenIn": "absolute",
+                    "value": 0
+                },
+                "parr": {
+                    "givenIn": "absolute",
+                    "value": 0
+                }
+            },
+            "velocity": {
+                "perp": {
+                    "givenIn": "absolute",
+                    "value": 0,
+                    "variation": {
+                        "givenIn": "absolute",
+                        "value": 300,
+                        "plusOrMinus": true
+                    }
+                },
+                "parr": {
+                    "givenIn": "absolute",
+                    "value": -100,
+                    "variation": {
+                        "givenIn": "ratio",
+                        "value": 0.25,
+                        "plusOrMinus": true
+                    }
+                },
+                "angular": {
+                    "givenIn": "turns",
+                    "value": 0,
+                    "variation": {
+                        "givenIn": "absolute",
+                        "value": 2,
+                        "plusOrMinus": true
+                    }
+                }
+            },
+            "spawnOn": "reload",
+            "spawnDelay": {
+                "givenIn": "ms",
+                "value": 0
+            }
+        },
+        "recoilImpulse": {
+            "direction": {
+                "perp": {
+                    "givenIn": "scale",
+                    "value": 0
+                },
+                "parr": {
+                    "givenIn": "scale",
+                    "value": 0.25
+                }
+            },
+            "duration": {
+                "givenIn": "ms",
+                "value": 100
+            }
+        },
+        "possibleFireModes": [
+            "semi"
+        ],
+        "burstProps": {
+            "shotDelay": {
+                "givenIn": "RPM",
+                "value": 0
+            },
+            "burstDelay": {
+                "givenIn": "ms",
+                "value": 0
+            }
+        }
+    },
+    {
+        "name": "M1911",
+        "summary": {
+            "class": "semi_pistol",
+            "engagementDistance": {
+                "min": {
+                    "givenIn": "absolute",
+                    "value": 200
+                },
+                "max": {
+                    "givenIn": "absolute",
+                    "value": 1500
+                }
+            },
+            "shouldNoslow": false,
+            "role": "secondary"
+        },
+        "dual": false,
+        "images": {
+            "loot": "assets/items/firearms/M1911/loot-weapon-m1911.svg",
+            "held": "assets/items/firearms/shared/gun-short.png",
+            "silhouette": "assets/items/firearms/M1911/m1911-silhouette.png"
+        },
+        "tint": "#929292",
+        "ballistics": {
+            "damage": 14,
+            "velocity": {
+                "givenIn": "absolute",
+                "value": 4000
+            },
+            "range": {
+                "givenIn": "absolute",
+                "value": 4400
+            },
+            "tracer": {
+                "width": {
+                    "givenIn": "scale",
+                    "value": 0.15
+                },
+                "height": {
+                    "givenIn": "scale",
+                    "value": 10
+                }
+            },
+            "obstacleMult": 1,
+            "headshotMult": 2,
+            "fsa": {
+                "enabled": false,
+                "rechargeTime": {
+                    "givenIn": "s",
+                    "value": 1e10
+                }
+            },
+            "falloff": 0.7,
+            "projectiles": 1
+        },
+        "suppressed": false,
+        "caliber": ".45ACP",
+        "firingDelay": {
+            "givenIn": "ms",
+            "value": 100
+        },
+        "deployGroup": 0,
+        "accuracy": {
+            "default": {
+                "givenIn": "degrees",
+                "value": 6
+            },
+            "moving": {
+                "givenIn": "degrees",
+                "value": 7
+            }
+        },
+        "moveSpeedPenalties": {
+            "active": {
+                "givenIn": "scale",
+                "value": 0
+            },
+            "firing": {
+                "givenIn": "scale",
+                "value": 0
+            }
+        },
+        "imageOffset": {
+            "perp": {
+                "givenIn": "scale",
+                "value": 0
+            },
+            "parr": {
+                "givenIn": "scale",
+                "value": 1.35
+            }
+        },
+        "dimensions": {
+            "width": {
+                "givenIn": "scale",
+                "value": 0.43359375
+            },
+            "height": {
+                "givenIn": "scale",
+                "value": 1.5
+            },
+            "layer": 0
+        },
+        "reload": {
+            "duration": {
+                "givenIn": "s",
+                "value": 2.1
+            },
+            "ammoReloaded": "all",
+            "chain": false
+        },
+        "magazineCapacity": {
+            "normal": 7,
+            "firepower": 12
+        },
+        "switchDelay": {
+            "givenIn": "ms",
+            "value": 250
+        },
+        "handPositions": {
+            "leftHand": {
+                "perp": {
+                    "givenIn": "scale",
+                    "value": 0.1
+                },
+                "parr": {
+                    "givenIn": "scale",
+                    "value": 0.85
+                }
+            }
+        },
+        "projectileSpawnOffset": {
+            "perp": {
+                "givenIn": "absolute",
+                "value": 0
+            },
+            "parr": {
+                "givenIn": "absolute",
+                "value": 0
+            }
+        },
+        "casings": {
+            "spawnOffset": {
+                "perp": {
+                    "givenIn": "absolute",
+                    "value": 0
+                },
+                "parr": {
+                    "givenIn": "absolute",
+                    "value": 20
+                }
+            },
+            "velocity": {
+                "perp": {
+                    "givenIn": "absolute",
+                    "value": -100,
+                    "variation": {
+                        "givenIn": "ratio",
+                        "value": 0.4,
+                        "plusOrMinus": true
+                    }
+                },
+                "parr": {
+                    "givenIn": "absolute",
+                    "value": 0,
+                    "variation": {
+                        "givenIn": "absolute",
+                        "value": 40,
+                        "plusOrMinus": true
+                    }
+                },
+                "angular": {
+                    "givenIn": "turns",
+                    "value": 2,
+                    "variation": {
+                        "givenIn": "ratio",
+                        "value": 1,
+                        "plusOrMinus": false
+                    }
+                }
+            },
+            "spawnOn": "fire",
+            "spawnDelay": {
+                "givenIn": "ms",
+                "value": 0
+            }
+        },
+        "recoilImpulse": {
+            "direction": {
+                "perp": {
+                    "givenIn": "scale",
+                    "value": 0
+                },
+                "parr": {
+                    "givenIn": "scale",
+                    "value": 0.09
+                }
+            },
+            "duration": {
+                "givenIn": "ms",
+                "value": 80
+            }
+        },
+        "possibleFireModes": [
+            "semi"
+        ],
+        "burstProps": {
+            "shotDelay": {
+                "givenIn": "RPM",
+                "value": 600
+            },
+            "burstDelay": {
+                "givenIn": "ms",
+                "value": 0
+            }
+        }
+    },
+    {
+        "name": "Dual M1911",
+        "summary": {
+            "class": "dual_semi_pistol",
+            "engagementDistance": {
+                "min": {
+                    "givenIn": "absolute",
+                    "value": 250
+                },
+                "max": {
+                    "givenIn": "absolute",
+                    "value": 1000
+                }
+            },
+            "shouldNoslow": false,
+            "role": "secondary"
+        },
+        "dual": true,
+        "images": {
+            "loot": "assets/items/firearms/Dual M1911/loot-weapon-m1911-dual.svg",
+            "held": "assets/items/firearms/shared/gun-short.png",
+            "silhouette": "assets/items/firearms/Dual M1911/m1911-dual-silhouette.png"
+        },
+        "tint": "#929292",
+        "ballistics": {
+            "damage": 14,
+            "velocity": {
+                "givenIn": "absolute",
+                "value": 4000
+            },
+            "range": {
+                "givenIn": "absolute",
+                "value": 4400
+            },
+            "tracer": {
+                "width": {
+                    "givenIn": "scale",
+                    "value": 0.15
+                },
+                "height": {
+                    "givenIn": "scale",
+                    "value": 10
+                }
+            },
+            "obstacleMult": 1,
+            "headshotMult": 2,
+            "fsa": {
+                "enabled": false,
+                "rechargeTime": {
+                    "givenIn": "s",
+                    "value": 1e10
+                }
+            },
+            "falloff": 0.7,
+            "projectiles": 1
+        },
+        "suppressed": false,
+        "caliber": ".45ACP",
+        "firingDelay": {
+            "givenIn": "ms",
+            "value": 85
+        },
+        "deployGroup": 0,
+        "accuracy": {
+            "default": {
+                "givenIn": "degrees",
+                "value": 9.5
+            },
+            "moving": {
+                "givenIn": "degrees",
+                "value": 8
+            }
+        },
+        "moveSpeedPenalties": {
+            "active": {
+                "givenIn": "scale",
+                "value": 0
+            },
+            "firing": {
+                "givenIn": "scale",
+                "value": 0
+            }
+        },
+        "imageOffset": {
+            "perp": {
+                "givenIn": "scale",
+                "value": 0.525
+            },
+            "parr": {
+                "givenIn": "scale",
+                "value": 1.35
+            }
+        },
+        "dimensions": {
+            "width": {
+                "givenIn": "scale",
+                "value": 0.43359375
+            },
+            "height": {
+                "givenIn": "scale",
+                "value": 1.5
+            },
+            "layer": 0
+        },
+        "reload": {
+            "duration": {
+                "givenIn": "s",
+                "value": 3.1
+            },
+            "ammoReloaded": "all",
+            "chain": false
+        },
+        "magazineCapacity": {
+            "normal": 14,
+            "firepower": 24
+        },
+        "switchDelay": {
+            "givenIn": "ms",
+            "value": 250
+        },
+        "handPositions": {
+            "leftHand": {
+                "perp": {
+                    "givenIn": "scale",
+                    "value": 0.525
+                },
+                "parr": {
+                    "givenIn": "scale",
+                    "value": 0.85
+                }
+            },
+            "rightHand": {
+                "perp": {
+                    "givenIn": "scale",
+                    "value": -0.525
+                },
+                "parr": {
+                    "givenIn": "scale",
+                    "value": 0.85
+                }
+            }
+        },
+        "projectileSpawnOffset": {
+            "perp": {
+                "givenIn": "scale",
+                "value": 0.525
+            },
+            "parr": {
+                "givenIn": "absolute",
+                "value": 0
+            }
+        },
+        "casings": {
+            "spawnOffset": {
+                "perp": {
+                    "givenIn": "scale",
+                    "value": 0.525
+                },
+                "parr": {
+                    "givenIn": "absolute",
+                    "value": 20
+                }
+            },
+            "velocity": {
+                "perp": {
+                    "givenIn": "absolute",
+                    "value": -100,
+                    "variation": {
+                        "givenIn": "ratio",
+                        "value": 0.4,
+                        "plusOrMinus": true
+                    }
+                },
+                "parr": {
+                    "givenIn": "absolute",
+                    "value": 0,
+                    "variation": {
+                        "givenIn": "absolute",
+                        "value": 40,
+                        "plusOrMinus": true
+                    }
+                },
+                "angular": {
+                    "givenIn": "turns",
+                    "value": 2,
+                    "variation": {
+                        "givenIn": "ratio",
+                        "value": 1,
+                        "plusOrMinus": false
+                    }
+                }
+            },
+            "spawnOn": "fire",
+            "spawnDelay": {
+                "givenIn": "ms",
+                "value": 0
+            }
+        },
+        "recoilImpulse": {
+            "direction": {
+                "perp": {
+                    "givenIn": "scale",
+                    "value": 0
+                },
+                "parr": {
+                    "givenIn": "scale",
+                    "value": 0.09
+                }
+            },
+            "duration": {
+                "givenIn": "ms",
+                "value": 80
+            }
+        },
+        "possibleFireModes": [
+            "semi"
+        ],
+        "burstProps": {
+            "shotDelay": {
+                "givenIn": "RPM",
+                "value": 600
             },
             "burstDelay": {
                 "givenIn": "ms",

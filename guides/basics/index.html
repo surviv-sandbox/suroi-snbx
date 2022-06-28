@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>surviv sandbox guides—basics</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="../style.css">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script src="../internalLinks.js" defer></script>
+</head>
+
+<body>
+    <article>
+        <header>
+            Basics
+        </header>
+        <main>
+            <div id="article-container">
+                <h2>
+                    The basics
+                </h2>
+                <h3>
+                    Foreword
+                </h3>
+
+                <p>
+                    Welcome to the guide for modifying <em>surviv.io sandbox</em>! This tool is
+                    designed to help conceptors (and anyone with an idea for surviv.io) visualize that idea in a more
+                    conrete way in an environment as similar to surviv as possible; while the project is still very much
+                    in development, there's still fun to be had. This series of guides will hopefully give you all the
+                    tools you need to implement your concepts. Note that some sections may be more technical than
+                    others; warnings and other information relevant to proper understanding of these guides will be
+                    provided.
+                </p>
+
+                <h3>
+                    Prerequisites
+                </h3>
+
+                <ul>
+                    <li>
+                        A computer (mobile or other such devices will not work)
+                    </li>
+                    <li>
+                        Basic computer literacy, such as knowing how to navigate your hard drive, moving around
+                        files, what an address is, etc.
+                    </li>
+                    <li>
+                        <em>(optional)</em> Understanding of—or even fluency in—Javascript and JSON
+                    </li>
+                </ul>
+
+                <h3>
+                    Getting the code
+                </h3>
+                <p>
+                    Currently, the game is hosted on GitHub. However, for us to make lasting
+                    changes—or any changes, for that matter—, we must have a local copy of the game on our computer for
+                    us to work with. Navigate to the <a href="https://github.com/surviv-sandbox/suroi-snbx">game's
+                        repositry on GitHub</a> and <a
+                        href="https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository ">clone
+                        it</a>. Once cloned, you can move it from your Downloads folder to somewhere more convenient if
+                    you wish.
+                </p>
+
+                <h3>
+                    Code editors
+                </h3>
+
+                <p>
+                    While optional, serious modders (or anyone who dislikes headaches) will want to consider installing
+                    a dedicated code editor; these software provide syntax highlighting and code completion, two tools
+                    to aid in developping mods, even mods as simple as modifying JSON files. <a
+                        href="https://code.visualstudio.com/">Visual Studio Code</a> is a great editor—more or less the
+                    gold standard at this point—, and will provide you with everything you need.
+                </p>
+                <div style="display: flex; justify-content: space-evenly;">
+                    <div class="code-block">
+                        // A program for calculating π<br>
+                        <br>
+                        function fact(x: number): number {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;if (x &lt; 2) {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return x || 1;<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                        <br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;return fact(x - 1);<br>
+                        }<br>
+                        <br>
+                        const iterationCount: number = 100;<br>
+                        <br>
+                        const π = 2 * (new Array&lt;void&gt;(iterationCount))<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;.map((v: void, i: number) => fact(i) / fact(fact(2 * i + 1)))<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;.reduce((prev: number, curr: number) => prev + curr);<br>
+                        <br>
+                        console.log(`π is about ${π}`);
+                    </div>
+                    <div class="code-block">
+                        <span class="comment">// A program for calculating π</span><br>
+                        <br>
+                        <span class="keyword">function</span> <span class="function">fact</span>(<span
+                            class="argument">x</span>:
+                        <span class="type-annotation">number</span>): <span class="type-annotation">number</span> {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="ctrlflw-keyword">if</span> (<span class="argument">x</span>
+                        &lt; <span class="number">2</span>) {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ctrlflw-keyword">return</span>
+                        <span class="argument">x</span> ||
+                        <span class="number">1</span>;<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                        <br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="ctrlflw-keyword">return</span> <span
+                            class="function">fact</span>(<span class="argument">x</span> - <span
+                            class="number">1</span>);<br>
+                        }<br>
+                        <br>
+                        <span class="keyword">const</span> <span class="const">iterationCount</span>:
+                        <span class="type-annotation">number</span> = <span class="number">100</span>;<br>
+                        <br>
+                        <span class="keyword">const</span> <span class="const">π</span> = <span class="number">2</span>
+                        * (<span class="keyword">new</span>
+                        <span class="class">Array</span>&lt;<span class="type-annotation">void</span>&gt;(<span
+                            class="const">iterationCount</span>))<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;.<span class="method">map</span>((<span class="argument">v</span>:
+                        <span class="type-annotation">void</span>, <span class="argument">i</span>: <span
+                            class="type-annotation">number</span>) <span class="keyword">=></span> <span
+                            class="function">fact</span>(<span class="argument">i</span>)
+                        / <span class="function">fact</span>(<span class="function">fact</span>(<span
+                            class="number">2</span> * <span class="argument">i</span> +
+                        <span class="number">1</span>)))<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;.<span class="method">reduce</span>((<span class="argument">prev</span>:
+                        <span class="type-annotation">number</span>, <span class="argument">curr</span>:
+                        <span class="type-annotation">number</span>)
+                        <span class="keyword">=></span> <span class="argument">prev</span> + <span
+                            class="argument">curr</span>);<br>
+                        <br>
+                        <span class="var">console</span>.<span class="function">log</span>(<span
+                            class="template-string-literal">`π is about
+                        </span><span class="template-string-expr">${</span><span class="const">π</span><span
+                            class="template-string-expr">}</span><span class="template-strein">`</span>);
+                    </div>
+                </div>
+                <p style="text-align: center;"><em>A comparison for your consideration (using VSCode's default coloring
+                        scheme)</em></p>
+                <br>
+
+                <h3>
+                    localhost
+                </h3>
+
+                <p>
+                    In order to run the game, your computer needs to host a local server (hence the name). See this <a
+                        href="https://developer.mozilla.org/en-US/docs/Learn/Common_questions/set_up_a_local_testing_server">MDN
+                        article on the topic</a> for the required procedure and justification—MDN is also just an
+                    amazing resource for anything related to web development, whether it be Javascript help, CSS stlying
+                    syntax, HTML design practices, HTTP guides or whatever else.
+                </p>
+
+                <h3>
+                    And with that…
+                </h3>
+
+                <p>…you're ready to start! Click on any of the links below to navigate to that tutorial.</p>
+
+                <div class="warning"><span style="font-family: 'roboto bold'; font-size: 18px;">Warning:</span><br>
+                    Since this project is still in early development, it is inevitable that
+                    things will change. Firstly, you will have to re-integrate your mods with every new release, and
+                    said re-integration may not be as simple as copy-pasting; more extensive and rigorous adaptations
+                    may be necessary in order to comply to any changes made.
+                </div>
+
+                <ul class="no-margin">
+                    <li>
+                        <a href="../guns/index.html">Firearms</a>
+                    </li>
+                    <li>
+                        <a href="../ammo/index.html">Ammunition</a>
+                    </li>
+                    <li>
+                        <a href="../explosions/index.html">Explosions</a>
+                    </li>
+                </ul>
+            </div>
+        </main>
+        <footer>
+            <p style="margin: 0 1%; padding: 0.5% 0; font-size: 12px;">"surviv.io" is owned by <a
+                    href="https://www.kongregate.com">Kongregate</a>. Use of game assets is authorized on the condition
+                that this project not be monetized in any way, shape or form. Written by eiπ on June 16<sup>th</sup>
+                2022, last updated / reviewed on June 26<sup>th</sup> 2020 for surviv sandbox version 0.7.0. You can <a
+                    href="https://discord.gg/uGkCbYbUAX">join the project's Discord here</a>. Color scheme heavily
+                inspired by the <a href="https://survivio.fandom.com/">surviv.io wiki</a>.
+            </p>
+        </footer>
+    </article>
+</body>
+
+</html>

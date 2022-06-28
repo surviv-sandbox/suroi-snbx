@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>surviv sandbox guides—ammunition</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="../style.css">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script src="../internalLinks.js" defer></script>
+    <script src="index.js" defer></script>
+</head>
+
+<body>
+    <article>
+        <header>
+            Ammunition
+        </header>
+        <main>
+            <div id="article-container">
+                <h2>
+                    Ammunition
+                </h2>
+
+                <p>
+                    Ammunition is another important aspect of the game; without it, guns are useless. While currently
+                    somewhat primitive by virtue of being in active development, the sandbox nevertheless lets you
+                    control the way ammunition behaves, from its color to casing and type.
+                </p>
+
+                <h3>
+                    Prerequisites
+                </h3>
+
+                <ul>
+                    <li>
+                        Everything required in the <a href="../basics/index.html">basic guide</a>
+                    </li>
+                    <li>
+                        <em>(optional)</em> Art for your ammunition
+                    </li>
+                </ul>
+
+                <h3>
+                    Preparing the images
+                </h3>
+
+                <p>
+                    As with <a href="../guns/index.html">firearms</a>, it's a good idea to first organize and move our
+                    images into an appropriate spot before modifying any JSON files, as the addresses referenced there
+                    depend on your placement choice. In the <code>assets/items/ammo</code> directory lives all the
+                    assets related to ammo—as of right now, they're mostly casings, except for 40mm, which has a special
+                    projectile. You'll also find <code>tracer.png</code>; like the stick images for firearms, this
+                    serves as a default, and the vast majority of ammo types use this.
+                </p>
+
+                <h3>
+                    Editing the JSON file
+                </h3>
+
+                <p>
+                    We must now embed the ammo type into the game by embedding it into ammo.json: a file that contains
+                    information about every ammo type in the game. Thankfully, the data needed for ammo types is quite
+                    minimalistic, unlike <a href="../guns/index.html#h3-2">the monstrosity that is a firearm's JSON</a>;
+                    that being said, we will still go over each field individually to explain what it does. Navigate to
+                    <code>assets/json/ammo.json</code>, open it in your text editor of choice, and scroll to the bottom
+                    of the file. Find the last leftmost closing curly brace (<code>}</code>) and add a comma after the
+                    closing curly brace that precedes it. Then, paste in the template below.
+                </p>
+
+                <div style="display: flex; justify-content: space-evenly;">
+                    <button id="json-prev-expand">Expand</button>
+                    <button id="json-prev-copy">Copy</button>
+                </div>
+                <div id="json-prev" class="code-block">
+                    <span class="json-key">""</span>: {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"tints"</span>: {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"normal"</span>: <span
+                        class="json-string">""</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"saturated"</span>: <span
+                        class="json-string">""</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"saturated_alt"</span>: <span
+                        class="json-string">""</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"chambered"</span>: <span
+                        class="json-string">""</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;},<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"alpha"</span>: {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"rate"</span>: <span
+                        class="json-number">0</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"min"</span>: <span
+                        class="json-number">0</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"max"</span>: <span
+                        class="json-number">0</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;},<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"spawnVar"</span>: {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"mean"</span>: <span
+                        class="json-number">0</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"variation"</span>: <span
+                        class="json-number">0</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"plusOrMinus"</span>:
+                    <span class="json-boolean">false</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;},<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"imageOffset"</span>: {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"parr"</span>: <span
+                        class="json-number">0</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"perp"</span>: <span
+                        class="json-number">0</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;},<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"projectileInfo"</span>: {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"type"</span>: <span
+                        class="json-string">"bullet"</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"img"</span>: <span
+                        class="json-string">""</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;},<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"casing"</span>: {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"img"</span>: <span
+                        class="json-string">""</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"lifetime"</span>: {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="json-key">"givenIn"</span>: <span class="json-string">""</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="json-key">"value"</span>: <span class="json-number">0</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="json-key">"variation"</span>: {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="json-key">"givenIn"</span>: <span class="json-string">""</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="json-key">"value"</span>: <span class="json-string">""</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="json-key">"plusOrMinus"</span>:
+                    <span class="json-boolean">false</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"width"</span>: <span
+                        class="json-number">0</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"height"</span>: <span
+                        class="json-number">0</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                    }<br>
+                </div>
+                <p>
+                    Now let's look at each one individually. Each field is expressed with the following syntax:<br>
+                    (<em><span class="json-key">field-name</span></em>:
+                    <em><span class="type-annotation">field-type</span></em>): <em>description</em><br>
+                    <br>
+                    If a field is optional, there will be a question mark between the field's name and the colon
+                    following it.<br>
+                    (<em><span class="json-key">optional-field</span></em>?: <em><span
+                            class="type-annotation">field-type</span></em>): <em>description</em><br>
+                    <br>
+                <div class="infobox"><span style="font-family: 'roboto bold'; font-size: 18px;">Info</span>:<br>
+                    Some basic types:
+                    <ul>
+                        <li>
+                            <code><span class="type-annotation">string</span></code> represents any type of text, always
+                            wrapped in double quotes, "like this".
+                        </li>
+                        <li>
+                            <code><span class="type-annotation">number</span></code> represents any number: whole,
+                            decimal, positive or negative. Scientific notation is done by appending an 'e', followed by
+                            the desired exponent (2.3 &times; 10<sup>4</sup> becomes <code>2.3e4</code>).
+                        </li>
+                        <li>
+                            <code><span class="type-annotation">boolean</span></code> represents either
+                            <code>true</code> or
+                            <code>false</code>, and nothing else.
+                        </li>
+                        <li>
+                            <code><span class="type-annotation">object</span></code> is a generic catch-all for
+                            properties whose values in turn have properties. (ex: if we consider a house to be an
+                            object, with multiple properties such as its worth or land area, then its owner
+                            property—which represents the person who owns the house—would also be an object with its own
+                            properties, like age, name and so on)
+                        </li>
+                        <li>
+                            <code><span class="type-annotation">T</span> | <span class="type-annotation">U</span></code>
+                            represents either type <span class="type-annotation">T</span> or type <span
+                                class="type-annotation">U</span>, meaning that the given variable can be of either type
+                            (ex: <span class="type-annotation">string</span> | <span
+                                class="type-annotation">number</span> means that something is either a string or a
+                            number).
+                        </li>
+                        <li>
+                            <code><span class="type-annotation">T</span>[]</code> is a collection (formally known in
+                            Javascript as an
+                            <em>array</em>) of values, with all of those values being of type <span
+                                class="type-annotation">T</span>. (ex: an array of booleans would be notated <span
+                                class="type-annotation">boolean</span>[])
+                        </li>
+                    </ul>
+                    Literal values can appear too. Consider <span class="number">0</span> | <span
+                        class="string-literal">"woohoo"</span>: this is saying that the attached value is either 0 or
+                    the string "woohoo".
+                </div>
+                </p>
+
+                <button id="info-prev-expand">Expand</button>
+                <div id="info-prev" class="code-block">
+                    <p class="no-margin">Note that the first field is ammo type's name. See the other ammo types in the
+                        file for an example.</p><br>
+                    <ul class="no-margin">
+                        <li>
+                            (<span class="json-key">tints</span>:
+                            <span class="type-annotation">object</span>): Data about the colors of the tracers guns
+                            using this ammo type
+                            <ul class="no-margin">
+                                <li>
+                                    (<span class="json-key">normal</span>:
+                                    <span class="type-annotation">string</span>): The regular color of tracers using
+                                    this ammo type; most shots will be colored this way.
+                                </li>
+                                <li>
+                                    (<span class="json-key">saturated</span>:
+                                    <span class="type-annotation">string</span>): While unused in surviv, in the
+                                    sandbox, a bonus feature called <code>headshotsUseSaturatedTracers</code> allows
+                                    tracers belonging to bullets that are headshots to, well, use this special color.
+                                </li>
+                                <li>
+                                    (<span class="json-key">saturated_alt</span>:
+                                    <span class="type-annotation">string</span>): Some ammo types, like 9mm and 12
+                                    gauge, don't have saturated tracer colors (well they do, but they're copies of their
+                                    respective regular colors). In conjunction with another bonus feature,
+                                    <code>useInterpolatedSaturatedTracers</code>, this field allows headshot tracers
+                                    to use the color you define here.
+                                </li>
+                                <li>
+                                    (<span class="json-key">chambered</span>: Currently unused by the sandbox, whether
+                                    or not this color is used is up to whatever perks the player currently has. Usually
+                                    fully-saturated versions of the normal color.
+                                </li>
+                            </ul>
+                        </li>
+                        <li>
+                            (<span class="json-key">alpha</span>:
+                            <span class="type-annotation">object</span>): Data about the tracer's opacity. Only applies
+                            to suppressed weapons using this ammo type.
+                            <ul class="no-margin">
+                                <li>
+                                    (<span class="json-key">rate</span>:
+                                    <span class="type-annotation">number</span>): A number that the current opacity is
+                                    multiplied by every game update until it reaches the minimum or maximum opacity.
+                                    Tracers start at opacity 1. (fully opaque)
+                                </li>
+                                <li>
+                                    (<span class="json-key">min</span>:
+                                    <span class="type-annotation">number</span>): The minimum opacity this tracer can
+                                    reach.
+                                </li>
+                                <li>
+                                    (<span class="json-key">max</span>:
+                                    <span class="type-annotation">number</span>): The maximum opacity this tracer can
+                                    reach. Do not set this value lower than 1.
+                                </li>
+                            </ul>
+                        </li>
+                        <li>
+                            (<span class="json-key">spawnVar</span>:
+                            <span class="type-annotation">object</span>): Used uniquely by shotguns as of writing, these
+                            properties define how much variation can occur in where this ammo type's bullets spawn. All
+                            measurements are given in relation to the player size. ("scale" as opposed to "absolute") If
+                            one draws a circle with radius <code>mean</code> centered around the bullet's regular spawn
+                            position, the circle corresponds to the bullet's possible spawn locations.
+                            <ul class="no-margin">
+                                <li>
+                                    (<span class="json-key">mean</span>:
+                                    <span class="type-annotation">number</span>): The average radius of the
+                                    aforementioned circle.
+                                </li>
+                                <li>
+                                    (<span class="json-key">variation</span>:
+                                    <span class="type-annotation">number</span>): By how much the above value can
+                                    change. Given relative to player size and <b>not</b> relative to the mean.
+                                </li>
+                                <li>
+                                    (<span class="json-key">plusOrMinus</span>:
+                                    <span class="type-annotation">number</span>): Whether the above variation only
+                                    applies in one direction (<code>false</code>) or in both (<code>true</code>).
+                                </li>
+                            </ul>
+                        </li>
+                        <li>
+                            (<span class="json-key">imageOffset</span>:
+                            <span class="type-annotation">object</span>): Describes the offset a bullet's image will be
+                            drawn relative to its hitbox (the hitbox is always located at the bullet's "true" position).
+                            All measurements are given in relation to the player size. ("scale" as opposed to
+                            "absolute")
+                            <ul class="no-margin">
+                                <li>
+                                    (<span class="json-key">parr</span>:
+                                    <span class="type-annotation">number</span>): The offset along the axis parallel to
+                                    the bullet's trajectory; positive is backwards, negative is forwards.
+                                </li>
+                                <li>
+                                    (<span class="json-key">perp</span>:
+                                    <span class="type-annotation">number</span>): The offset along the axis
+                                    perpendicular to the bullet's trajectory; positive is right and negative is left.
+                                </li>
+                            </ul>
+                        </li>
+                        <li>
+                            (<span class="json-key">projectileInfo</span>:
+                            <span class="type-annotation">object</span>): See <a href="#h3-3">below</a>.
+                        </li>
+                        <li>
+                            (<span class="json-key">casing</span>:
+                            <span class="type-annotation">object</span>): Describes the casing guns using this ammo type
+                            eject; while the firearms controls the spawn offset and velocity, the ammo type controls the
+                            image, lifetime and size.
+                            <div class="imp-dis"><span
+                                    style="font-family: 'roboto bold'; font-size: 18px;">Implementation
+                                    discrepancy:</span><br>
+                                These values have not been validated through comparisons with surviv.io, and are just
+                                what "look right".
+                            </div>
+                            <ul class="no-margin">
+                                <li>
+                                    (<span class="json-key">img</span>:
+                                    <span class="type-annotation">string</span>): A path to the casing's image. If you
+                                    put the images in the <a href="#h3-2">recommended directory</a>, your path should
+                                    start with <code>assets/items/ammo</code>.
+                                </li>
+                                <li>
+                                    (<span class="json-key">lifetime</span>:
+                                    <span class="type-annotation">object</span>): Data about how long this casing lives
+                                    for before despawning.
+                                    <ul class="no-margin">
+                                        <li>
+                                            (<span class="json-key">givenIn</span>: <span class="json-string">"s"</span>
+                                            |
+                                            <span class="json-string">"ms"</span> |
+                                            <span class="json-string">"RPM"</span>): Whether the provided value
+                                            is in seconds, milliseconds or in rounds/minute. The latter is quite rare.
+                                        </li>
+                                        <li>
+                                            (<span class="json-key">value</span>:
+                                            <span class="type-annotation">object</span>): The amount of time after
+                                            spawning that this casing will disappear.
+                                        </li>
+                                        <li>
+                                            (<span class="json-key">variation</span>: <span
+                                                class="type-annotation">object</span>): Info about variations in
+                                            despawn time.
+                                            <ul class="no-margin">
+                                                <li>
+                                                    (<span class="json-key">givenIn</span>: <span
+                                                        class="json-string">"ratio"</span> |
+                                                    <span class="json-string">"absolute"</span>): Whether the provided
+                                                    value is given relative to the previously provided value for the
+                                                    "value" field ("ratio") or given in milliseconds ("absolute").
+                                                </li>
+                                                <li>
+                                                    (<span class="json-key">value</span>: <span
+                                                        class="type-annotation">number</span>):
+                                                    The variation in despawn time.
+                                                </li>
+                                                <li>
+                                                    (<span class="json-key">plusOrMinus</span>: <span
+                                                        class="type-annotation">boolean</span>): Whether or not the
+                                                    variation can apply in both directions (<code>true</code>) or only
+                                                    one (<code>false</code>).
+                                                </li>
+                                            </ul>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    (<span class="json-key">width</span>: <span class="type-annotation">number</span>):
+                                    The casing's width, given in absolute units.
+                                </li>
+                                <li>
+                                    (<span class="json-key">height</span>: <span class="type-annotation">number</span>):
+                                    The casing's height (or length), given in absolute units. Consult your image to find
+                                    its aspect ratio; that way, you can tweak these values to maintain it.
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+
+                <h3 style="margin: 0.5em 0 0 0">
+                    The <code>projectileInfo</code> field
+                </h3>
+
+                <p>
+                    Since ammo types (more specifically 40mm) can spawn in explosions and generally do things other than
+                    be solid projectiles, this must be accounted for in the JSON data. However, because each role
+                    requires different things—a regular bullet doesn't have a blast radius, for example—it'd be unwise
+                    to simply have one catch-all template for ammo types. For this reason, it's worth dedicating an
+                    entire section to the <code>projectileInfo</code> field, as it will become (though currently isn't
+                    really) too complex for a simple one to two line explanation.<br>
+                    <br>
+                    That being said, some properties are shared by all of them.
+                </p>
+
+                <ul class="no-margin">
+                    <li>
+                        (<span class="json-key">img</span>: <span class="type-annotation">string</span>): The address of
+                        the projectile's "world" image. Most ammo types use tracers, and therefore have this property
+                        set to <code>assets/items/ammo/tracer.png</code>.
+                    </li>
+                    <li>
+                        (<span class="json-key">spinVel</span>?: <span class="type-annotation">string</span>):
+                        Information about how this projectile spins. May be omitted if the projectile does not spin, as
+                        is the case for the majority of them.
+                        <ul class="no-margin">
+                            <li>
+                                (<span class="json-key">givenIn</span>: <span class="json-string">"degrees"</span>
+                                |
+                                <span class="json-string">"radians"</span> |
+                                <span class="json-string">"gradians"</span> |
+                                <span class="json-string">"turns"</span>): Whether the provided value is in degrees,
+                                radians, gradians or number of turns. Turns are typically used.
+                            </li>
+                            <li>
+                                (<span class="json-key">value</span>: <span class="type-annotation">number</span>):
+                                The projectile's angular velocity. Positive values make the projectile turn clockwise.
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <p style="margin: 2em 0 0 0">
+                    The <code>type</code> property will dictate what other
+                    properties appear on this object.
+                </p>
+
+                <ul>
+                    <li>
+                        <h4><code>"type": "bullet"</code></h4>
+                        <p>The simplest. No additional properties required, it speaks for itself. A type of "bullet"
+                            indicates that this projectile will self-destruct on collision, applying damage to whatever
+                            it collided with.</p>
+                    </li>
+                    <li>
+                        <h4><code>"type": "explosive"</code></h4>
+                        <p>Indicates that, when certain conditions to be explained shortly are met, this projectile will
+                            spawn
+                            an explosion.</p>
+                        <ul class="no-margin">
+                            <li>
+                                (<span class="json-key">explosionType</span>: <span
+                                    class="type-annotation">string</span>): A string containing the name of an explosion
+                                defined in <a href="../../assets/json/explosions.json"><code>explosions.json</code></a>.
+                            </li>
+                            <li>
+                                (<span class="json-key">heightPeak</span>: <span class="type-annotation">number</span>):
+                                Used to affect the zoom effect imparted on the projectile's image.
+                            </li>
+                            <li>
+                                (<span class="json-key">explodeOnContact</span>: <span
+                                    class="type-annotation">boolean</span>): Whether this projectile will spawn its
+                                explosion when colliding with an object or player.
+                            </li>
+                            <li>
+                                (<span class="json-key">maxDist</span>: <span class="type-annotation">object</span>):
+                                The maximum distance this projectile will travel before detonating.
+                                <div class="warning"><span
+                                        style="font-family: 'roboto bold'; font-size: 18px;">Warning:</span><br>
+                                    surviv.io tends to favor the use fuse times as opposed to maximum range; the sandbox
+                                    will soon adopt this as well.
+                                </div>
+                                <ul class="no-margin">
+                                    <li>
+                                        (<span class="json-key">givenIn</span>: <span class="json-string">"scale"</span>
+                                        | <span class="json-string">"absolute"</span>): Whether the provided value is
+                                        relative to the player's size ("scale") or to the world's coordinate system
+                                        ("absolute").
+                                    </li>
+                                    <li>
+                                        (<span class="json-key">value</span>: <span
+                                            class="type-annotation">number</span>): The maximum distance.
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <p>For those familiar with Typescript's syntax, what follows is the complete type annotation for an ammo
+                    type, taken from <code>util.d.ts</code>.</p>
+
+                <button id="ts-prev-expand">Show</button>
+                <div id="ts-prev" class="code-block">
+                    <span class="keyword">type</span> <span class="custom-type">scaleOrAbsolute</span> = {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">givenIn</span>: <span
+                        class="string-literal">"scale"</span> | <span class="string-literal">"absolute"</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">value</span>: <span
+                        class="type-annotation">number</span>;<br>
+                    };<br>
+                    <span class="keyword">type</span> <span class="custom-type">ratioOrAbsolute</span> = {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">givenIn</span>: <span
+                        class="string-literal">"ratio"</span> | <span class="string-literal">"absolute"</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">value</span>: <span
+                        class="type-annotation">number</span>;<br>
+                    };<br>
+                    <span class="keyword">type</span> <span class="custom-type">angleModes</span> = {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">givenIn</span>: <span
+                        class="string-literal">"degrees"</span> | <span class="string-literal">"radians</span>" |
+                    <span class="string-literal">"gradians"</span> | <span class="string-literal">"turns"</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">value</span>: <span
+                        class="type-annotation">number</span>;<br>
+                    };<br>
+                    <span class="keyword">type</span> <span class="custom-type">timeModes</span> = {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">givenIn</span>: <span
+                        class="string-literal">"RPM"</span> | <span class="string-literal">"ms"</span> | <span
+                        class="string-literal">"s"</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">value</span>: <span
+                        class="type-annotation">number</span>;<br>
+                    };<br>
+                    <span class="keyword">type</span> <span class="custom-type">offsetData</span> = {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">perp</span>: <span
+                        class="custom-type">scaleOrAbsolute</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">parr</span>: <span
+                        class="custom-type">scaleOrAbsolute</span>;<br>
+                    };<br>
+                    <span class="keyword">type</span> <span class="custom-type">variation</span> = {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">variation</span>: <span
+                        class="custom-type">ratioOrAbsolute</span> & {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">plusOrMinus</span>:
+                    <span class="type-annotation">boolean</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;};<br>
+                    };<br>
+                    <span class="keyword">type</span> <span class="custom-type">ammoData</span> = {
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">tints</span>: {
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">normal</span>: <span
+                        class="type-annotation">string</span>;
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">saturated</span>: <span
+                        class="type-annotation">string</span>;
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">saturated_alt</span>?:
+                    <span class="type-annotation">string</span>;
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">chambered</span>: <span
+                        class="type-annotation">string</span>;
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;};
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">alpha</span>: {
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">rate</span>: <span
+                        class="type-annotation">number</span>;
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">min</span>: <span
+                        class="type-annotation">number</span>;
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">max</span>: <span
+                        class="type-annotation">number</span>;
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;};
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">spawnVar</span>: {
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">mean</span>: <span
+                        class="type-annotation">number</span>;
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">variation</span>: <span
+                        class="type-annotation">number</span>;
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">plusOrMinus</span>:
+                    <span class="type-annotation">boolean</span>;
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;};
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">imageOffset</span>: {
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">parr</span>: <span
+                        class="type-annotation">number</span>;
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">perp</span>: <span
+                        class="type-annotation">number</span>;
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;};
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">projectileInfo</span>: ({
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">type</span>: <span
+                        class="string-literal">"explosive"</span>;
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">explosionType</span>:
+                    <span class="type-annotation">string</span>;
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">explodeOnContact</span>:
+                    <span class="type-annotation">boolean</span>;
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">maxDist</span>:
+                    <span class="type-annotation">scaleOrAbsolute</span>;
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">heightPeak</span>:
+                    <span class="type-annotation">number</span>;
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;} | {
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">type</span>: <span
+                        class="string-literal">"bullet"</span>;
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;}) & {
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">img</span>: <span
+                        class="type-annotation">string</span>;
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">spinVel?</span>:
+                    <span class="type-annotation">angleModes</span>;
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;};
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">casing</span>: {
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">img</span>: <span
+                        class="type-annotation">string</span>;
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">lifetime</span>:
+                    <span class="type-annotation">timeModes</span> & <span class="type-annotation">variataion</span>;
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">width</span>: <span
+                        class="type-annotation">number</span>;
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">height</span>: <span
+                        class="type-annotation">number</span>;
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;};
+                    <br>
+                    };
+                </div>
+
+                <p>
+                    And that's just about it for this guide. You've now implemented your own ammo type into the sandbox
+                    successfully. Now try making a gun that uses it, or, if you've already done that, go take your new
+                    toy for a test drive!
+                </p>
+
+                <h3>Other guides:</h3>
+                <ul class="no-margin">
+                    <li>
+                        <a href="../basics/index.html">Basics</a>
+                    </li>
+                    <li>
+                        <a href="../guns/index.html">Firearms</a>
+                    </li>
+                    <li>
+                        <a href="../explosions/index.html">Explosions</a>
+                    </li>
+                </ul>
+            </div>
+        </main>
+        <footer>
+            <p style="margin: 0 1%; padding: 0.5% 0; font-size: 12px;">"surviv.io" is owned by <a
+                    href="https://www.kongregate.com">Kongregate</a>. Use of game assets is authorized on the condition
+                that this project not be monetized in any way, shape or form. Written by eiπ on June 20<sup>th</sup>
+                2022, last updated June 26<sup>th</sup> 2020 for surviv sandbox version 0.7.0. You can <a
+                    href="https://discord.gg/uGkCbYbUAX">join the project's Discord here</a>. Color scheme heavily
+                inspired by the <a href="https://survivio.fandom.com/">surviv.io wiki</a>.
+            </p>
+        </footer>
+    </article>
+</body>
+
+</html>

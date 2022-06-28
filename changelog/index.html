@@ -12,7 +12,317 @@
 <body>
     <button id="back">Back</button>
     <title>Changelog</title>
-    <p id="main"></p>
+    <div id="main-cont">
+        <h2>v0.7.0</h2>
+        <h3>June 28<sup>th</sup> 2022</h3>
+
+        <ul>
+            <li> NEW: <a href="../guides/basics/index.html">Guides are here</a>! Some basic how-to's for adding in guns,
+                ammos and explosions to the game
+                <ul>
+                    <li>That being said, since the game changes often, anything made using them might not be compatible
+                        for long
+                </ul>
+            </li>
+            <li> NEW: An actual settings menu for your enjoyment
+            <li> NEW: Added the MP220—for your shotgun-quickswitching enjoyment—M1911 and Dual M1911
+            <li>
+                Bug fixes:
+                <ul>
+                    <li> Fixed menus occaionally persisting when entering a level
+                    <li> Fixed a bug where exiting a level would stop any performance monitoring
+                    <li> Fixed a bug where partial reloads would still replenish a weapon's ammo if the weapon was
+                        switched off of
+                    <li> Fixed a bug where firing during a partial reload would fire two shots
+                    <li> Fixed a bug where attempting to fire a burst weapon while it was reloading would cause the
+                        weapon to fire after the weapon was done reloading, regardless of if the mouse button was still
+                        held down
+                    <li> Fixed explosions not deal max damage within their
+                        <code>radii.damage.min</code>
+                    <li> Fixed a bug where switching to a weapon without quickswitch would use the old weapon's switch
+                        delay.
+                    <li> Fixed a bug where the game would sometimes be limited to a portion of the screen
+                    <li> Fixed a bug where a keybind would be triggered even if a modifier key was held (ex:
+                        <kbd>Ctrl</kbd> + <kbd>2</kbd> would switch to the user's secondary weapon)
+                    <li> Fixed explosions ignoring a player's invulnerability
+                    <li> Fixed casings not spawning at the correct position
+                    <li> Fixed casings' perpendicular spawn offsets being ignored if the casing was spawned on reload
+                    <li> When firing the last round in a weapon, the reload will now start after the weapon's firing
+                        delay, as opposed to immediately
+                    <li> Fixed being able to start a reload earlier than what a weapon's switch delay would allow by
+                        pressing the reload key
+                </ul>
+            </li>
+            <li>
+                Settings:
+                <ul>
+                    <li> Added settings to
+                        <ul>
+                            <li>Toggle quickswitch, noslow and headshots</li>
+                            <li>Toggle the M79's movement penalty, grenade spin and casing spawn</li>
+                            <li>Toggle pulling both of the MP220's triggers on fire</li>
+                            <li>Show an FPS and a TPS counter</li>
+                            <li>Disable the HUD</li>
+                            <li>Control the graphics quality</li>
+                            <li>Limit the amount of decals that can exist at once</li>
+                        </ul>
+                </ul>
+            </li>
+            <li>
+                Bot 1v1
+                <ul>
+                    <li> Adjusted the position of some buttons
+                    <li> Fixed a bug where first-time users would have no scope preference chosed in "Bot 1v1"
+                    <li> The health preference fields now only validate their input when it is comitted (by unfocusing
+                        the field) as opposed to whenever the user types something in the field.
+                </ul>
+            </li>
+            <li>
+                Miscellaneous game-related stuff
+                <ul>
+                    <li> The game is now better at memorizing values between different game versions
+                    <li> Adjusted some <code>guns.json</code> values.
+                    <li> In the alternate killfeed, suicides now only show the concerned player's name once instead of
+                        twice.
+                    <li> Damage numbers now round to the nearest hundreth
+                    <li> Most bullets can no longer hurt the player who shot them
+                    <li> Casings now shrink in size as they despawn (as they do ingame), as opposed to fading away
+                    <li> Bots will use the P30L from further away
+                    <li> Binded <code>other_gun</code> and <code>switch_guns</code> to <kbd>e</kbd> and <kbd>t</kbd>
+                        respectively
+                </ul>
+            </li>
+            <li>
+                Extra stuff:
+                <ul>
+                    <li> Added light themes for this page and the attributions page
+                    <li> Added some <code>&lt;code&gt;</code> tags around to make things nicer
+                    <li> Changed the code used to generate links so that the links would always lead to the same section
+                    <li> Retired <code>changelog.md</code>; the changelog now lives in <code>index.html</code>
+                    <li> Changelog entries now have a section dedicated to more in-depth technical changes
+                    <li> Disabled zooming
+                    <li> Fixed a bug with the attributions page
+                    <li> The framework version table now shows entries representing an updated framework with color
+                        (ex: 1.3.4 -> 1.3.5 would have the latter colored in some way)
+                </ul>
+            </li>
+        </ul>
+
+        <div>
+            <button class="tech-changes-toggle"><span style="font-family: monospace">▴</span> Technical
+                changes:</button>
+            <div class="tech-changes">
+                <ul>
+                    <li>
+                        Renamed <code>gunPrototype.prototype.offset</code> to
+                        <code>gunPrototype.prototype.imageOffset</code>
+                    </li>
+                    <li>
+
+                        Renamed <code>gunPrototype.prototype.fireMode</code> to
+                        <code>gunPrototype.prototype.fireModes</code>
+                    </li>
+                    <li>
+                        <code>gamespace.bulletInfo[string].imageOffset.y</code>,
+                        <code>gunPrototype.prototype.imageOffset.y</code>,
+                        <code>gunPrototype.prototype.recoilImpulse.y</code>,
+                        <code>gunPrototype.prototype.hands.leftHand.y</code> and
+                        <code>gunPrototype.prototype.hands.rightHand.y</code> (which corresponds to
+                        <code>imageOffset.parr</code> in ammo.json and to <code>imageOffset.parr.value</code>,
+                        <code>recoilImpulse.direction.parr.value</code>, <code>handPositions.leftHand.parr.value</code>
+                        and <code>handPositions.rightHand.parr.value</code> in guns.json respectively) have had their
+                        signs flipped.
+                    </li>
+                    <li>
+                        Moved <code>gunPrototype</code>, <code>gun</code>, <code>bullet</code>, <code>shrapnel</code>
+                        and <code>casing</code> to a new file, <code>guns.ts</code>.
+                    </li>
+                    <li>
+                        New file <code>settings.ts</code> responsible for the entire settings menu.
+                    </li>
+                    <li>
+                        <code>perf._timers.b</code> replaced by <code>perf._timers.c</code>, which has accordingly been
+                        renamed.
+                    </li>
+                    <li>
+                        Refactored some code for exiting level by having it call a new method on the gamespace:
+                        <code>gamespace.exitLevel</code>.
+                    </li>
+                    <li>
+                        <code>gun.primary</code> and <code>gun.reload</code> now much more aggressively (and
+                        consistently) clear the appropriate timers as well as setting them to false.
+                    </li>
+                    <li>
+                        New property <code>gamespace.settings.balanceChanges</code> is typed as
+                        <code>{ weapons: { general: { noslow: boolean; quickswitch: boolean; headshots: boolean; }; m79: { grenadeSpin: boolean; moveSpeedPenalty: boolean; spawnCasingOnReload: boolean; }; mp220: { pullBothTriggers: boolean; }; }; }</code>
+                    </li>
+                    <li>
+                        Renamed <code>gamespace.settings.bonus_features</code> to
+                        <code>gamespace.settings.bonusFeatures</code>
+                    </li>
+                    <li>
+                        All the bonus features are now named using camelCase instead of using_underscores.
+                    </li>
+                    <li>
+                        New property <code>gamespace._oldStats</code> holds partial versions of some guns, ammo and
+                        explosions.<br>
+                        <code>DeepPartial&lt;T&gt;</code>, defined as
+                        <code>{ [P in keyof T]?: T[P] extends object ? DeepPartial&lt;T[P]&gt; : T[P] }</code>,
+                        is the type encapsulating the appropriate inner type. (ex:
+                        <code>gamespace._oldStats.guns</code> has type <code>DeepPartial&lt;gunPrototype&gt;</code>)
+                    </li>
+                    <li>
+                        Classes <code>bullet</code> and <code>shrapnel</code> are now both extensions of a new class,
+                        <code>projectile</code>, which combines the commmon points of these two classes
+                    </li>
+                    <li>
+                        Changed <code>playerLike.damage</code>'s type signature to have its second argument be of type
+                        <code>projectile | explosion</code>
+                    </li>
+                    <li>
+                        <code>projectile</code> instances and <code>casing</code> instances now linearly interpolate
+                        between their start and end positions, the latter being calculated when the instance is created.
+                    </li>
+                    <li>
+                        Added some code to coax the GC into cleaning up unneeded WEBGL rendering contexts sooner after
+                        exiting a level.
+                    </li>
+                    <li>
+                        Added <code>gamespace.settings.monitors</code> to keep track of the performance monitor's modes
+                    </li>
+                    <li>
+                        Added <code>gamespace.settings.maxDecals</code> to limit the amount of decals that can exist at
+                        once
+                    </li>
+                    <li>
+                        Added <code>projectile.shrapnel</code> to keep track of whether a projectile can damage its
+                        shooter
+                    </li>
+                    <li>
+                        Renamed <code>gamespace.settings.ui</code> to <code>gamespace.settings.hud</code>
+                    </li>
+                    <li>
+                        Moved <code>gamespace.settings.graphicsQuality</code>,
+                        <code>gamespace.settings.hud</code>, <code>gamespace.settings.monitors</code> and
+                        <code>gamespace.settings.debug</code> to a new property, <code>gamespace.settings.visual</code>
+                    </li>
+                    <li>Added the ability to <code>yeet</code></li>
+                </ul>
+            </div>
+        </div>
+
+        <h2>v0.6.1</h2>
+        <h3>June 21<sup>st</sup> 2022</h3>
+
+        <ul>
+            <li> Fixed a typo inside <code>util.ts</code>. (variataion => variation)
+        </ul>
+
+        <h2>v0.6.0</h2>
+        <h3>June 15<sup>th</sup> 2022</h3>
+
+        <ul>
+            <li> Adjusted tracer opacity for suppressed weapons
+            <li> Adjusted casing spawns
+            <li> Changed some animation values (recoil impulse lengths and magnitudes)
+            <li> Retroactively renamed all versions to comply with the <a href="https://semver.org">SemVer</a> (Semantic
+                Versioning) specification
+            <li> Made the changelog prettier
+            <li> Fixed some bad links on the attributions page
+            <li> Fixed a bug with shooting at an invalid time
+        </ul>
+
+        <h2>v0.5.1</h2>
+        <h3>June 7<sup>th</sup> 2022</h3>
+
+        <ul>
+            <li> Fixed a typo in the changelog
+            <li> Holding attack either while the weapon is reloading or while the weapon isn't ready to fire will allow
+                the weapon to fire when it is ready to do so again
+            <li> For ammo types that lack distinct saturated tracer colors (9mm, 12 gauge and 5.56mm), a new option
+                allows the game to create new values based on ammo types that have distinct saturated tracers.
+            <li> Fixed a bug where presets wouldn't apply correctly when re-entering the 'Bot 1v1' level
+            <li> Fixed a bug where exiting 'Bot 1v1' would prevent re-entering the level with fatal crashes
+            <li> Fixed a bug where levels' event listeners weren't being cleaned up properly
+        </ul>
+
+        <h2>v0.5.0</h2>
+        <h3>June 6<sup>th</sup> 2022</h3>
+
+        <ul>
+            <li> Restructuring, housekeeping
+            <li> Fixed <code>prev_item</code> not working correctly
+            <li> Fixed and re-added distance-based rendering
+            <li> Added pause menu, functionality to gracefully exit a level
+            <li> Binded <code>cancel</code> to x
+            <li> Minor styling updates
+        </ul>
+
+        <h2>v0.4.0</h2>
+        <h3>June 1<sup>st</sup> 2022</h3>
+
+        <ul>
+            <li> Added weapons:
+                <ul>
+                    <li> SV-98
+                    <li> L86A2
+                    <li> AN-94
+                    <li> P30L
+                    <li> Dual P30L
+                    <li> FAMAS
+                    <li> OTs-38
+                    <li> Dual OTs-38
+                    <li> M134
+                    <li> M79
+                </ul>
+            <li> Added "automatic" burst fire; hold the attack button to fire off burst weapons in an automatic fashion
+            <li> Hand outlines are no longer pitch black
+            <li> Headshot kills are indicated with a red glow in the alternate killfeed
+        </ul>
+
+        <h2>v0.3.0</h2>
+        <h3>May 29<sup>th</sup> 2022</h3>
+
+        <ul>
+            <li> Total bot AI overhaul
+            <li> Added better system to interact with localStorage
+            <li> Added option to hide UI (bound to p)
+            <li> More settings are modifiable
+            <li> Added second level
+            <li> Added level select screen
+            <li> Temporarily disabled distance-based rendering optimization
+            <li> Added support for mouse wheel key binds
+        </ul>
+
+        <h2>v0.2.0</h2>
+        <h3>May 25<sup>th</sup> 2022</h3>
+
+        <ul>
+            <li> Made the boot-up message less dramatic
+            <li> Firing your weapon slows you down
+            <li> Added a second weapon slot
+                <ul>
+                    <li> Added quickswitch and noslow mechanics, based off of <a
+                            href="https://github.com/surviv-underclock/docs">this paper on the subject</a>
+                </ul>
+            <li> Made hand outlines slightly thicker
+            <li> Fixed a bug that prevented firing while reloading single-shot realoding weapons like the M870
+            <li> Minor weapon adjustments (mostly cosmetic)
+            <li> Binded <code>slot0</code>, <code>slot1</code>, <code>last_item</code>, <code>next_item</code> and
+                <code>prev_item</code> to <kbd>1</kbd>, <kbd>2</kbd>, <kbd>Q</kbd>, <kbd>MWheelUp</kbd> and
+                <kbd>MWheelDown</kbd> respectively
+            <li> Added an attributions page
+            <li> Game remebers health presets
+            <li> Option to disable AI added
+        </ul>
+
+        <h2>v0.1.0</h2>
+        <h3>May 24<sup>th</sup> 2022</h3>
+
+        <ul>
+            <li> Changelog created
+        </ul>
+    </div>
 </body>
 
 </html>

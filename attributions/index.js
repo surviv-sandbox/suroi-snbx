@@ -25,7 +25,7 @@
             a.title = a.href = e.match(/\(https?:\/\/.*?\)/g)[0].replace(/\(|\)/g, "");
             a.textContent = e.match(/\[.*?\]/g)[0].replace(/\[|\]/g, "");
             cellB.appendChild(a);
-            cellC.innerHTML = !!e.match(/".*?".*?\(https?:\/\/.*\) \(Renamed\)/) ? `<span style="color: #8F8">yes</span>` : `<span style="color: #F88">no</span>`;
+            cellC.innerHTML = !!e.match(/".*?".*?\(https?:\/\/.*\) \(Renamed\)/) ? `<span class="yes">yes</span>` : `<span class="no">no</span>`;
 
             row.append(cellA, cellB, cellC);
             ++i;
@@ -73,11 +73,31 @@
                     );
 
                     table.appendChild(document.createElement("tbody")).append(...(() => {
-                        return frameworks.map((f, i) => {
+                        return frameworks.map(f => {
                             const row = document.createElement("tr");
 
-                            row.append(...values.reverse().concat({ frameworks: { [f]: f } }).reverse().map(v => {
-                                const td = document.createElement("td");
+                            row.append(...[{ frameworks: { [f]: f } }].concat(values.reverse()).map((v, i, a) => {
+                                const td = document.createElement("td"),
+                                    change = (() => {
+                                        if (i > 1) {
+                                            /**
+                                             * @type {string}
+                                             */
+                                            const prev = a[i - 1].frameworks[f],
+
+                                                b = prev.split(/\./g),
+                                                c = v.frameworks[f].split(/\./g),
+                                                j = b.findIndex((v, i) => v != c[i]);
+
+                                            return { index: j, dir: Math.sign(c[j] - b[j]) };
+                                        }
+
+                                        return { index: -1, dir: 0 };
+                                    })();
+
+                                if (change.index != -1) {
+                                    td.classList.add(`${{ 0: "major", 1: "minor", 2: "patch" }[change.index]}-${{ [-1]: "down", 1: "up" }[change.dir]}`);
+                                }
 
                                 td.textContent = v.frameworks[f];
                                 return td;

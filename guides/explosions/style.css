@@ -1,0 +1,305 @@
+div#json-prev,
+div#info-prev {
+    overflow: scroll;
+    max-height: 250px;
+    margin: 0;
+    transition: max-height 0.5s ease;
+}
+
+div#ts-prev {
+    overflow: scroll;
+    max-height: 0;
+    margin: 0;
+    transition: max-height 0.5s ease;
+}
+
+button#json-prev-expand {
+    border-style: none solid solid none;
+}
+
+button#info-prev-expand,
+button#ts-prev-expand {
+    width: 100%;
+    border-style: none none solid none;
+}
+
+button#json-prev-copy {
+    border-style: none none solid solid;
+}
+
+@media (prefers-color-scheme: light) {
+    button {
+        width: 50%;
+        text-align: center;
+        margin: auto;
+        font-family: roboto;
+        font-size: 16px;
+        background-color: hsl(83, 61%, 79%);
+        color: black;
+    }
+
+    span.comment {
+        color: #008400
+    }
+
+    span.keyword {
+        color: #1700FF
+    }
+
+    span.boolean {
+        color: #1700FF
+    }
+
+    span.nullish {
+        color: #1700FF
+    }
+
+    span.ctrlflw-keyword {
+        color: #C000E3
+    }
+
+    span.var {
+        color: #12178D
+    }
+
+    span.const {
+        color: #0070C7
+    }
+
+    span.argument {
+        color: #12178D
+    }
+
+    span.enum-field {
+        color: #0070C7
+    }
+
+    span.object-field {
+        color: #12178D
+    }
+
+    span.interface-field {
+        color: #12178D
+    }
+
+    span.type-annotation {
+        color: #0086A0
+    }
+
+    span.class {
+        color: #0086A0
+    }
+
+    span.enum {
+        color: #0086A0
+    }
+
+    span.interface {
+        color: #0086A0
+    }
+
+    span.custom-type {
+        color: #0086A0
+    }
+
+    span.number {
+        color: #008A55
+    }
+
+    span.function {
+        color: #7E5D17
+    }
+
+    span.method {
+        color: #7E5D17
+    }
+
+    span.string-literal {
+        color: #B20002
+    }
+
+    span.template-string-literal {
+        color: #B20002
+    }
+
+    span.template-string-expr {
+        color: #1700FF
+    }
+
+    span.json-comment {
+        color: #008400
+    }
+
+    span.json-key {
+        color: #12178D
+    }
+
+    span.json-boolean {
+        color: #1700FF
+    }
+
+    span.json-nullish {
+        color: #1700FF
+    }
+
+    span.json-type-annotation {
+        color: #0086A0
+    }
+
+    span.json-number {
+        color: #008A55
+    }
+
+    span.json-string {
+        color: #B20002
+    }
+
+    @keyframes green-fade {
+        from {
+            background-color: hsl(120, 61%, 50%);
+        }
+
+        to {
+            background-color: hsl(83, 61%, 79%);
+        }
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    button {
+        background-color: hsl(211, 61%, 11%);
+        color: white;
+        width: 50%;
+        text-align: center;
+        margin: auto;
+        font-family: roboto;
+        font-size: 16px;
+    }
+
+    span.comment {
+        color: #6A9955;
+    }
+
+    span.keyword {
+        color: #569CD6;
+    }
+
+    span.boolean {
+        color: #569CD6;
+    }
+
+    span.nullish {
+        color: #569CD6;
+    }
+
+    span.ctrlflw-keyword {
+        color: #C586C0;
+    }
+
+    span.var {
+        color: #9CDCFE;
+    }
+
+    span.argument {
+        color: #9CDCFE;
+    }
+
+
+    span.const {
+        color: #00C3FF;
+    }
+
+    span.enum-field {
+        color: #00C3FF;
+    }
+
+    span.object-field {
+        color: #9CDCFE;
+    }
+
+    span.interface-field {
+        color: #9CDCFE;
+    }
+
+    span.type-annotation {
+        color: #4EC9B0;
+    }
+
+    span.class {
+        color: #4EC9B0;
+    }
+
+    span.enum {
+        color: #4EC9B0;
+    }
+
+    span.interface {
+        color: #4EC9B0;
+    }
+
+    span.custom-type {
+        color: #4EC9B0;
+    }
+
+    span.number {
+        color: #B5CEA8;
+    }
+
+    span.function {
+        color: #DCDCAA;
+    }
+
+    span.method {
+        color: #DCDCAA;
+    }
+
+    span.string-literal {
+        color: #CE9178;
+    }
+
+    span.template-string-literal {
+        color: #CE9178;
+    }
+
+    span.template-string-expr {
+        color: #569CD6;
+    }
+
+    span.json-comment {
+        color: #6A9955;
+    }
+
+    span.json-key {
+        color: #9CDCFE;
+    }
+
+    span.json-boolean {
+        color: #569CD6;
+    }
+
+    span.json-nullish {
+        color: #569CD6;
+    }
+
+    span.json-type-annotation {
+        color: #4EC9B0;
+    }
+
+    span.json-number {
+        color: #B5CEA8;
+    }
+
+    span.json-string {
+        color: #CE9178;
+    }
+
+    @keyframes green-fade {
+        from {
+            background-color: hsl(120, 61%, 50%);
+        }
+
+        to {
+            background-color: hsl(211, 61%, 11%);
+        }
+    }
+}

@@ -6,11 +6,11 @@ function std_setup(engine, world, p5, level, font) {
     gamespace.p5 = p5;
     window.addEventListener("contextmenu", e => e.preventDefault());
     window.addEventListener("resize", () => void p5.resizeCanvas(p5.windowWidth, p5.windowHeight));
-    p5.createCanvas(p5.windowWidth, p5.windowHeight, p5.WEBGL);
+    p5.createCanvas(window.innerWidth, window.innerHeight, p5.WEBGL);
     gamespace.camera = p5._elements[0]._curCamera;
     $("defaultCanvas0").style.display = "none";
     gamespace.created = gamespace.lastUpdate = gamespace._currentUpdate = Date.now();
-    p5.pixelDensity(gamespace.settings.graphicsQuality);
+    p5.pixelDensity(gamespace.settings.visual.graphicsQuality);
     p5.textAlign(p5.CENTER, p5.CENTER);
     p5.imageMode(p5.CENTER);
     p5.angleMode(p5.RADIANS);

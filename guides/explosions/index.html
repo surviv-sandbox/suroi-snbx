@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>surviv sandbox guides—explosions</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="../style.css">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script src="../internalLinks.js" defer></script>
+    <script src="index.js" defer></script>
+</head>
+
+<body>
+    <article>
+        <header>
+            Explosions
+        </header>
+        <main>
+            <div id="article-container">
+                <h2>
+                    Explosions
+                </h2>
+
+                <p>
+                    Making things explode is fun. In the right hands, explosives can be very powerful, both in real life
+                    and in-game. This guide will serve to teach you how to implement your own explosions into the
+                    sandbox.
+                </p>
+
+                <h3>
+                    Prerequisites
+                </h3>
+
+                <ul>
+                    <li>
+                        Everything required in the <a href="../basics/index.html">basic guide</a>
+                    </li>
+                    <li>
+                        <em>(optional)</em> If applicable, art for your explosion (custom decal / custom shrapnel)
+                    </li>
+                </ul>
+
+                <h3>
+                    Preparing the images
+                </h3>
+
+                <p>
+                    If your explosion doesn't use the default decal (<a
+                        href="../../assets/decals/map-barrel-res-01.svg"><code>assets/decals/map-barrel-res-01.svg</code></a>)
+                    or doesn't use the default shrapnel (<a
+                        href="../../assets/items/ammo/tracer.png"><code>assets/items/ammo/tracer.png</code></a>), then
+                    you may import your own. As of writing, no dedicated structure exists to accommodate these assets,
+                    so
+                    you are free to place them wherever you want, so long as you remember where they are.
+                </p>
+
+                <h3>
+                    Editing the JSON
+                </h3>
+
+                <p>
+                    The explosions must now be registered within the game. Navigate to
+                    <a href="../../assets/json/explosions.json"><code>assets/json/explosions.json</code></a>, open it in
+                    your text editor of choice, and find the last closing curly brace (<code>}</code>) at the bottom of
+                    the file. Type a comma after the closing curly brace that <em>precedes it</em> (one line above,
+                    slightly to the right), and paste in the template below.
+                </p>
+
+                <div style="display: flex; justify-content: space-evenly;">
+                    <button id="json-prev-expand">Expand</button>
+                    <button id="json-prev-copy">Copy</button>
+                </div>
+                <div id="json-prev" class="code-block">
+                    <span class="json-key">""</span>: {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"damage"</span>: <span
+                        class="json-number">0</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"obstacleMult"</span>: <span
+                        class="json-number">0</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"radii"</span>: {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"visual"</span>: {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="json-key">"min"</span>: {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="json-key">"givenIn"</span>: <span class="json-string">""</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="json-key">"value"</span>: <span class="json-number">0</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="json-key">"max"</span>: {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="json-key">"givenIn"</span>: <span class="json-string">""</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="json-key">"value"</span>: <span class="json-number"></span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"damage"</span>: {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="json-key">"min"</span>: {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="json-key">"givenIn"</span>: <span class="json-string">""</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="json-key">"value"</span>: <span class="json-number"></span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="json-key">"max"</span>: {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="json-key">"givenIn"</span>: <span class="json-string">""</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="json-key">"value"</span>: <span class="json-number"></span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;},<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"lifetime"</span>: {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"givenIn"</span>: <span
+                        class="json-string">""</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"value"</span>: <span
+                        class="json-number">0</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;},<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"color"</span>: [<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="json-number">0</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="json-number">0</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="json-number">0</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;],<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"decal"</span>: {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"img"</span>: <span
+                        class="json-string">""</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"width"</span>: {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="json-key">"givenIn"</span>: <span class="json-string">""</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="json-key">"value"</span>: <span class="json-number">0</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"height"</span>: {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="json-key">"givenIn"</span>: <span class="json-string">""</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="json-key">"value"</span>: <span class="json-number">0</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"tint"</span>: <span
+                        class="json-string">""</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;},<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"shrapnel"</span>: {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"count"</span>: <span
+                        class="json-number">0</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"damage"</span>: <span
+                        class="json-number">0</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"color"</span>: <span
+                        class="json-string">""</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"img"</span>: <span
+                        class="json-string">""</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"velocity"</span>: {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="json-key">"givenIn"</span>: <span class="json-string">""</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="json-key">"value"</span>: <span class="json-number">0</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"range"</span>: {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="json-key">"givenIn"</span>: <span class="json-string">""</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="json-key">"value"</span>: <span class="json-number">0</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="json-key">"variation"</span>: {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="json-key">"givenIn"</span>: <span class="json-string">""</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="json-key">"value"</span>: <span class="json-number">0</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="json-key">"plusOrMinus"</span>: <span class="json-boolean">false</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"falloff"</span>: <span
+                        class="json-number">0</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="json-key">"tracer"</span>: {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="json-key">"width"</span>: {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="json-key">"givenIn"</span>: <span class="json-string">""</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="json-key">"value"</span>: <span class="json-number">0</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="json-key">"height"</span>: {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="json-key">"givenIn"</span>: <span class="json-string">""</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="json-key">"value"</span>: <span class="json-number">0</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                    }
+                </div>
+
+                <p>
+                    Now let's look at each one individually. Each field is expressed with the following syntax:<br>
+                    (<em><span class="json-key">field-name</span></em>:
+                    <em><span class="type-annotation">field-type</span></em>): <em>description</em><br>
+                    <br>
+                    If a field is optional, there will be a question mark between the field's name and the colon
+                    following it.<br>
+                    (<em><span class="json-key">optional-field</span></em>?: <em><span
+                            class="type-annotation">field-type</span></em>): <em>description</em><br>
+                    <br>
+                <div class="infobox"><span style="font-family: 'roboto bold'; font-size: 18px;">Info</span>:<br>
+                    Some basic types:
+                    <ul>
+                        <li>
+                            <code><span class="type-annotation">string</span></code> represents any type of text, always
+                            wrapped in double quotes, "like this".
+                        </li>
+                        <li>
+                            <code><span class="type-annotation">number</span></code> represents any number: whole,
+                            decimal, positive or negative. Scientific notation is done by appending an 'e', followed by
+                            the desired exponent (2.3 &times; 10<sup>4</sup> becomes <code>2.3e4</code>).
+                        </li>
+                        <li>
+                            <code><span class="type-annotation">boolean</span></code> represents either
+                            <code>true</code> or <code>false</code>, and nothing else.
+                        </li>
+                        <li>
+                            <code><span class="type-annotation">object</span></code> is a generic catch-all for
+                            properties whose values in turn have properties. (ex: if we consider a house to be an
+                            object, with multiple properties such as its worth or land area, then its owner
+                            property—which represents the person who owns the house—would also be an object with its own
+                            properties, like age, name and so on)
+                        </li>
+                        <li>
+                            <code><span class="type-annotation">T</span> | <span class="type-annotation">U</span></code>
+                            represents either type <span class="type-annotation">T</span> or type <span
+                                class="type-annotation">U</span>, meaning that the given variable can be of either type
+                            (ex: <span class="type-annotation">string</span> | <span
+                                class="type-annotation">number</span> means that something is either a string or a
+                            number).
+                        </li>
+                        <li>
+                            <code><span class="type-annotation">T</span>[]</code> is a collection (formally known in
+                            Javascript as an <em>array</em>) of values, with all of those values being of type <span
+                                class="type-annotation">T</span>. (ex: an array of booleans would be notated <span
+                                class="type-annotation">boolean</span>[])
+                        </li>
+                    </ul>
+                    Literal values can appear too. Consider <span class="number">0</span> | <span
+                        class="string-literal">"woohoo"</span>: this is saying that the attached value is either 0 or
+                    the string "woohoo".
+                </div>
+                </p>
+
+                <button id="info-prev-expand">Expand</button>
+                <div id="info-prev" class="code-block">
+                    <p class="no-margin">Note that the first field is explosion's name. See the other explosion in the
+                        file for an example.</p><br>
+                    <ul class="no-margin">
+                        <li>
+                            (<span class="json-key">damage</span>: <span class="type-annotation">number</span>): The
+                            explosion's damage, not including shrapnel.
+                        </li>
+                        <li>
+                            (<span class="json-key">obstacleMult</span>: <span class="type-annotation">number</span>):
+                            A number by which the explosion's and any shrapnel's damage is multiplied when said damage
+                            is applied to an obstacle.
+                        </li>
+                        <li>
+                            (<span class="json-key">radii</span>: <span class="type-annotation">object</span>): Data
+                            about this explosion's radii. Since the radii of the visual explosion and the damage area
+                            don't match, and both have a minimum and maximum, we end up with 4 distinct values.
+                            <ul class="no-margin">
+                                <li>
+                                    (<span class="json-key">visual</span>: <span class="type-annotation">object</span>):
+                                    Data about this explosion's "visual" radii: the circle the player sees on-screen.
+                                    <ul class="no-margin">
+                                        <li>
+                                            (<span class="json-key">min</span>: <span
+                                                class="type-annotation">object</span>): The smallest radius the visual
+                                            component of the explosion; the explosion starts at this radius and grows to
+                                            its
+                                            maximum radius.
+                                            <ul class="no-margin">
+                                                <li>
+                                                    (<span class="json-key">givenIn</span>: <span
+                                                        class="json-string">"scale"</span> |
+                                                    <span class="json-string">"absolute"</span>): Whether the provided
+                                                    value
+                                                    is relative to the player's size ("scale") or to the world's
+                                                    coordinate
+                                                    system ("absolute").
+                                                </li>
+                                                <li>
+                                                    (<span class="json-key">value</span>: <span
+                                                        class="type-annotation">number</span>): The minimum visual
+                                                    radius.
+                                                </li>
+                                            </ul>
+                                        </li>
+                                        <li>
+                                            (<span class="json-key">max</span>: <span
+                                                class="type-annotation">object</span>): The largest radius the
+                                            explosion's visual component reaches. Linearly interpolated to from the
+                                            minimum radius.
+                                            <ul class="no-margin">
+                                                <li>
+                                                    (<span class="json-key">givenIn</span>: <span
+                                                        class="json-string">"scale"</span> |
+                                                    <span class="json-string">"absolute"</span>): Whether the provided
+                                                    value is relative to the player's size ("scale") or to the world's
+                                                    coordinate system ("absolute").
+                                                </li>
+                                                <li>
+                                                    (<span class="json-key">value</span>: <span
+                                                        class="type-annotation">number</span>): The maximum visual
+                                                    radius.
+                                                </li>
+                                            </ul>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    (<span class="json-key">damage</span>: <span class="type-annotation">object</span>):
+                                    Data about this explosion's "damage" radii: the circle within which entities take
+                                    damage.
+                                    <ul class="no-margin">
+                                        <li>
+                                            (<span class="json-key">min</span>: <span
+                                                class="type-annotation">object</span>): The "max damage" radius, so to
+                                            speak; entities within the circle delimited by this radius will take full
+                                            damage from the explosion.
+                                            <div class="imp-dis-pos"><span
+                                                    style="font-family: 'roboto bold'; font-size: 18px;">Possible
+                                                    implementation discrepancy:</span><br>
+                                                This behavior might differ from surviv.io's.
+                                            </div>
+                                            <ul class="no-margin">
+                                                <li>
+                                                    (<span class="json-key">givenIn</span>: <span
+                                                        class="json-string">"scale"</span> |
+                                                    <span class="json-string">"absolute"</span>): Whether the provided
+                                                    value is relative to the player's size ("scale") or to the world's
+                                                    coordinate system ("absolute").
+                                                </li>
+                                                <li>
+                                                    (<span class="json-key">value</span>: <span
+                                                        class="type-annotation">number</span>): The "max damage" radius.
+                                                </li>
+                                            </ul>
+                                        </li>
+                                        <li>
+                                            (<span class="json-key">max</span>: <span
+                                                class="type-annotation">object</span>): The largest circle within which
+                                            entities will take damage; entities outside of this circle will suffer no
+                                            damage from the explosion itself, but may still be hit by shrapnel.
+                                            <ul class="no-margin">
+                                                <li>
+                                                    (<span class="json-key">givenIn</span>: <span
+                                                        class="json-string">"scale"</span> |
+                                                    <span class="json-string">"absolute"</span>): Whether the provided
+                                                    value is relative to the player's size ("scale") or to the world's
+                                                    coordinate system ("absolute").
+                                                </li>
+                                                <li>
+                                                    (<span class="json-key">value</span>: <span
+                                                        class="type-annotation">number</span>): The maximum radius.
+                                                </li>
+                                            </ul>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                        <li>
+                            (<span class="json-key">lifetime</span>: <span class="type-annotation">object</span>):
+                            Data pertaining to how long the explosion lasts. Note that this is purely visual: damage is
+                            applied when the explosion is spawned, and shrapnel is also spawned as soon as the explosion
+                            spawns.
+                            <ul class="no-margin">
+                                <li>
+                                    (<span class="json-key">givenIn</span>: <span class="json-string">"s"</span> | <span
+                                        class="json-string">"ms"</span> | <span class="json-string">"RPM"</span>):
+                                    Whether the provided value is in seconds, milliseconds or in rounds/minute. The
+                                    latter is quite rare.
+                                </li>
+                                <li>
+                                    (<span class="json-key">value</span>: <span class="type-annotation">number</span>):
+                                    How long the explosion will last.
+                                </li>
+                            </ul>
+                        </li>
+                        <li>
+                            (<span class="json-key">color</span>: <span class="type-annotation">number</span>[] | <span
+                                class="type-annotation">string</span>):
+                            Purely cosmetic. Defines the "main" color the explosion will fade around. Only three
+                            numbers, corresponding to the red, green and blue channels, are needed; extras will do
+                            nothing. Alternatively, a hex string is also accepted.
+                        </li>
+                        <li>
+                            (<span class="json-key">decal</span>: <span class="type-annotation">object</span>):
+                            Information about the decal left behind by the explosion.
+                            <ul class="no-margin">
+                                <li>
+                                    (<span class="json-key">img</span>: <span class="type-annotation">string</span>):
+                                    The path to the decal image. See <a href="#h3-1">here</a>.
+                                </li>
+                                <li>
+                                    (<span class="json-key">width</span>: <span class="type-annotation">object</span>):
+                                    The decals's width.
+                                    <ul class="no-margin">
+                                        <li>
+                                            (<span class="json-key">givenIn</span>: <span
+                                                class="json-string">"scale"</span> |
+                                            <span class="json-string">"absolute"</span>): Whether the provided
+                                            value is relative to the player's size ("scale") or to the world's
+                                            coordinate system ("absolute").
+                                        </li>
+                                        <li>
+                                            (<span class="json-key">value</span>: <span
+                                                class="type-annotation">number</span>):
+                                            The decal's width.
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    (<span class="json-key">height</span>: <span class="type-annotation">object</span>):
+                                    The decal's height.
+                                    <ul class="no-margin">
+                                        <li>
+                                            (<span class="json-key">givenIn</span>: <span
+                                                class="json-string">"scale"</span> |
+                                            <span class="json-string">"absolute"</span>): Whether the provided
+                                            value is relative to the player's size ("scale") or to the world's
+                                            coordinate system ("absolute").
+                                        </li>
+                                        <li>
+                                            (<span class="json-key">value</span>: <span
+                                                class="type-annotation">number</span>):
+                                            The decal's height. Check the original image to determine its aspect ratio
+                                            so that you can adjust this value to maintain it.
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    (<span class="json-key">tint</span>: <span class="type-annotation">string</span> |
+                                    <span class="type-annotation">number</span>[]</span>):
+                                    What color to tint the image pointed to by the address specified above. Either a hex
+                                    string or an array of three numbers works.
+                                </li>
+                            </ul>
+                        </li>
+                        <li>
+                            (<span class="json-key">shrapnel</span>: <span class="type-annotation">object</span>):
+                            Information about the shrapnel created by the explosion.
+                            <ul class="no-margin">
+                                <li>
+                                    (<span class="json-key">count</span>: <span class="type-annotation">number</span>):
+                                    The number of shrapnel spawned in when the explosion is created.
+                                </li>
+                                <li>
+                                    (<span class="json-key">damage</span>: <span class="type-annotation">number</span>):
+                                    The damage one piece of shrapnel deals.
+                                </li>
+                                <li>
+                                    (<span class="json-key">color</span>: <span class="type-annotation">string</span> |
+                                    <span class="type-annotation">number</span>[]):
+                                    The color that the shrapnel's image is to be tinted. Either a hex string or three
+                                    numbers for RGB.
+                                </li>
+                                <li>
+                                    (<span class="json-key">img</span>: <span class="type-annotation">string</span>):
+                                    The path to the shrapnel's image. See <a href="#h3-1">here</a>.
+                                </li>
+                                <li>
+                                    (<span class="json-key">velocity</span>: <span
+                                        class="type-annotation">object</span>):
+                                    The shrapnel's velocity, expressed in either units/second or px/second.
+                                    <ul class="no-margin">
+                                        <li>
+                                            (<span class="json-key">givenIn</span>: <span
+                                                class="json-string">"scale"</span> |
+                                            <span class="json-string">"absolute"</span>): Whether the provided value is
+                                            relative to the player's size ("scale") or to the world's coordinate system
+                                            ("absolute").
+                                        </li>
+                                        <li>
+                                            (<span class="json-key">value</span>: <span
+                                                class="type-annotation">number</span>):
+                                            The shrapnel's velocity.
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    (<span class="json-key">range</span>: <span class="type-annotation">object</span>):
+                                    The shrapnel's range; the distance before which it despawns.
+                                    <ul class="no-margin">
+                                        <li>
+                                            (<span class="json-key">givenIn</span>: <span
+                                                class="json-string">"scale"</span> |
+                                            <span class="json-string">"absolute"</span>): Whether the provided value is
+                                            relative to the player's size ("scale") or to the world's coordinate system
+                                            ("absolute").
+                                        </li>
+                                        <li>
+                                            (<span class="json-key">value</span>: <span
+                                                class="type-annotation">number</span>):
+                                            The shrapnel's range.
+                                        </li>
+                                        <li>
+                                            (<span class="json-key">variation</span>: <span
+                                                class="type-annotation">object</span>):
+                                            Information about the variation in range.
+                                            <ul class="no-margin">
+                                                <li>
+                                                    (<span class="json-key">givenIn</span>: <span
+                                                        class="json-string">"ratio"</span> |
+                                                    <span class="json-string">"absolute"</span>): Whether the
+                                                    provided value is relative to the previously provided value
+                                                    for the "value" field ("ratio") or to the world's coordinate
+                                                    system ("absolute").
+                                                </li>
+                                                <li>
+                                                    (<span class="json-key">value</span>: <span
+                                                        class="type-annotation">number</span>):
+                                                    The variation in range.
+                                                </li>
+                                                <li>
+                                                    (<span class="json-key">plusOrMinus</span>: <span
+                                                        class="type-annotation">boolean</span>):
+                                                    Whether or not the variation can apply in both directions
+                                                    (<code>true</code>) or not (<code>false</code>).
+                                                </li>
+                                            </ul>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    (<span class="json-key">falloff</span>: <span
+                                        class="type-annotation">number</span>):
+                                    The number by which the shrapnel's damage is multiplied every 100 units. Since
+                                    shrapnel tends to have ranges way below that, this property is somewhat redundant.
+                                </li>
+                                <li>
+                                    (<span class="json-key">tracer</span>: <span class="type-annotation">object</span>):
+                                    Information about the shrapnel's tracer.
+                                    <ul class="no-margin">
+                                        <li>
+                                            (<span class="json-key">width</span>: <span
+                                                class="type-annotation">object</span>):
+                                            The tracer's width, or thickness.
+                                            <ul class="no-margin">
+                                                <li>
+                                                    (<span class="json-key">givenIn</span>: <span
+                                                        class="json-string">"scale"</span> |
+                                                    <span class="json-string">"absolute"</span>): Whether the provided
+                                                    value is relative to the player's size ("scale") or to the world's
+                                                    coordinate system ("absolute").
+                                                </li>
+                                                <li>
+                                                    (<span class="json-key">value</span>: <span
+                                                        class="type-annotation">number</span>):
+                                                    The tracer's width.
+                                                </li>
+                                            </ul>
+                                        </li>
+                                        <li>
+                                            (<span class="json-key">height</span>: <span
+                                                class="type-annotation">object</span>):
+                                            The tracer's height, or length.
+                                            <ul class="no-margin">
+                                                <li>
+                                                    (<span class="json-key">givenIn</span>: <span
+                                                        class="json-string">"scale"</span> |
+                                                    <span class="json-string">"absolute"</span>): Whether the provided
+                                                    value is relative to the player's size ("scale") or to the world's
+                                                    coordinate system ("absolute").
+                                                </li>
+                                                <li>
+                                                    (<span class="json-key">value</span>: <span
+                                                        class="type-annotation">number</span>):
+                                                    The tracer's height (or length).
+                                                </li>
+                                            </ul>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+
+                <p>
+                    And for the Typescript enthusiasts among you, here's the type annotation for that JSON, taken from
+                    <core>util.d.ts</core>.
+                </p>
+
+                <button id="ts-prev-expand">Show</button>
+                <div id="ts-prev" class="code-block">
+                    <span class="keyword">type</span> <span class="custom-type">hexColor</span> = <span
+                        class="template-string-literal">`#</span><span class="template-string-expr">${</span><span
+                        class="type-annotation">string</span><span class="template-string-expr">}</span><span
+                        class="template-string-literal">`</span>;<br>
+                    <span class="keyword">type</span> <span class="custom-type">RGBColor</span> = [<span
+                        class="type-annotation">number</span>, <span class="type-annotation">number</span>, <span
+                        class="type-annotation">number</span>];<br>
+                    <span class="keyword">type</span> <span class="custom-type">RGBAColor</span> = [<span
+                        class="type-annotation">number</span>, <span class="type-annotation">number</span>, <span
+                        class="type-annotation">number</span>, <span class="type-annotation">number</span>];<br>
+                    <span class="keyword">type</span> <span class="custom-type">HSLColor</span> = {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">hue</span>: <span
+                        class="type-annotation">number</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">saturation</span>: <span
+                        class="type-annotation">number</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">luminosity</span>: <span
+                        class="type-annotation">number</span>;<br>
+                    };<br>
+                    <span class="keyword">type</span> <span class="custom-type">HSBColor</span> = {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">hue</span>: <span
+                        class="type-annotation">number</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">saturation</span>: <span
+                        class="type-annotation">number</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">brightness</span>: <span
+                        class="type-annotation">number</span>;<br>
+                    };<br>
+                    <span class="keyword">type</span> <span class="custom-type">HSLAColor</span> = <span
+                        class="type-annotation">HSLColor</span> & {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">alpha</span>: <span
+                        class="type-annotation">number</span>;<br>
+                    };<br>
+                    <span class="keyword">type</span> <span class="custom-type">HSBAColor</span> = <span
+                        class="type-annotation">HSBColor</span> & {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">alpha</span>: <span
+                        class="type-annotation">number</span>;<br>
+                    };<br>
+                    <span class="keyword">type</span> <span class="custom-type">colorModes</span> = <span
+                        class="type-annotation">hexColor</span> | <span class="type-annotation">RGBColor</span> |
+                    <span class="type-annotation">RGBAColor</span> | <span class="type-annotation">HSLColor</span> |
+                    <span class="type-annotation">HSLAColor</span> | <span class="type-annotation">HSBColor</span> |
+                    <span class="type-annotation">HSBAColor</span>;<br>
+                    <span class="keyword">type</span> <span class="custom-type">scaleOrAbsolute</span> = {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">givenIn</span>: <span
+                        class="string-literal">"scale"</span> | <span class="string-literal">"absolute"</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">value</span>: <span
+                        class="type-annotation">number</span>;<br>
+                    };<br>
+                    <span class="keyword">type</span> <span class="custom-type">ratioOrAbsolute</span> = {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">givenIn</span>: <span
+                        class="string-literal">"ratio"</span> | <span class="string-literal">"absolute"</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">value</span>: <span
+                        class="type-annotation">number</span>;<br>
+                    };<br>
+                    <span class="keyword">type</span> <span class="custom-type">angleModes</span> = {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">givenIn</span>: <span
+                        class="string-literal">"degrees"</span> | <span class="string-literal">"radians"</span> |
+                    <span class="string-literal">"gradians"</span> | <span class="string-literal">"turns"</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">value</span>: <span
+                        class="type-annotation">number</span>;<br>
+                    };<br>
+                    <span class="keyword">type</span> <span class="custom-type">timeModes</span> = {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">givenIn</span>: <span
+                        class="string-literal">"RPM"</span> | <span class="string-literal">"ms"</span> | <span
+                        class="string-literal">"s"</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">value</span>: <span
+                        class="type-annotation">number</span>;<br>
+                    };<br>
+                    <span class="keyword">type</span> <span class="custom-type">variation</span> = {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">variation</span>: <span
+                        class="type-annotation">ratioOrAbsolute</span> & {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">plusOrMinus</span>:
+                    <span class="type-annotation">boolean</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;};<br>
+                    };<br>
+                    <span class="keyword">type</span> <span class="custom-type">explosionData</span> = {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">damage</span>: <span
+                        class="type-annotation">number</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">obstacleMult</span>: <span
+                        class="type-annotation">number</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">radii</span>: {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">visual</span>: {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="object-field">min</span>: <span class="type-annotation">scaleOrAbsolute</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="object-field">max</span>: <span class="type-annotation">scaleOrAbsolute</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">damage</span>: {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="object-field">min</span>: <span class="type-annotation">scaleOrAbsolute</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="object-field">max</span>: <span class="type-annotation">scaleOrAbsolute</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;};<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">lifetime</span>: <span
+                        class="type-annotation">timeModes</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">color</span>: <span
+                        class="type-annotation">colorModes</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">decal</span>: {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">img</span>: <span
+                        class="type-annotation">string</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">width</span>: <span
+                        class="type-annotation">scaleOrAbsolute</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">height</span>: <span
+                        class="type-annotation">scaleOrAbsolute</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">tint</span>: <span
+                        class="type-annotation">colorModes</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;};<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">shrapnel</span>: {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">count</span>: <span
+                        class="type-annotation">number</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">damage</span>: <span
+                        class="type-annotation">number</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">color</span>: <span
+                        class="type-annotation">colorModes</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">img</span>: <span
+                        class="type-annotation">string</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">velocity</span>: <span
+                        class="type-annotation">scaleOrAbsolute</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">range</span>: <span
+                        class="type-annotation">scaleOrAbsolute</span> & <span
+                        class="type-annotation">variation</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">falloff</span>: <span
+                        class="type-annotation">number</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="object-field">tracer</span>: {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="object-field">width</span>: <span class="type-annotation">scaleOrAbsolute</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                        class="object-field">height</span>: <span class="type-annotation">scaleOrAbsolute</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;};<br>
+                    };<br>
+                </div>
+
+                <p>
+                    To use your new explosion type, you need to reference its name in <a
+                        href="../ammo/index.html#h3-3">an ammo type's <code>explosion_type</code> field</a>. Then,
+                    reference that ammo type in a gun's <code>caliber</code> property, and you're done!
+                </p>
+
+                <h3>Other guides:</h3>
+                <ul class="no-margin">
+                    <li>
+                        <a href="../basics/index.html">Basics</a>
+                    </li>
+                    <li>
+                        <a href="../guns/index.html">Firearms</a>
+                    </li>
+                    <li>
+                        <a href="../ammo/index.html">Ammunition</a>
+                    </li>
+                </ul>
+            </div>
+        </main>
+        <footer>
+            <p style="margin: 0 1%; padding: 0.5% 0; font-size: 12px;">"surviv.io" is owned by <a
+                    href="https://www.kongregate.com">Kongregate</a>. Use of game assets is authorized on the condition
+                that this project not be monetized in any way, shape or form. Written by eiπ on June 21<sup>st</sup>
+                2022, last updated / reviewed on June 26<sup>th</sup> 2020 for surviv sandbox version 0.7.0. You can <a
+                    href="https://discord.gg/uGkCbYbUAX">join the project's Discord here</a>. Color scheme heavily
+                inspired by the <a href="https://survivio.fandom.com/">surviv.io wiki</a>.
+            </p>
+        </footer>
+    </article>
+</body>
+
+</html>

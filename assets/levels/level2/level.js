@@ -84,6 +84,7 @@ export const level = await (async () => {
                                     case "dmr": return 4;
                                     case "burst_ar": return 6;
                                     case "semi_pistol_move": return 6;
+                                    case "grenade_launcher": return 7;
                                     default: return 1;
                                 }
                             })(gamespace.guns.find(g => g.name == d.weapon).summary.class);
@@ -201,9 +202,7 @@ export const level = await (async () => {
                             if (e.key == "Escape") {
                                 document.removeEventListener("keydown", exit);
                                 e.preventDefault();
-                                gamespace.cleanUp({ clearEvents: true });
-                                Array.from(document.body.children).forEach(n => n.remove());
-                                makeMenu(true);
+                                gamespace.exitLevel();
                             }
                         });
                     }
