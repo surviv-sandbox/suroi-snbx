@@ -3,12 +3,39 @@ function makeMenu(first: boolean) {
         memoryManager.has("sawPopup") || memoryManager.setItem("sawPopup", true);
 
         {
-            const s = memoryManager.getItem("settings") as void | JSONObject;
+            function fetchGun(name: string) {
+                return gamespace.guns.find(g => g.name == name);
+            }
 
-            if (s) {
-                gamespace.settings = overrideObject(gamespace.settings, s as any);
-            } else {
-                memoryManager.setItem("settings", gamespace.settings);
+            function fetchOldGun(name: string) {
+                return gamespace._oldStats.guns.find(g => g.name == name);
+            }
+
+            const b = gamespace.settings.balanceChanges;
+
+            {
+                const g = fetchGun("M79"),
+                    a = g?.caliber ? gamespace.bulletInfo[g.caliber] : void 0;
+
+                if (g) {
+                    g.moveSpeedPenalties.active = b.weapons.m79.moveSpeedPenalty ? fetchOldGun("M79")?.moveSpeedPenalties?.active ?? 0 : 0;
+
+                    a && (a.projectileInfo.spinVel = b.weapons.m79.grenadeSpin ? gamespace._oldStats.ammo[g.caliber]?.projectileInfo?.spinVel ?? 0 : 0);
+                    g.casing.spawnOn = b.weapons.m79.spawnCasingOnReload ? "reload" : fetchOldGun("M79")?.casing?.spawnOn ?? "fire";
+                }
+            }
+
+            {
+                const g = fetchGun("MP220"),
+                    p = b.weapons.mp220.pullBothTriggers;
+
+                if (g) {
+                    g.accuracy.default = p ? 13 * Math.PI / 180 : fetchGun("MP220")?.accuracy.default ?? 10 * Math.PI / 180;
+                    g.accuracy.moving = p ? 16 * Math.PI / 180 : fetchGun("MP220")?.accuracy.moving ?? 12 * Math.PI / 180;
+                    g.fireModes = p ? ["burst-2"] : fetchGun("MP220")?.fireModes ?? ["semi"];
+                    g.recoilImpulse.y = p ? 0.3 : fetchGun("MP220")?.recoilImpulse?.y ?? 0.25;
+                    g.recoilImpulse.duration = p ? 120 : fetchGun("MP220")?.recoilImpulse?.duration ?? 100;
+                }
             }
         }
 
@@ -71,10 +98,10 @@ function makeMenu(first: boolean) {
                     ctx = can.getContext("2d") as CanvasRenderingContext2D;
 
                 Array.from(menu.children).forEach(e => e.remove());
-                $("settings-cont")?.remove();
 
                 can.width = window.innerWidth;
                 can.height = window.innerHeight;
+                can.style.width = can.style.height = "100%";
                 ctx.fillStyle = "#547033";
                 ctx.fillRect(0, 0, can.width / 10, can.height);
                 ctx.fillRect(0, 0, can.width, can.height / 9);
@@ -94,7 +121,7 @@ function makeMenu(first: boolean) {
                         desc = makeElement("p", `level-${l.name}-desc`, "level-desc");
 
                     button.style.left = `${(17 * (i % 5)) + 11}%`;
-                    button.style.top = `calc(${(Math.floor(i / 5) * 22) + 100 / 9 + 2}%)`;
+                    button.style.top = `${(Math.floor(i / 5) * 22) + 100 / 9 + 2}%`;
                     button.style[`background${l.thumbnail ? "Image" : "Color"}`] = l.thumbnail ? `url(${l.thumbnail})` : (l.color || "#333333");
 
                     levelTitle.textContent = l.name;
@@ -110,50 +137,11 @@ function makeMenu(first: boolean) {
             }
         });
 
-        // I'll have to re-do this when there are like, actual settings, but this'll do for now
-        settings.addEventListener("click", e => void (!e.button && (() => {
-            if ($("settings-cont")) {
-                return $("settings-cont")!.remove();
+        settings.addEventListener("click", async e => {
+            if (!e.button) {
+                (await import("./settings.js")).makeSettings();
             }
-
-            const doc = new DocumentFragment(),
-                cont = makeElement("div", "settings-cont"),
-                switches = (() => {
-                    const b: HTMLButtonElement[] = [],
-                        f = (bonus: boolean) => bonus ? gamespace.settings.bonus_features : gamespace.settings;
-
-                    Object.keys(gamespace.settings)
-                        .filter(k => !["graphicsQuality", "useNativeMath", "bonus_features", "name"].includes(k))
-                        .map(k => ({ bonus: false, key: k }))
-                        .concat(
-                            Object.keys(gamespace.settings.bonus_features)
-                                .map(k => ({ bonus: true, key: k }))
-                        )
-                        .forEach(feature => {
-                            const button = makeElement("button", `setting-${feature.key}-switch`, "setting-switch surviv-outline-button");
-
-                            button.textContent = feature.key.replace(/_/g, " ");
-
-                            button.style.borderColor = f(feature.bonus)[feature.key] ? "#0F0" : "";
-                            button.style.backgroundColor = f(feature.bonus)[feature.key] ? "#0108" : "";
-
-                            button.addEventListener("click", e => void (!e.button && (() => {
-                                f(feature.bonus)[feature.key] = !f(feature.bonus)[feature.key];
-
-                                memoryManager.setItem("settings", gamespace.settings);
-                                button.style.borderColor = f(feature.bonus)[feature.key] ? "#0F0" : "";
-                                button.style.backgroundColor = f(feature.bonus)[feature.key] ? "#0108" : "";
-                            })()));
-                            b.push(button);
-                        });
-
-                    return b;
-                })();
-
-            doc.appendChild(cont).append(...switches);
-
-            document.body.appendChild(doc);
-        })()));
+        });
 
         changelog.addEventListener("click", e => void (!e.button && window.open("./changelog/", "_self")));
 
@@ -161,7 +149,7 @@ function makeMenu(first: boolean) {
 
         function startGame(index: number) {
             document.body.style.backgroundColor = "rgb(20, 20, 20)";
-            container.remove();
+            $("menu-container")!.remove();
 
             const ob = JSON.parse(localStorage.surviv_sandbox ?? "{}") as JSONObject;
 
@@ -178,5 +166,95 @@ function makeMenu(first: boolean) {
         }
     }
 };
+
+(() => {
+    function fetchGun(name: string) {
+        return gamespace.guns.find(g => g.name == name);
+    }
+
+    const s = memoryManager.getItem("settings") as void | JSONObject;
+
+    if (s) {
+        gamespace.settings = {
+            visual: {
+                debug: (s.visual as badCodeDesign)?.debug ?? s.debug as boolean ?? false,
+                graphicsQuality: (s.visual as badCodeDesign)?.graphicsQuality ?? s.graphicsQuality as number ?? 1.5,
+                monitors: (s.visual as badCodeDesign)?.monitors ?? s.monitors as [0 | 1 | 2, 0 | 1 | 2] ?? [0, 0],
+                hud: (s.visual as badCodeDesign)?.hud ?? s.ui as boolean ?? true,
+                maxDecals: (s.visual as badCodeDesign)?.maxDecals ?? Infinity
+            },
+            balanceChanges: {
+                weapons: {
+                    general: {
+                        noslow: (s.balanceChanges as badCodeDesign)?.weapons?.general?.noslow ?? true,
+                        quickswitch: (s.balanceChanges as badCodeDesign)?.weapons?.general?.quickswitch ?? true,
+                        headshots: (s.balanceChanges as badCodeDesign)?.weapons?.general?.headshots ?? true
+                    },
+                    m79: {
+                        grenadeSpin: (s.balanceChanges as badCodeDesign)?.weapons?.m79?.grenadeSpin ?? true,
+                        moveSpeedPenalty: (s.balanceChanges as badCodeDesign)?.weapons?.m79?.moveSpeedPenalty ?? true,
+                        spawnCasingOnReload: (s.balanceChanges as badCodeDesign)?.weapons?.m79?.spawnCasingOnReload ?? false
+                    },
+                    mp220: {
+                        pullBothTriggers: (s.balanceChanges as badCodeDesign)?.weapons?.mp220?.pullBothTriggers ?? false
+                    }
+                }
+            },
+            bonusFeatures: {
+                botDebug: (s.bonusFeatures as badCodeDesign)?.botDebug ?? (s.bonus_features as badCodeDesign)?.bot_debug ?? false,
+                csgoStyleKillfeed: (s.bonusFeatures as badCodeDesign)?.csgoStyleKillfeed ?? (s.bonus_features as badCodeDesign)?.csgo_style_killfeed ?? false,
+                damageNumbersStack: (s.bonusFeatures as badCodeDesign)?.damageNumbersStack ?? (s.bonus_features as badCodeDesign)?.damage_numbers_stack ?? false,
+                headshotsUseSaturatedTracers: (s.bonusFeatures as badCodeDesign)?.headshotsUseSaturatedTracers ?? (s.bonus_features as badCodeDesign)?.headshots_use_saturated_tracers ?? false,
+                showDamageNumbers: (s.bonusFeatures as badCodeDesign)?.showDamageNumbers ?? (s.bonus_features as badCodeDesign)?.show_damage_numbers ?? false,
+                useInterpolatedSaturatedTracers: (s.bonusFeatures as badCodeDesign)?.useInterpolatedSaturatedTracers ?? (s.bonus_features as badCodeDesign)?.use_interpolated_tracer_colors ?? false,
+            },
+            name: s.name?.toString?.() ?? "Player",
+            useNativeMath: s.useNativeMath as boolean ?? true
+        };
+    } else {
+        memoryManager.setItem("settings", gamespace.settings);
+    }
+
+    {
+        const g = fetchGun("M79"),
+            a = g?.caliber ? gamespace.bulletInfo[g.caliber] : void 0;
+
+        if (g) {
+            gamespace._oldStats.guns.push({
+                name: g.name,
+                moveSpeedPenalties: {
+                    active: g.moveSpeedPenalties.active
+                }
+            });
+
+            gamespace._oldStats.ammo[g.caliber] = {
+                projectileInfo: {
+                    spinVel: a!.projectileInfo.spinVel
+                }
+            };
+        }
+    }
+
+    {
+        const g = fetchGun("MP220");
+
+        if (g) {
+            gamespace._oldStats.guns.push({
+                accuracy: {
+                    default: g.accuracy.default,
+                    moving: g.accuracy.moving
+                },
+                fireModes: g.fireModes,
+                recoilImpulse: {
+                    x: g.recoilImpulse.x,
+                    y: g.recoilImpulse.y,
+                    duration: g.recoilImpulse.duration,
+                }
+            });
+        }
+    }
+
+    perf.showMeters(...gamespace.settings.visual.monitors);
+})();
 
 makeMenu(true);

@@ -24,7 +24,13 @@ const keyBindings: {
         "reload": {
             key: "r",
             callback(type: `${string}${"down" | "up"}`) {
-                type.endsWith("down") && gamespace?.player?.inventory?.activeItem?.reload?.(gamespace?.player);
+                const p = gamespace.player;
+
+                if (type.endsWith("down") && p) {
+                    if (gamespace._currentUpdate - p.state.lastSwitch > p.state.eSwitchDelay) {
+                        p.inventory.activeItem.reload(p);
+                    }
+                }
             }
         },
         "primary_fire": {
@@ -99,12 +105,21 @@ const keyBindings: {
             }
         },
         "other_gun": {
-            key: "",
-            callback() { }
+            key: "e",
+            callback(type: `${string}${"down" | "up"}`) {
+                if (type.endsWith("down") && gamespace.player !== void 0) {
+                    gamespace.player.switchSlots((1 - gamespace.player.inventory.activeIndex) as 0 | 1);
+                };
+            }
         },
         "switch_guns": {
-            key: "",
-            callback() { }
+            key: "t",
+            callback(type: `${string}${"down" | "up"}`) {
+                if (type.endsWith("down") && gamespace.player !== void 0) {
+                    [gamespace.player.inventory.slot0, gamespace.player.inventory.slot1] = [gamespace.player.inventory.slot1, gamespace.player.inventory.slot0];
+                    gamespace.player.inventory.activeIndex = 1 - gamespace.player.inventory.activeIndex as 0 | 1;
+                };
+            }
         },
         "map": {
             key: "m",
@@ -118,9 +133,9 @@ const keyBindings: {
             key: "p",
             callback(type: `${string}${"down" | "up"}`) {
                 if (type.endsWith("down")) {
-                    gamespace.settings.ui = !gamespace.settings.ui;
+                    gamespace.settings.visual.hud = !gamespace.settings.visual.hud;
 
-                    document.querySelectorAll(".ui").forEach(e => e.classList[gamespace.settings.ui ? "remove" : "add"]("hidden"));
+                    document.querySelectorAll(".ui").forEach(e => e.classList[gamespace.settings.visual.hud ? "remove" : "add"]("hidden"));
                 }
             }
         },
@@ -148,15 +163,8 @@ const keyBindings: {
 
                                     exit.addEventListener("click", e => {
                                         if (!e.button) {
-                                            ui.elements.forEach(e => {
-                                                if (!["ammo", "HP", "reloading", "killfeed"].includes(e)) {
-                                                    ui.remove(e);
-                                                }
-                                            });
                                             cont.remove();
-                                            gamespace.cleanUp({ clearEvents: true });
-                                            Array.from(document.body.children).forEach(n => n.remove());
-                                            makeMenu(true);
+                                            gamespace.exitLevel();
                                         }
                                     });
 
@@ -175,10 +183,10 @@ const keyBindings: {
 })();
 
 function registerInput(event: KeyboardEvent | MouseEvent | WheelEvent) {
-    if (event.ctrlKey && (event as KeyboardEvent).key == "Control" &&
-        event.altKey && (event as KeyboardEvent).key == "Alt" &&
-        event.shiftKey && (event as KeyboardEvent).key == "Shift" &&
-        event.metaKey && (event as KeyboardEvent).key == "Meta") { return; }
+    if (event.ctrlKey && (event as KeyboardEvent).key != "Control" ||
+        event.altKey && (event as KeyboardEvent).key != "Alt" ||
+        event.shiftKey && (event as KeyboardEvent).key != "Shift" ||
+        event.metaKey && (event as KeyboardEvent).key != "Meta") { return; }
 
     if (event instanceof KeyboardEvent) {
         gamespace.keys[event.key.toLowerCase()] = event.type == "keydown";

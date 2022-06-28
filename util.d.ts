@@ -1,4 +1,3 @@
-/// <reference types="p5" />
 declare type TOrArrayT<T> = T | T[];
 declare type JSONValue = string | number | boolean | null;
 declare type JSONObject = {
@@ -28,6 +27,12 @@ declare type HSBAColor = HSBColor & {
     alpha: number;
 };
 declare type colorModes = hexColor | RGBColor | RGBAColor | HSLColor | HSLAColor | HSBColor | HSBAColor;
+/**
+ * Make all properties in T optional, and if a given property holds an object, make all of its properties optional
+ */
+declare type DeepPartial<T> = {
+    [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
+};
 declare type JSONLevel = {
     obstacles: (({
         type: "rectangle";
@@ -102,8 +107,8 @@ interface Math {
     acot: (x: number) => number;
 }
 declare const generateId: Generator<number, never, unknown>;
-declare function loadImg(path: string): import("p5").Image;
-declare function loadFnt(path: string): import("p5").Font;
+declare function loadImg(path: string, failGracefully?: boolean): import("p5").Image | void;
+declare function loadFnt(path: string, failGracefully?: boolean): import("p5").Font;
 declare function makeElement<K extends keyof HTMLElementTagNameMap>(tag: K, id?: string, className?: string): HTMLElementTagNameMap[K];
 declare function squaredDist(ptA: {
     x: number;
@@ -176,7 +181,7 @@ declare type JSONGun = {
         held: false | string;
         silhouette: false | string;
     };
-    tint: colorModes;
+    tint: string;
     ballistics: {
         damage: number;
         velocity: scaleOrAbsolute;
@@ -293,52 +298,7 @@ declare type ammoData = {
 };
 declare function parseAmmoData(data: {
     [key: string]: ammoData;
-}): {
-    [key: string]: {
-        tints: {
-            normal: string;
-            saturated: string;
-            saturated_alt?: string;
-            chambered: string;
-        };
-        alpha: {
-            rate: number;
-            min: number;
-            max: number;
-        };
-        spawnVar: {
-            mean: number;
-            variation: number;
-            plusOrMinus: boolean;
-        };
-        imageOffset: {
-            parr: number;
-            perp: number;
-        };
-        projectileInfo: ({
-            type: "explosive";
-            explosionType: string;
-            explodeOnContact: boolean;
-            maxDist: number;
-            heightPeak: number;
-        } | {
-            type: "bullet";
-        }) & {
-            img: import("p5").Image;
-            spinVel: number;
-        };
-        casing: {
-            img: import("p5").Image;
-            lifetime: {
-                value: number;
-                variation: number;
-                plusOrMinus: boolean;
-            };
-            width: number;
-            height: number;
-        };
-    };
-};
+}): bulletInfo;
 declare type explosionData = {
     damage: number;
     obstacleMult: number;
@@ -376,49 +336,7 @@ declare type explosionData = {
 };
 declare function parseExplosionData(data: {
     [key: string]: explosionData;
-}): {
-    [key: string]: {
-        damage: number;
-        obstacleMult: number;
-        radii: {
-            visual: {
-                min: number;
-                max: number;
-            };
-            damage: {
-                min: number;
-                max: number;
-            };
-        };
-        lifetime: number;
-        color: [number, number, number];
-        decal: {
-            img: import("p5").Image;
-            width: number;
-            height: number;
-            tint: `#${string}`;
-        };
-        shrapnel: {
-            count: number;
-            damage: number;
-            color: `#${string}`;
-            img: import("p5").Image;
-            velocity: number;
-            range: {
-                value: number;
-                variation: {
-                    value: number;
-                    plusOrMinus: boolean;
-                };
-            };
-            falloff: number;
-            tracer: {
-                width: number;
-                height: number;
-            };
-        };
-    };
-};
+}): explosionInfo;
 declare function $(ele: string): HTMLElement | null;
 declare function average(options: {
     useNativeMath: boolean;
@@ -433,7 +351,7 @@ declare function checkBounds(value: Decimal | number, lowerBound: Decimal | numb
         lower?: boolean;
         upper?: boolean;
     };
-    useNativeMath: boolean;
+    useNativeMath?: boolean;
 }): boolean;
 declare function clamp(value: Decimal.Value, min?: Decimal.Value, max?: Decimal.Value, options?: {
     useNativeMath: boolean;
@@ -447,6 +365,9 @@ declare function meanDevPM_random(mean: Decimal.Value, deviation: Decimal.Value,
 }): string | number | import("./libraries/decimaljs/decimal.global").default;
 declare function clone<T extends JSONContent>(object: T): T;
 declare function overrideObject<T extends JSONObject, U extends JSONObject>(o1: Extract<T, U> & Partial<T>, o2: Extract<T, U> & Partial<U>): Extract<T, U> & Partial<T>;
+declare function linterp(a: Decimal.Value, b: Decimal.Value, t: Decimal.Value, options?: {
+    useNativeMath: boolean;
+}): number | import("./libraries/decimaljs/decimal.global").default;
 declare function getDecimalPlaces(n: number | Decimal): number;
 declare function sliceToDecimalPlaces(number: number | Decimal, decimalPlaces: number): number;
 declare function sigFigIshMult(a: number, b: number): number;
@@ -519,3 +440,9 @@ declare function toHex(color: colorModes, options?: {
     useNativeMath: boolean;
 }): `#${string}`;
 declare function loadJSONBasedGamespaceFields(): Promise<void>;
+/**
+ * Literally the best function in this entire project.
+ * @link https://areweyeetyet.rs
+ * Rust is pretty cool
+ */
+declare function yeet(e: any): never;

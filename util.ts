@@ -23,6 +23,13 @@ type HSLAColor = HSLColor & { alpha: number; };
 type HSBAColor = HSBColor & { alpha: number; };
 type colorModes = hexColor | RGBColor | RGBAColor | HSLColor | HSLAColor | HSBColor | HSBAColor;
 
+/**
+ * Make all properties in T optional, and if a given property holds an object, make all of its properties optional
+ */
+type DeepPartial<T> = {
+    [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P]
+};
+
 type JSONLevel = {
     obstacles: (
         (
@@ -91,12 +98,27 @@ const generateId = (function* () {
     }
 })();
 
-function loadImg(path: string): import("p5").Image { // Words cannot express how utterly fucking stupid this is
-    return p5.prototype.loadImage.call({ _decrementPreload: () => { } }, path);
+function loadImg(path: string, failGracefully?: boolean): import("p5").Image | void { // Words cannot express how utterly fucking stupid this is
+    try {
+        return p5.prototype.loadImage.call({ _decrementPreload: () => { } }, path);
+    } catch (e) {
+        if (failGracefully) {
+            return console.warn(`Failed to fetch image at path '${path}': ${e instanceof Error ? e.message : e}`);
+        }
+        throw e;
+    }
+
 }
 
-function loadFnt(path: string): import("p5").Font { // p5 serves as a good reminder as to why libraries are deisnged the way they are
-    return p5.prototype.loadFont.call({ _decrementPreload: () => { } }, path);
+function loadFnt(path: string, failGracefully?: boolean): import("p5").Font { // p5 serves as a good reminder as to why libraries are deisnged the way they are
+    try {
+        return p5.prototype.loadFont.call({ _decrementPreload: () => { } }, path);
+    } catch (e) {
+        if (failGracefully) {
+
+        }
+        throw e;
+    }
 }
 
 function makeElement<K extends keyof HTMLElementTagNameMap>(tag: K, id?: string, className?: string): HTMLElementTagNameMap[K] {
@@ -156,7 +178,7 @@ function parseLevelData(data: JSONLevel): { obstacles: obstacle[]; players: play
             return new obstacle(
                 body,
                 o.options.angle,
-                loadImg(d.image),
+                loadImg(d.image) as import("p5").Image,
                 { width: d.imageWidth, height: d.imageHeight },
                 d.tint,
                 d.layer,
@@ -337,15 +359,15 @@ function parseGunData(gunData: JSONGun[]) {
             (() => {
                 return {
                     loot: g.images.loot != false ? {
-                        img: loadImg(g.images.loot),
+                        img: loadImg(g.images.loot, true),
                         src: g.images.loot
                     } : void 0,
                     held: g.images.held != false ? {
-                        img: loadImg(g.images.held),
+                        img: loadImg(g.images.held, true),
                         src: g.images.held
                     } : void 0,
                     silhouette: g.images.silhouette != false ? {
-                        img: loadImg(g.images.silhouette),
+                        img: loadImg(g.images.silhouette, true),
                         src: g.images.silhouette
                     } : void 0
                 };
@@ -572,7 +594,7 @@ function parseAmmoData(data: { [key: string]: ammoData; }) {
                 spinVel: a.projectileInfo.spinVel ? toRad(a.projectileInfo.spinVel) : 0
             }) as typeof gamespace.bulletInfo[string]["projectileInfo"],
             casing: {
-                img: loadImg(a.casing.img),
+                img: loadImg(a.casing.img) as import("p5").Image,
                 lifetime: (() => {
                     const l = a.casing.lifetime,
                         v = l.variation,
@@ -654,7 +676,7 @@ function parseExplosionData(data: { [key: string]: explosionData; }) {
                 const d = e.decal;
 
                 return {
-                    img: loadImg(d.img),
+                    img: loadImg(d.img) as import("p5").Image,
                     tint: toHex(d.tint),
                     width: d.width.value * (d.width.givenIn == "scale" ? playerSize : 1),
                     height: d.height.value * (d.height.givenIn == "scale" ? playerSize : 1)
@@ -668,7 +690,7 @@ function parseExplosionData(data: { [key: string]: explosionData; }) {
                     count: s.count,
                     damage: s.damage,
                     color: toHex(s.color),
-                    img: loadImg(s.img),
+                    img: loadImg(s.img) as import("p5").Image,
                     velocity: s.velocity.value * (s.velocity.givenIn == "scale" ? playerSize : 1),
                     range: {
                         value: sRVal,
@@ -732,7 +754,7 @@ function stdDev(options: { useNativeMath: boolean; }, ...arr: Decimal.Value[]) {
     return average(options, ...a);
 }
 
-function checkBounds(value: Decimal | number, lowerBound: Decimal | number | "-inf" | "inf", upperBound: Decimal | number | "-inf" | "inf", options: { inclusion?: { lower?: boolean, upper?: boolean; }, useNativeMath: boolean; } = { inclusion: { lower: true, upper: true }, useNativeMath: true }): boolean {
+function checkBounds(value: Decimal | number, lowerBound: Decimal | number | "-inf" | "inf", upperBound: Decimal | number | "-inf" | "inf", options: { inclusion?: { lower?: boolean, upper?: boolean; }, useNativeMath?: boolean; } = { inclusion: { lower: true, upper: true }, useNativeMath: true }): boolean {
     options = { useNativeMath: options.useNativeMath ?? gamespace.settings.useNativeMath, inclusion: { lower: options.inclusion?.lower ?? true, upper: options.inclusion?.upper ?? true } };
 
     value = +value, lowerBound = typeof lowerBound != "string" ? +lowerBound : lowerBound, upperBound = typeof upperBound != "string" ? +upperBound : upperBound;
@@ -839,6 +861,10 @@ function overrideObject<T extends JSONObject, U extends JSONObject>(o1: Extract<
     }
 
     return o1;
+}
+
+function linterp(a: Decimal.Value, b: Decimal.Value, t: Decimal.Value, options: { useNativeMath: boolean; } = { useNativeMath: gamespace.settings.useNativeMath }) {
+    return options.useNativeMath ? (+a * (1 - +t) + +b * +t) : Decimal.mul(b, t).add(Decimal.mul(a, Decimal.sub(1, t)));
 }
 
 function getDecimalPlaces(n: number | Decimal) {
@@ -1110,7 +1136,22 @@ async function loadJSONBasedGamespaceFields() {
     gamespace.explosionInfo = parseExplosionData((await (await fetch("assets/json/explosions.json")).json()) as { [key: string]: explosionData; });
 }
 
+/**
+ * Literally the best function in this entire project.
+ * @link https://areweyeetyet.rs
+ * Rust is pretty cool
+ */
+function yeet(e: any): never {
+    throw e;
+}
+
 (() => {
+    window.addEventListener("keydown", ev => {
+        if ((ev.key == "-" || ev.key == "=") && (ev.metaKey || ev.ctrlKey)) {
+            ev.preventDefault();
+        }
+    });
+
     Math.cmp = function (a, b) {
         if (a == b) { return 0; }
         return a > b ? 1 : -1;

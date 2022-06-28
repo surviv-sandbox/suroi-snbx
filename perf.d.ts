@@ -2,7 +2,6 @@ declare const perf: {
     _timers: {
         a: number | void;
         b: number | void;
-        c: number | void;
     };
     _data: {
         ticks: number;

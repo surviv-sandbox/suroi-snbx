@@ -149,14 +149,14 @@ class manager {
         try {
             this.#cache = JSON.parse(s) ?? {};
         } catch (e) {
-            console.warn(`Failed to initialize cache from localStorage value; JSON.parse failed with the following error:`);
+            console.warn("Failed to initialize cache from localStorage value; JSON.parse failed with the following error:");
             console.log(e);
         }
 
         if (this.#cache.version != gamespace.version) {
-            localStorage.clear();
+            this.#cache;
 
-            this.setItem("version", gamespace.version);
+            ; this.setItem("version", gamespace.version);
         }
     }
 

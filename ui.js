@@ -30,7 +30,7 @@ class uiManager {
         if (!p) {
             return;
         }
-        const container = makeElement("div", "ui-container", `ui ${gamespace.settings.ui ? "" : "hidden"}`);
+        const container = makeElement("div", "ui-container", `ui ${gamespace.settings.visual.hud ? "" : "hidden"}`);
         document.body.appendChild(container);
         this.#elements.forEach(e => e.create?.(container));
     }
@@ -140,8 +140,8 @@ ui.add({
             gamespace.kills.forEach((k, i) => {
                 const p = ($(`killfeed-kill-${k.id}`) ?? makeElement("div", `killfeed-kill-${k.id}`, "killfeed-entry"));
                 if (!$(`killfeed-kill-${k.id}`)) {
-                    if (gamespace.settings.bonus_features.csgo_style_killfeed) {
-                        p.innerHTML = `${k.killer}&nbsp;&nbsp;&nbsp;<img src="${gamespace.guns.find(g => g.name == k.weapon).images.silhouette.src}" class="killfeed-image"${k.crit ? ` style="background: content-box radial-gradient(#f00, transparent);"` : ""}/>&nbsp;&nbsp;&nbsp;${k.killed}`;
+                    if (gamespace.settings.bonusFeatures.csgoStyleKillfeed) {
+                        p.innerHTML = `${k.killer ? `${k.killer}&nbsp;&nbsp;&nbsp;` : ""}<img src="${gamespace.guns.find(g => g.name == k.weapon).images.silhouette.src}" class="killfeed-image"${k.crit ? ` style="background: content-box radial-gradient(#f00, transparent);"` : ""}/>&nbsp;&nbsp;&nbsp;${k.killed}`;
                         p.style.backgroundColor = k.killed == gamespace.settings.name ? "#8008" : "";
                         p.style.outline = k.killer == gamespace.settings.name ? "calc(2vh / 9) solid #C00" : "";
                     }

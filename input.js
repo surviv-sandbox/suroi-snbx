@@ -19,7 +19,12 @@ const keyBindings = (() => {
         "reload": {
             key: "r",
             callback(type) {
-                type.endsWith("down") && gamespace?.player?.inventory?.activeItem?.reload?.(gamespace?.player);
+                const p = gamespace.player;
+                if (type.endsWith("down") && p) {
+                    if (gamespace._currentUpdate - p.state.lastSwitch > p.state.eSwitchDelay) {
+                        p.inventory.activeItem.reload(p);
+                    }
+                }
             }
         },
         "primary_fire": {
@@ -100,12 +105,23 @@ const keyBindings = (() => {
             }
         },
         "other_gun": {
-            key: "",
-            callback() { }
+            key: "e",
+            callback(type) {
+                if (type.endsWith("down") && gamespace.player !== void 0) {
+                    gamespace.player.switchSlots((1 - gamespace.player.inventory.activeIndex));
+                }
+                ;
+            }
         },
         "switch_guns": {
-            key: "",
-            callback() { }
+            key: "t",
+            callback(type) {
+                if (type.endsWith("down") && gamespace.player !== void 0) {
+                    [gamespace.player.inventory.slot0, gamespace.player.inventory.slot1] = [gamespace.player.inventory.slot1, gamespace.player.inventory.slot0];
+                    gamespace.player.inventory.activeIndex = 1 - gamespace.player.inventory.activeIndex;
+                }
+                ;
+            }
         },
         "map": {
             key: "m",
@@ -119,8 +135,8 @@ const keyBindings = (() => {
             key: "p",
             callback(type) {
                 if (type.endsWith("down")) {
-                    gamespace.settings.ui = !gamespace.settings.ui;
-                    document.querySelectorAll(".ui").forEach(e => e.classList[gamespace.settings.ui ? "remove" : "add"]("hidden"));
+                    gamespace.settings.visual.hud = !gamespace.settings.visual.hud;
+                    document.querySelectorAll(".ui").forEach(e => e.classList[gamespace.settings.visual.hud ? "remove" : "add"]("hidden"));
                 }
             }
         },
@@ -143,15 +159,8 @@ const keyBindings = (() => {
                                     resume.addEventListener("click", e => void (!e.button && cont.remove()));
                                     exit.addEventListener("click", e => {
                                         if (!e.button) {
-                                            ui.elements.forEach(e => {
-                                                if (!["ammo", "HP", "reloading", "killfeed"].includes(e)) {
-                                                    ui.remove(e);
-                                                }
-                                            });
                                             cont.remove();
-                                            gamespace.cleanUp({ clearEvents: true });
-                                            Array.from(document.body.children).forEach(n => n.remove());
-                                            makeMenu(true);
+                                            gamespace.exitLevel();
                                         }
                                     });
                                     uiContainer.appendChild(cont).append(resume, exit);
@@ -169,10 +178,10 @@ const keyBindings = (() => {
     };
 })();
 function registerInput(event) {
-    if (event.ctrlKey && event.key == "Control" &&
-        event.altKey && event.key == "Alt" &&
-        event.shiftKey && event.key == "Shift" &&
-        event.metaKey && event.key == "Meta") {
+    if (event.ctrlKey && event.key != "Control" ||
+        event.altKey && event.key != "Alt" ||
+        event.shiftKey && event.key != "Shift" ||
+        event.metaKey && event.key != "Meta") {
         return;
     }
     if (event instanceof KeyboardEvent) {

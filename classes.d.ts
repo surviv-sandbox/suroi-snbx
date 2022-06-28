@@ -1,4 +1,6 @@
-/// <reference types="p5" />
+/**
+ * @deprecated This class hasn't really been touched since… ever. Use of this class may or may not yield expected results.
+ */
 declare class obstacle {
     #private;
     get body(): Matter.Body;
@@ -104,7 +106,7 @@ declare class playerLike {
     destroy(): void;
     move(w: boolean, a: boolean, s: boolean, d: boolean): void;
     switchSlots(index: 0 | 1): void;
-    damage(amount: number, source: bullet | explosion | shrapnel): void;
+    damage(amount: number, source: projectile | explosion): void;
 }
 declare class player extends playerLike {
     constructor(body: Matter.Body, angle: number, health: number, loadout: {
@@ -127,247 +129,33 @@ declare class inventory {
     get activeItem(): gun;
     constructor(parent: playerLike);
 }
-declare class gunPrototype {
+interface listener {
+    event: string;
+    callback: (this: customEvent, event: Event, ...args: any[]) => any;
     name: string;
-    summary: {
-        class: string;
-        engagementDistance: {
-            min: number;
-            max: number;
-        };
-        shouldNoslow: boolean;
-        role: "primary" | "secondary";
-    };
-    dual: boolean;
-    images: {
-        loot: {
-            img: import("p5").Image | void;
-            src: string | false;
-        } | void;
-        held: {
-            img: import("p5").Image | void;
-            src: string | false;
-        } | void;
-        silhouette: {
-            img: import("p5").Image | void;
-            src: string | false;
-        } | void;
-    };
-    ballistics: {
-        damage: number;
-        velocity: number;
-        range: number;
-        obstacleMult: number;
-        headshotMult: number;
-        tracer: {
-            width: number;
-            height: number;
-        };
-        projectiles: number;
-        falloff: number;
-        fsaCooldown: number;
-    };
-    caliber: string;
-    delay: number;
-    accuracy: {
-        default: number;
-        moving: number;
-    };
-    offset: {
-        x: number;
-        y: number;
-    };
-    dimensions: {
-        width: number;
-        height: number;
-        layer: 0 | 1 | 2;
-    };
-    switchDelay: number;
-    hands: {
-        lefthand: {
-            x: number;
-            y: number;
-        };
-        righthand?: {
-            x: number;
-            y: number;
-        };
-    };
-    tint: string;
-    spawnOffset: {
-        x: number;
-        y: number;
-    };
-    suppressed: boolean;
-    casing: {
-        spawnOffset: {
-            perp: number;
-            parr: number;
-        };
-        velocity: {
-            perp: {
-                value: number;
-                variation: {
-                    value: number;
-                    plusOrMinus: boolean;
-                };
-            };
-            parr: {
-                value: number;
-                variation: {
-                    value: number;
-                    plusOrMinus: boolean;
-                };
-            };
-            angular: {
-                value: number;
-                variation: {
-                    value: number;
-                    plusOrMinus: boolean;
-                };
-            };
-        };
-        spawnOn: "fire" | "reload";
-        spawnDelay: number;
-    };
-    recoilImpulse: {
-        x: number;
-        y: number;
-        duration: number;
-    };
-    fireMode: ("automatic" | "semi" | `${"auto-" | ""}burst-${number}`)[];
-    burstProps: {
-        shotDelay: number;
-        burstDelay: number;
-    };
-    reload: {
-        duration: number;
-        ammoReloaded: number | "all";
-        chain: boolean;
-    };
-    altReload?: {
-        duration: number;
-        ammoReloaded: number | "all";
-        chain: boolean;
-    };
-    magazineCapacity: {
-        normal: number;
-        firepower: number;
-    };
-    moveSpeedPenalties: {
-        active: number;
-        firing: number;
-    };
-    deployGroup: number;
-    constructor(name: string, summary: {
-        class: string;
-        engagementDistance: {
-            min: number;
-            max: number;
-        };
-        shouldNoslow: boolean;
-        role: "primary" | "secondary";
-    }, dual: boolean, images: {
-        loot: {
-            img: import("p5").Image | void;
-            src: string | false;
-        } | void;
-        held: {
-            img: import("p5").Image | void;
-            src: string | false;
-        } | void;
-        silhouette: {
-            img: import("p5").Image | void;
-            src: string | false;
-        } | void;
-    }, tint: string, ballistics: {
-        damage: number;
-        velocity: number;
-        range: number;
-        obstacleMult: number;
-        headshotMult: number;
-        tracer: {
-            width: number;
-            height: number;
-        };
-        projectiles: number;
-        falloff: number;
-        fsaCooldown: number;
-    }, caliber: string, delay: number, accuracy: {
-        default: number;
-        moving: number;
-    }, offset: {
-        x: number;
-        y: number;
-    }, dimensions: {
-        width: number;
-        height: number;
-        layer: 0 | 1 | 2;
-    }, hands: {
-        lefthand: {
-            x: number;
-            y: number;
-        };
-        righthand?: {
-            x: number;
-            y: number;
-        };
-    }, spawnOffset: {
-        x: number;
-        y: number;
-    }, suppressed: boolean, recoilImpulse: {
-        x: number;
-        y: number;
-        duration: number;
-    }, fireMode: ("automatic" | "semi" | `burst-${number}`)[], burstProps: {
-        shotDelay: number;
-        burstDelay: number;
-    }, reload: {
-        duration: number;
-        ammoReloaded: number | "all";
-        chain: boolean;
-    }, capacity: {
-        normal: number;
-        firepower: number;
-    }, switchDelay: number, casing: typeof gunPrototype.prototype.casing, moveSpeedPenalties: {
-        active: number;
-        firing: number;
-    }, deployGroup: number, altReload?: {
-        duration: number;
-        ammoReloaded: number | "all";
-        chain: boolean;
-    });
+    once?: boolean;
 }
-declare class gun {
+declare class customEvent {
     #private;
-    get proto(): gunPrototype;
-    get activeFireModeIndex(): number;
-    set activeFireModeIndex(v: number);
-    get activeFireMode(): "automatic" | "semi" | `burst-${number}` | `auto-burst-${number}`;
-    get ammo(): number;
-    set ammo(v: number);
-    recoilImpulseParity: -1 | 1;
-    constructor(proto: gunPrototype);
-    primary(shooter: playerLike): void;
-    reload(shooter: playerLike): void;
-    stopReload(shooter: playerLike): void;
-    makeCasing(shooter: playerLike): void;
+    get listenerCount(): number;
+    get listeners(): {
+        event: string;
+        callback: (this: customEvent, event: Event, ...args: any[]) => any;
+        name: string;
+        once?: boolean;
+    }[];
+    on(event: string, callback: listener["callback"]): this;
+    once(event: string, callback: listener["callback"]): this;
+    removeListener(event: string, name: string): boolean;
+    addEventListener(event: string, callback: listener["callback"], options?: {
+        once: boolean;
+    }): this;
+    removeListenersByType(event: string): void;
+    removeAllListeners(): void;
+    dispatchEvent(event: string | Event, ...args: Parameters<listener["callback"]>[1][]): boolean;
 }
-declare class bullet {
-    #private;
-    get body(): Matter.Body;
-    get shooter(): playerLike;
-    get emitter(): gunPrototype;
-    get angle(): number;
-    get trajectory(): number;
-    get start(): {
-        x: number;
-        y: number;
-    };
-    get created(): number;
-    get crit(): boolean;
-    get alpha(): number;
-    get info(): {
+declare type bulletInfo = {
+    [key: string]: {
         tints: {
             normal: string;
             saturated: string;
@@ -411,80 +199,9 @@ declare class bullet {
             height: number;
         };
     };
-    get type(): "explosive" | "bullet";
-    get sqauredDistance(): number;
-    get damage(): number;
-    constructor(body: Matter.Body, shooter: playerLike, emitter: gunPrototype, angle: number, start: {
-        x: number;
-        y: number;
-    }, created: number, crit: boolean, type: typeof bullet.prototype.type);
-    update(): void;
-    draw(): void;
-    destroy(): void;
-}
-declare class shrapnel {
-    #private;
-    get body(): Matter.Body;
-    get shooter(): playerLike;
-    get emitter(): gunPrototype;
-    get angle(): number;
-    get trajectory(): number;
-    get origin(): {
-        x: number;
-        y: number;
-    };
-    get start(): {
-        x: number;
-        y: number;
-    };
-    get created(): number;
-    get crit(): boolean;
-    get range(): number;
-    get info(): {
-        count: number;
-        damage: number;
-        color: `#${string}`;
-        img: import("p5").Image;
-        velocity: number;
-        range: {
-            value: number;
-            variation: {
-                value: number;
-                plusOrMinus: boolean;
-            };
-        };
-        falloff: number;
-        tracer: {
-            width: number;
-            height: number;
-        };
-    };
-    get sqauredDistance(): number;
-    get damage(): number;
-    constructor(body: Matter.Body, shooter: playerLike, emitter: gunPrototype, angle: number, origin: {
-        x: number;
-        y: number;
-    }, start: {
-        x: number;
-        y: number;
-    }, created: number, crit: boolean);
-    update(): void;
-    draw(): void;
-    destroy(): void;
-}
-declare class explosion {
-    #private;
-    get origin(): {
-        x: number;
-        y: number;
-    };
-    get createdAt(): number;
-    get shooter(): playerLike;
-    get emitter(): gunPrototype;
-    get crit(): boolean;
-    get damage(): number;
-    get id(): number;
-    get info(): {
+};
+declare type explosionInfo = {
+    [key: string]: {
         damage: number;
         obstacleMult: number;
         radii: {
@@ -503,12 +220,12 @@ declare class explosion {
             img: import("p5").Image;
             width: number;
             height: number;
-            tint: `#${string}`;
+            tint: hexColor;
         };
         shrapnel: {
             count: number;
             damage: number;
-            color: `#${string}`;
+            color: hexColor;
             img: import("p5").Image;
             velocity: number;
             range: {
@@ -525,118 +242,11 @@ declare class explosion {
             };
         };
     };
-    get steps(): number;
-    get alpha(): number;
-    constructor(origin: {
-        x: number;
-        y: number;
-    }, shooter: playerLike, emitter: gunPrototype, crit: boolean);
-    update(): void;
-    draw(): void;
-}
-declare class casing {
-    #private;
-    get body(): Matter.Body;
-    get emitter(): gunPrototype;
-    get angle(): number;
-    get trajectory(): number;
-    get lifetime(): number;
-    get start(): {
-        x: number;
-        y: number;
-    };
-    get created(): number;
-    get velocities(): {
-        parr: number;
-        perp: number;
-        angular: number;
-    };
-    constructor(body: Matter.Body, emitter: gunPrototype, angle: number, start: {
-        x: number;
-        y: number;
-    }, created: number, vel: {
-        parr: number;
-        perp: number;
-        angular: number;
-    });
-    update(): void;
-    draw(): void;
-    destroy(): void;
-}
-interface listener {
-    event: string;
-    callback: (this: customEvent, event: Event, ...args: any[]) => any;
-    name: string;
-    once?: boolean;
-}
-declare class customEvent {
-    #private;
-    get listenerCount(): number;
-    get listeners(): {
-        event: string;
-        callback: (this: customEvent, event: Event, ...args: any[]) => any;
-        name: string;
-        once?: boolean;
-    }[];
-    on(event: string, callback: listener["callback"]): this;
-    once(event: string, callback: listener["callback"]): this;
-    removeListener(event: string, name: string): boolean;
-    addEventListener(event: string, callback: listener["callback"], options?: {
-        once: boolean;
-    }): this;
-    removeListenersByType(event: string): void;
-    removeAllListeners(): void;
-    dispatchEvent(event: string | Event, ...args: Parameters<listener["callback"]>[1][]): boolean;
-}
+};
 declare const gamespace: {
     readonly version: string;
     bots: InstanceType<typeof import("./assets/scripts/std_ai").default>[];
-    bulletInfo: {
-        [key: string]: {
-            tints: {
-                normal: string;
-                saturated: string;
-                saturated_alt?: string;
-                chambered: string;
-            };
-            alpha: {
-                rate: number;
-                min: number;
-                max: number;
-            };
-            spawnVar: {
-                mean: number;
-                variation: number;
-                plusOrMinus: boolean;
-            };
-            imageOffset: {
-                parr: number;
-                perp: number;
-            };
-            projectileInfo: ({
-                type: "explosive";
-                explosionType: string;
-                explodeOnContact: boolean;
-                maxDist: number;
-                heightPeak: number;
-            } | {
-                type: "bullet";
-            }) & {
-                img: import("p5").Image;
-                spinVel: number;
-            };
-            casing: {
-                img: import("p5").Image;
-                lifetime: {
-                    value: number;
-                    variation: number;
-                    plusOrMinus: boolean;
-                };
-                width: number;
-                height: number;
-            };
-        };
-    };
+    bulletInfo: bulletInfo;
     camera: import("p5").Camera;
     cleanUp(options?: {
         reloadJSONBasedFields?: boolean;
@@ -664,56 +274,15 @@ declare const gamespace: {
     deltaTime: number;
     engine: Matter.Engine;
     events: customEvent;
-    explosionInfo: {
-        [key: string]: {
-            damage: number;
-            obstacleMult: number;
-            radii: {
-                visual: {
-                    min: number;
-                    max: number;
-                };
-                damage: {
-                    min: number;
-                    max: number;
-                };
-            };
-            lifetime: number;
-            color: [number, number, number];
-            decal: {
-                img: import("p5").Image;
-                width: number;
-                height: number;
-                tint: hexColor;
-            };
-            shrapnel: {
-                count: number;
-                damage: number;
-                color: hexColor;
-                img: import("p5").Image;
-                velocity: number;
-                range: {
-                    value: number;
-                    variation: {
-                        value: number;
-                        plusOrMinus: boolean;
-                    };
-                };
-                falloff: number;
-                tracer: {
-                    width: number;
-                    height: number;
-                };
-            };
-        };
-    };
+    explosionInfo: explosionInfo;
+    exitLevel(): void;
     fonts: {
         [key: string]: {
             src: string;
             font: import("p5").Font;
         };
     };
-    freeze: () => void;
+    freeze(): void;
     _frozen: boolean;
     readonly frozen: boolean;
     guns: gunPrototype[];
@@ -738,7 +307,7 @@ declare const gamespace: {
     levels: {
         color?: string;
         description: string;
-        initializer: () => void;
+        initializer(): void;
         jsonPath: string;
         levelData: ReturnType<typeof parseLevelData>;
         name: string;
@@ -773,23 +342,49 @@ declare const gamespace: {
         obstacles: obstacle[];
         players: playerLike[];
     };
-    player: playerLike;
+    _oldStats: {
+        ammo: DeepPartial<bulletInfo>;
+        explosions: DeepPartial<explosionInfo>;
+        guns: DeepPartial<gunPrototype>[];
+    };
+    player: player;
     p5: import("p5");
     settings: {
-        graphicsQuality: number;
-        debug: boolean;
+        visual: {
+            graphicsQuality: number;
+            debug: boolean;
+            monitors: [0 | 1 | 2, 0 | 1 | 2];
+            hud: boolean;
+            maxDecals: number;
+        };
         useNativeMath: boolean;
         name: string;
-        bonus_features: {
-            bot_debug: boolean;
-            csgo_style_killfeed: boolean;
-            damage_numbers_stack: boolean;
-            headshots_use_saturated_tracers: boolean;
-            show_damage_numbers: boolean;
-            use_interpolated_saturated_tracers: boolean;
+        bonusFeatures: {
+            botDebug: boolean;
+            csgoStyleKillfeed: boolean;
+            damageNumbersStack: boolean;
+            headshotsUseSaturatedTracers: boolean;
+            showDamageNumbers: boolean;
+            useInterpolatedSaturatedTracers: boolean;
         };
-        ui: boolean;
+        balanceChanges: {
+            weapons: {
+                general: {
+                    noslow: boolean;
+                    quickswitch: boolean;
+                    headshots: boolean;
+                };
+                m79: {
+                    grenadeSpin: boolean;
+                    moveSpeedPenalty: boolean;
+                    spawnCasingOnReload: boolean;
+                };
+                mp220: {
+                    pullBothTriggers: boolean;
+                };
+            };
+        };
     };
-    update: (p5: import("p5")) => void;
+    update(p5: import("p5")): void;
     world: Matter.Composite;
 };

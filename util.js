@@ -4,11 +4,26 @@ const generateId = (function* () {
         yield i++;
     }
 })();
-function loadImg(path) {
-    return p5.prototype.loadImage.call({ _decrementPreload: () => { } }, path);
+function loadImg(path, failGracefully) {
+    try {
+        return p5.prototype.loadImage.call({ _decrementPreload: () => { } }, path);
+    }
+    catch (e) {
+        if (failGracefully) {
+            return console.warn(`Failed to fetch image at path '${path}': ${e instanceof Error ? e.message : e}`);
+        }
+        throw e;
+    }
 }
-function loadFnt(path) {
-    return p5.prototype.loadFont.call({ _decrementPreload: () => { } }, path);
+function loadFnt(path, failGracefully) {
+    try {
+        return p5.prototype.loadFont.call({ _decrementPreload: () => { } }, path);
+    }
+    catch (e) {
+        if (failGracefully) {
+        }
+        throw e;
+    }
 }
 function makeElement(tag, id, className) {
     const ele = document.createElement(tag);
@@ -96,15 +111,15 @@ function parseGunData(gunData) {
         })(), g.dual, (() => {
             return {
                 loot: g.images.loot != false ? {
-                    img: loadImg(g.images.loot),
+                    img: loadImg(g.images.loot, true),
                     src: g.images.loot
                 } : void 0,
                 held: g.images.held != false ? {
-                    img: loadImg(g.images.held),
+                    img: loadImg(g.images.held, true),
                     src: g.images.held
                 } : void 0,
                 silhouette: g.images.silhouette != false ? {
-                    img: loadImg(g.images.silhouette),
+                    img: loadImg(g.images.silhouette, true),
                     src: g.images.silhouette
                 } : void 0
             };
@@ -428,6 +443,9 @@ function overrideObject(o1, o2) {
     }
     return o1;
 }
+function linterp(a, b, t, options = { useNativeMath: gamespace.settings.useNativeMath }) {
+    return options.useNativeMath ? (+a * (1 - +t) + +b * +t) : Decimal.mul(b, t).add(Decimal.mul(a, Decimal.sub(1, t)));
+}
 function getDecimalPlaces(n) {
     if (n instanceof Decimal) {
         return n.decimalPlaces();
@@ -631,7 +649,20 @@ async function loadJSONBasedGamespaceFields() {
     gamespace.bulletInfo = parseAmmoData((await (await fetch("assets/json/ammo.json")).json()));
     gamespace.explosionInfo = parseExplosionData((await (await fetch("assets/json/explosions.json")).json()));
 }
+/**
+ * Literally the best function in this entire project.
+ * @link https://areweyeetyet.rs
+ * Rust is pretty cool
+ */
+function yeet(e) {
+    throw e;
+}
 (() => {
+    window.addEventListener("keydown", ev => {
+        if ((ev.key == "-" || ev.key == "=") && (ev.metaKey || ev.ctrlKey)) {
+            ev.preventDefault();
+        }
+    });
     Math.cmp = function (a, b) {
         if (a == b) {
             return 0;

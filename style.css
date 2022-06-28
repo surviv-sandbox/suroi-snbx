@@ -1,5 +1,9 @@
 /* GENERAL STYLES */
 
+html {
+  zoom: 100%;
+}
+
 .hidden {
   display: none;
 }
@@ -11,6 +15,10 @@ textarea,
 input,
 label {
   position: absolute;
+}
+
+button:hover {
+  cursor: pointer;
 }
 
 body {
@@ -298,6 +306,159 @@ p.level-desc {
   font-size: calc(5vw / 6);
   color: #DDDDDD;
   text-shadow: calc(-5vw / 72) calc(-1vh / 9) 0 #000, calc(5vw / 72) calc(-1vh / 9) 0 #000, calc(-5vw / 72) calc(1vh / 9) 0 #000, calc(5vw / 72) calc(1vh / 9) 0 #000;
+}
+
+/* SETTINGS MENU STYLING */
+
+div#settings-sidebar {
+  position: absolute;
+  width: calc(100% / 9);
+  height: 100%;
+  background-color: #547033;
+  top: 0;
+  left: 0;
+}
+
+div#settings-title {
+  display: flex;
+  color: white;
+  font-family: "roboto bold";
+  font-size: calc(40vh / 9);
+  background-color: #547033;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: calc(100% / 9);
+  align-items: center;
+  justify-content: center;
+}
+
+div#settings-header {
+  background-color: #547033;
+  position: absolute;
+  top: calc(100% / 9);
+  right: 0;
+  width: calc(800% / 9);
+  height: 3%;
+  display: flex;
+  justify-content: space-evenly;
+}
+
+div#settings-header>button:first-child {
+  border-left: none;
+}
+
+div#settings-header>button:last-child {
+  border-right: none;
+}
+
+button.settings-tab {
+  background-color: #6f9343;
+  border: none;
+  border-left: calc(2vh / 9) hsl(87, 37%, 32%) solid;
+  border-right: calc(2vh / 9) hsl(87, 37%, 32%) solid;
+  position: relative;
+  color: white;
+  width: 100%;
+  font: calc(15vh / 9) "roboto bold";
+  border-top-left-radius: calc(5vh / 9);
+  border-top-right-radius: calc(5vh / 9);
+}
+
+button.settings-tab:hover {
+  filter: brightness(95%);
+}
+
+button.settings-tab.active {
+  filter: brightness(90%);
+}
+
+div#settings-body {
+  position: absolute;
+  top: calc(calc(100% / 9) + 3%);
+  right: 0;
+  height: calc(100% - calc(calc(100% / 9) + 3%));
+  width: calc(800% / 9);
+}
+
+div.setting-cont {
+  display: flex;
+  color: white;
+  background-color: hsl(88, 37%, 45%);
+  border: none;
+  border-bottom: solid calc(2vh / 9) hsl(88, 37%, 32%);
+  border-top: solid calc(2vh / 9) hsl(88, 37%, 32%);
+  font: calc(14vh / 9) roboto;
+  text-align: left;
+  padding: 1%;
+}
+
+button.setting-cat {
+  color: white;
+  background-color: hsl(88, 37%, 40%);
+  border: none;
+  border-bottom: solid calc(2vh / 9) hsl(88, 37%, 32%);
+  border-top: solid calc(2vh / 9) hsl(88, 37%, 32%);
+  font: calc(16vh / 9) roboto;
+  font-family: jura;
+  text-align: left;
+  padding: 0.5% 1%;
+  position: relative;
+  width: 100%;
+}
+
+div.setting-cat-cont button.setting-cat {
+  border-left: solid calc(2vh / 9) hsl(88, 37%, 32%);
+}
+
+button.setting-cat:hover {
+  cursor: pointer;
+  background-color: hsl(88, 37%, 39%);
+  color: #DDD;
+}
+
+div.setting-cat-cont {
+  position: relative;
+  width: 99%;
+  margin: 0 0 0 auto;
+}
+
+div.setting-cat-cont div.setting-cont,
+div.setting-cat-cont div.setting-cat-outer {
+  border-left: solid calc(2vh / 9) hsl(88, 37%, 32%);
+}
+
+select.setting-select {
+  position: relative;
+  margin: 0 0 0 auto;
+  background-color: #222;
+  color: white;
+  border-radius: calc(5vh / 9);
+  font-family: jura;
+}
+
+input[type=checkbox].setting-checkbox {
+  position: relative;
+  margin: 0 0 0 auto;
+  border-radius: calc(5vh / 9);
+}
+
+input[type=text].setting-numeric-field {
+  position: relative;
+  margin: 0 0 0 auto;
+  background-color: #222;
+  color: white;
+  border-radius: calc(5vh / 9);
+  border-style: solid;
+  border-width: 1px;
+  font-family: jura;
+}
+
+div.checkbox-cont:hover {
+  cursor: pointer;
+  background-color: hsl(88, 37%, 42%);
+  color: #DDD;
 }
 
 /* UI ELEMENT STYLING */

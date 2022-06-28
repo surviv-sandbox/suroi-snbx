@@ -2,7 +2,6 @@ const perf: {
     _timers: {
         a: number | void;
         b: number | void;
-        c: number | void;
     };
     _data: {
         ticks: number;
@@ -27,8 +26,7 @@ const perf: {
 } = {
     _timers: {
         a: void 0,
-        b: void 0,
-        c: void 0
+        b: void 0
     },
     _data: {
         ticks: 0,
@@ -108,7 +106,7 @@ const perf: {
                 perf._timers.a ??= setInterval(() => { ++perf._data.ticks; }, 0) as any;
             }
 
-            perf._timers.c ??= setInterval(() => {
+            perf._timers.b ??= setInterval(() => {
                 perf._data.tps.push(perf._data.ticks);
                 perf._data.fps.push(perf._data.frames);
 
@@ -198,8 +196,7 @@ const perf: {
 
         perf._timers = {
             a: tpsMode ? perf._timers.a : (perf._data.tps.length = perf._data.frames = 0, perf._timers.a && clearInterval(perf._timers.a)),
-            b: fpsMode ? perf._timers.b : (perf._data.fps.length = perf._data.ticks = 0, void 0),
-            c: (tpsMode || fpsMode) ? perf._timers.c : perf._timers.c && clearInterval(perf._timers.c)
+            b: (tpsMode || fpsMode) ? perf._timers.b : perf._timers.b && clearInterval(perf._timers.b)
         };
 
         const p = $("perf") as HTMLParagraphElement;
