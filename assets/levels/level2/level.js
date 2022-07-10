@@ -1,11 +1,9 @@
-import std_setup from "../../scripts/std_level_setup.js";
+import AI from "../../scripts/std_ai.js";
 export const level = await (async () => {
-    const json = await (await fetch("assets/levels/level2/data.json")).json();
-    const name = "Deathmatch", path = ["levels", `level-${name}`], level = {
+    const json = await (await fetch("assets/levels/level2/data.json")).json(), name = "Deathmatch", path = ["levels", `level-${name}`], level = {
         name: name,
         jsonPath: "assets/levels/level2/data.json",
         description: "Fight bots for 5 minutes.",
-        levelData: parseLevelData(json),
         world: {
             width: 15000,
             height: 15000,
@@ -14,7 +12,7 @@ export const level = await (async () => {
         },
         color: "#0F800F",
         initializer: () => {
-            const s = (p5) => {
+            const levelData = parseLevelData(json), s = (p5) => {
                 //@ts-ignore
                 const engine = Matter.Engine.create(void 0, {
                     gravity: {
@@ -22,8 +20,8 @@ export const level = await (async () => {
                     }
                 }), world = engine.world;
                 p5.setup = function () {
-                    std_setup(engine, world, p5, level, { font: "assets/fonts/RobotoCondensed-Bold.ttf", size: 80 });
-                    const randomWeapon = () => new gun(gamespace.guns[Math.floor(Math.random() * gamespace.guns.length)]), 
+                    gamespace.stdLevelSetup(engine, world, p5, level, levelData, AI, { font: "assets/fonts/RobotoCondensed-Bold.ttf", size: 80 });
+                    const keys = Array.from(gamespace.guns.keys()), randomWeapon = () => new gun(gamespace.guns.get(Array.from(gamespace.guns.keys())[Math.floor(Math.random() * gamespace.guns.size)])), 
                     //@ts-ignore
                     teleportToRandomPos = (p) => Matter.Body.setPosition(p.body, { x: Math.random() * level.world.width, y: Math.random() * level.world.height }), setInvuln = (p) => {
                         p.aiIgnore = p.state.invuln = true;
@@ -72,23 +70,26 @@ export const level = await (async () => {
                                 p.inventory.slot1 = randomWeapon();
                             }
                             catch { }
-                            d.killer.state.custom.kills = (d.killer.state.custom.kills ?? 0) + 1;
-                            d.killer.state.custom.score = (d.killer.state.custom.score ?? 0) + ((className) => {
-                                switch (className) {
-                                    case "assault_rifle": return 5;
-                                    case "shotgun": return 8;
-                                    case "lmg": return 2;
-                                    case "semi_pistol": return 6;
-                                    case "dual_semi_pistol": return 4;
-                                    case "sniper_rifle": return 2;
-                                    case "dmr": return 4;
-                                    case "burst_ar": return 6;
-                                    case "semi_pistol_move": return 6;
-                                    case "grenade_launcher": return 7;
-                                    default: return 1;
-                                }
-                            })(gamespace.guns.find(g => g.name == d.weapon).summary.class);
-                            p.state.custom.deaths = (d.killer.state.custom.deaths ?? 0) + 1;
+                            if (d.killer.body.id != d.killed.body.id) {
+                                d.killer.state.custom.kills = (d.killer.state.custom.kills ?? 0) + 1;
+                                d.killer.state.custom.score = (d.killer.state.custom.score ?? 0) +
+                                    ((className) => {
+                                        switch (className) {
+                                            case "assault_rifle": return 5;
+                                            case "shotgun": return 8;
+                                            case "lmg": return 2;
+                                            case "semi_pistol": return 6;
+                                            case "dual_semi_pistol": return 4;
+                                            case "sniper_rifle": return 2;
+                                            case "dmr": return 4;
+                                            case "burst_ar": return 6;
+                                            case "semi_pistol_move": return 6;
+                                            case "grenade_launcher": return 7;
+                                            default: return 4;
+                                        }
+                                    })(extractValue(gamespace.guns.get(d.weapon).summary.class, []));
+                            }
+                            p.state.custom.deaths = (p.state.custom.deaths ?? 0) + 1;
                             teleportToRandomPos(p);
                             setInvuln(p);
                         });
@@ -151,7 +152,7 @@ export const level = await (async () => {
                             uiContainer.appendChild(timer);
                         },
                         update() {
-                            const e = $("deathmatch-countdown"), d = 300000 - (gamespace._currentUpdate - gamespace.created), m = Math.floor(d / 60000), s = Math.ceil((d - 60000 * m) / 1000);
+                            const e = $("deathmatch-countdown"), d = 300000 - (gamespace.currentUpdate - gamespace.created), m = Math.floor(d / 60000), s = Math.ceil((d - 60000 * m) / 1000);
                             e.style.fontWeight = "bolder";
                             e.textContent = `${m + +(s == 60)}:${`${s == 60 ? 0 : s}`.padStart(2, "0")}`;
                             (s <= 10 && !m) && (e.style.color = "red");
@@ -160,13 +161,13 @@ export const level = await (async () => {
                     });
                 };
                 p5.draw = function () {
-                    gamespace.update(p5);
+                    gamespace.update();
                     gamespace.bots.forEach(b => {
                         if (b.player.body !== void 0) {
                             b.update();
                         }
                     });
-                    if (gamespace._currentUpdate - gamespace.created >= 300000) {
+                    if (gamespace.currentUpdate - gamespace.created >= 300000 /* 5 minutes */) {
                         gamespace.freeze();
                         p5.noLoop();
                         p5.draw = void 0;

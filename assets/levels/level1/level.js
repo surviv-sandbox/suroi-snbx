@@ -1,20 +1,18 @@
-import std_setup from "../../scripts/std_level_setup.js";
+import AI from "../../scripts/std_ai.js";
 export const level = await (async () => {
-    const json = await (await fetch("assets/levels/level1/data.json")).json();
-    const name = "Bot War", path = ["levels", `level-${name}`], level = {
+    const json = await (await fetch("assets/levels/level1/data.json")).json(), name = "Bot War", path = ["levels", `level-${name}`], level = {
         name: name,
         jsonPath: "assets/levels/level1/data.json",
         description: "50 bots. 1 winner. And you as a spectator.",
-        levelData: parseLevelData(json),
         world: {
-            width: 10000,
-            height: 10000,
+            width: 7500,
+            height: 7500,
             color: "#80AF49",
             gridColor: "#00000028",
         },
         color: "#0080FF",
         initializer: () => {
-            const s = (p5) => {
+            const levelData = parseLevelData(json), s = (p5) => {
                 //@ts-ignore
                 const engine = Matter.Engine.create(void 0, {
                     gravity: {
@@ -22,7 +20,7 @@ export const level = await (async () => {
                     }
                 }), world = engine.world;
                 p5.setup = function () {
-                    std_setup(engine, world, p5, level, { font: "assets/fonts/RobotoCondensed-Bold.ttf", size: 80 });
+                    gamespace.stdLevelSetup(engine, world, p5, level, levelData, AI, { font: "assets/fonts/RobotoCondensed-Bold.ttf", size: 80 });
                     gamespace.bots.forEach(b => {
                         //@ts-ignore
                         Matter.Body.setPosition(b.player.body, {
@@ -31,8 +29,8 @@ export const level = await (async () => {
                         });
                         b.player.angle = Math.random() * Math.PI * 2;
                     });
-                    const r = () => new gun(gamespace.guns[Math.floor(Math.random() * gamespace.guns.length)]);
-                    // const r = () => new gun(gamespace.guns.find(g => g.name == ""));
+                    const r = () => new gun(gamespace.guns.get(Array.from(gamespace.guns.keys())[Math.floor(Math.random() * gamespace.guns.size)]));
+                    // const r = () => new gun(gamespace.guns.get(""));
                     gamespace.bots.forEach(b => {
                         b.player.inventory.slot0 = r();
                         b.player.inventory.slot1 = r();
@@ -40,7 +38,7 @@ export const level = await (async () => {
                     gamespace.player.aiIgnore = true;
                 };
                 p5.draw = function () {
-                    gamespace.update(p5);
+                    gamespace.update();
                     if (gamespace.objects.players.length == 2) {
                         gamespace.freeze();
                         p5.noLoop();

@@ -1,14 +1,12 @@
-import std_setup from "../../scripts/std_level_setup.js";
+import AI from "../../scripts/std_ai.js";
 export const level = await (async () => {
-    const json: JSONLevel = await (await fetch("assets/levels/level0/data.json")).json();
-
-    const name = "Bot 1v1",
+    const json: JSONLevel = await (await fetch("assets/levels/level0/data.json")).json(),
+        name = "Bot 1v1",
         path = ["levels", `level-${name}`],
-        level = {
+        level: level = {
             name: name,
             jsonPath: "assets/levels/level0/data.json",
             description: "Fight a very advanced and totally state-of-the art bot.",
-            levelData: parseLevelData(json),
             world: {
                 width: 5000,
                 height: 5000,
@@ -17,83 +15,85 @@ export const level = await (async () => {
             },
             color: "#FF8000",
             initializer: () => {
-                const s = (p5: import("p5")) => {
-                    //@ts-ignore
-                    const engine = Matter.Engine.create(void 0, {
-                        gravity: {
-                            y: 0 // For some reason, this doesn't work
-                        }
-                    }),
-                        world = engine.world;
-
-                    p5.setup = function () {
-                        std_setup(engine, world, p5, level, { font: "assets/fonts/RobotoCondensed-Bold.ttf", size: 80 });
-
-                        // @ts-ignore
-                        Matter.Body.setPosition(gamespace.objects.players[1].body, {
-                            x: Math.random() * level.world.width,
-                            y: Math.random() * level.world.height
-                        });
-
-                        w = gamespace.objects.players.map(p => [p.inventory.slot0, p.inventory.slot1].map(g => (g as gun).proto.name));
-                        doAI = !memoryManager.getItem([...path, "ai-disable"], "boolean");
-                        gamespace.player.aiIgnore = memoryManager.getItem([...path, "ai-ignore"], "boolean") as badCodeDesign;
-                    };
-
-                    let w: string[][],
-                        doAI = true;
-
-                    p5.draw = function () {
-                        gamespace.update(p5);
-                        if (gamespace.objects.players.length < 2) {
-                            gamespace.freeze();
-                            p5.noLoop();
-                            p5.draw = void 0 as badCodeDesign;
-
-                            const winBanner = makeElement("p", "winner-text");
-
-                            winBanner.style.font = "calc(250vw / 72) roboto";
-                            winBanner.style.color = "#FF0";
-                            winBanner.style.width = "100%";
-                            winBanner.style.left = "50%";
-                            winBanner.style.top = "20%";
-                            winBanner.style.position = "absolute";
-                            winBanner.style.transform = "translate(-50%, 0)";
-                            winBanner.style.textShadow = "calc(10vw / 72) calc(2vh / 9) black";
-                            winBanner.style.pointerEvents = "none";
-                            winBanner.style.userSelect = "none";
-                            winBanner.style.textAlign = "center";
-
-                            winBanner.innerHTML = (gamespace.objects.players.length
-                                ? `You ${gamespace.player ? "win!" : "lose."} Remaining HP: ${Math.round(100 * gamespace.objects.players[0].health) / 100}`
-                                : `Stalemate; you all lose`) + `<br><span style="font-size: calc(200vw / 72)">${w[0][0]}/${w[0][1]} vs ${w[1][0]}/${w[1][1]}</span>`;
-
-                            setTimeout(() => {
-                                winBanner.innerHTML += `<br><span style="font-size: calc(180vw / 72)">Press Escape to restart.</span>`;
-                                document.addEventListener("keydown", function exit(e) {
-                                    if (e.key == "Escape") {
-                                        document.removeEventListener("keydown", exit);
-                                        e.preventDefault();
-                                        gamespace.exitLevel();
-                                    }
-                                });
-                            }, 250);
-
-
-                            document.body.appendChild(winBanner);
-                            return;
-                        }
-
-                        gamespace.bots.forEach(b => {
-                            if (b.player.body !== void 0 && b.player.body.id != gamespace.player.body.id && doAI) {
-                                gamespace.settings.bonusFeatures.botDebug && b.debug();
-                                b.update();
+                const levelData = parseLevelData(json),
+                    s = (p5: import("p5")) => {
+                        //@ts-ignore
+                        const engine = Matter.Engine.create(void 0, {
+                            gravity: {
+                                y: 0 // For some reason, this doesn't work
                             }
-                        });
-                    };
-                };
+                        }),
+                            world = engine.world;
 
-                (() => { // Terrible, awful UI code, don't write this either
+                        p5.setup = function () {
+                            gamespace.stdLevelSetup(engine, world, p5, level, levelData, AI, { font: "assets/fonts/RobotoCondensed-Bold.ttf", size: 80 });
+
+                            // @ts-ignore
+                            Matter.Body.setPosition(gamespace.objects.players[1].body, {
+                                x: Math.random() * level.world.width,
+                                y: Math.random() * level.world.height
+                            });
+
+                            w = gamespace.objects.players.map(p => [p.inventory.slot0, p.inventory.slot1].map(g => (g as gun).proto.name));
+                            doAI = !memoryManager.getItem([...path, "ai-disable"], "boolean");
+                            gamespace.player.aiIgnore = memoryManager.getItem([...path, "ai-ignore"], "boolean") as boolean;
+                        };
+
+                        let w: string[][],
+                            doAI = true;
+
+                        p5.draw = function () {
+                            gamespace.update();
+                            if (gamespace.objects.players.length < 2) {
+                                gamespace.freeze();
+                                gamespace.player?.events?.dispatchEvent?.("dumpHitInfo");
+                                p5.noLoop();
+                                p5.draw = void 0 as badCodeDesign;
+
+                                const winBanner = makeElement("p", "winner-text");
+
+                                winBanner.style.font = "calc(250vw / 72) roboto";
+                                winBanner.style.color = "#FF0";
+                                winBanner.style.width = "100%";
+                                winBanner.style.left = "50%";
+                                winBanner.style.top = "20%";
+                                winBanner.style.position = "absolute";
+                                winBanner.style.transform = "translate(-50%, 0)";
+                                winBanner.style.textShadow = "calc(10vw / 72) calc(2vh / 9) black";
+                                winBanner.style.pointerEvents = "none";
+                                winBanner.style.userSelect = "none";
+                                winBanner.style.textAlign = "center";
+
+                                winBanner.innerHTML = (gamespace.objects.players.length
+                                    ? `You ${gamespace.player ? "win!" : "lose."} Remaining HP: ${Math.round(100 * gamespace.objects.players[0].health) / 100}`
+                                    : `Stalemate; you all lose`) + `<br><span style="font-size: calc(200vw / 72)">${w[0][0]}/${w[0][1]} vs ${w[1][0]}/${w[1][1]}</span>`;
+
+                                setTimeout(() => {
+                                    winBanner.innerHTML += `<br><span style="font-size: calc(180vw / 72)">Press Escape to restart.</span>`;
+                                    document.addEventListener("keydown", function exit(e) {
+                                        if (e.key == "Escape") {
+                                            document.removeEventListener("keydown", exit);
+                                            e.preventDefault();
+                                            gamespace.exitLevel();
+                                        }
+                                    });
+                                }, 250);
+
+
+                                document.body.appendChild(winBanner);
+                                return;
+                            }
+
+                            gamespace.bots.forEach(b => {
+                                if (b.player.body !== void 0 && b.player.body.id != gamespace.player.body.id && doAI) {
+                                    gamespace.settings.bonusFeatures.botDebug && b.debug();
+                                    b.update();
+                                }
+                            });
+                        };
+                    };
+
+                (() => { // Terrible, awful UI code, don't write this
                     const doc = new DocumentFragment(),
                         cont = makeElement("div", "game-start-cont"),
                         overlay = makeElement("canvas", "gme-start-overlay");
@@ -151,59 +151,76 @@ export const level = await (async () => {
                         buttons: [HTMLButtonElement[], HTMLButtonElement[], HTMLButtonElement[], HTMLButtonElement[]] = [[], [], [], []],
                         inputs: HTMLInputElement[] = [];
 
+                    const sa = memoryManager.getItem([...path, "saw-akm"], "number") || 0,
+                        a = Math.random() < (sa + 1) / 5;
+                    a && memoryManager.setItem([...path, "saw-akm"], sa + 1, true);
+
                     for (let i = 0; i <= 1; i++) {
-                        const entity = level.levelData.players[1 - i];
+                        const entity = levelData.players[1 - i];
 
                         for (let h = 0; h <= 1; h++) {
                             const hCopy = h,
-                                s = memoryManager.getItem([...path, "weapon-presets", i ? "player" : "bot", `${h}`]);
+                                s = memoryManager.getItem([...path, "weapon-presets", i ? "player" : "bot", `${h}`]) as string;
 
                             if (s) {
-                                entity.inventory[`slot${h}`] = new gun(s == "Random"
-                                    ? gamespace.guns[Math.floor(Math.random() * gamespace.guns.length)] as gunPrototype
-                                    : gamespace.guns.find(gu => gu.name == s) as gunPrototype);
+                                entity.inventory[`slot${h}`] = new gun(
+                                    gamespace.guns.get(
+                                        s == "Random"
+                                            ? Array.from(gamespace.guns.keys())[Math.floor(Math.random() * gamespace.guns.size)]
+                                            : s == "AKM" && !a ? "AK-47" : s
+                                    ) as gunPrototype
+                                );
                             }
 
                             otx.textBaseline = "bottom";
                             otx.font = "calc(180vw / 72) roboto";
                             otx.fillText(`${h ? "Secondary" : "Primary"} Weapon`, i ? 375 : 1125, 112.5 + h * 337.5);
 
-                            gamespace.guns.concat({ name: "Random" } as any).forEach((g, j) => {
-                                const b = makeElement("button", `gun-${i ? "player" : "bot"}-${g.name}-${h}`, "surviv-outline-button"),
-                                    currentlySelected = entity.inventory[`slot${hCopy}`].proto.name == g.name && s != "Random",
-                                    iCopy = i; // I love closures
+                            Array.from(gamespace.guns.entries())
+                                .map(v => v[1])
+                                .filter(v => v.name != "AKM" || a)
+                                .concat({ name: "Random" } as badCodeDesign)
+                                .forEach((g, j) => {
+                                    const b = makeElement("button", `gun-${i ? "player" : "bot"}-${g.name}-${h}`, "surviv-outline-button"),
+                                        name = g.name,
+                                        currentlySelected = entity.inventory[`slot${hCopy}`].proto.name == name && s != "Random",
+                                        iCopy = i; // I love closures
 
-                                if (currentlySelected && !s) {
-                                    memoryManager.setItem([...path, "weapon-presets", i ? "player" : "bot", `${h}`], g.name, true);
-                                }
+                                    if (currentlySelected && (!s || (s == "AKM" && a))) {
+                                        memoryManager.setItem([...path, "weapon-presets", i ? "player" : "bot", `${h}`], name, true);
+                                    }
 
-                                b.textContent = g.name;
+                                    b.textContent = name;
 
-                                b.style.borderColor = (currentlySelected || (s + g.name) == "RandomRandom") ? "#0F0" : "";
-                                b.style.backgroundColor = (currentlySelected || (s + g.name) == "RandomRandom") ? "#0108" : "";
-                                b.style.position = "absolute";
-                                b.style.left = `${(j % 5) * 20 + 0.5}%`;
-                                b.style.width = `19%`;
-                                b.style.height = `${76 / 3}%`;
-                                b.style.top = `${(76 / 3 + 1) * Math.floor(j / 5)}%`;
+                                    b.style.borderColor = (currentlySelected || (s + name) == "RandomRandom") ? "#0F0" : "";
+                                    b.style.backgroundColor = (currentlySelected || (s + name) == "RandomRandom") ? "#0108" : "";
+                                    b.style.position = "absolute";
+                                    b.style.left = `${(j % 5) * 20 + 0.5}%`;
+                                    b.style.width = `19%`;
+                                    b.style.height = `${76 / 3}%`;
+                                    b.style.top = `${(76 / 3 + 1) * Math.floor(j / 5)}%`;
 
-                                b.addEventListener("click", e => (!e.button && (() => {
-                                    if (entity.inventory[`slot${hCopy}`].name == g.name) { return; }
+                                    b.addEventListener("click", e => (!e.button && (() => {
+                                        if (entity.inventory[`slot${hCopy}`].name == name) { return; }
 
-                                    entity.inventory[`slot${hCopy}`] = new gun(g.name == "Random"
-                                        ? gamespace.guns[Math.floor(Math.random() * gamespace.guns.length)] as gunPrototype
-                                        : gamespace.guns.find(gu => gu.name == g.name) as gunPrototype);
+                                        entity.inventory[`slot${h}`] = new gun(
+                                            gamespace.guns.get(
+                                                name == "Random"
+                                                    ? Array.from(gamespace.guns.keys())[Math.floor(Math.random() * gamespace.guns.size)]
+                                                    : name
+                                            ) as gunPrototype
+                                        );
 
-                                    memoryManager.setItem([...path, "weapon-presets", i ? "player" : "bot", `${hCopy}`], g.name, true);
+                                        memoryManager.setItem([...path, "weapon-presets", i ? "player" : "bot", `${hCopy}`], name, true);
 
-                                    buttons[iCopy + 2 * hCopy].forEach(b => b.style.borderColor = b.style.backgroundColor = "");
+                                        buttons[iCopy + 2 * hCopy].forEach(b => b.style.borderColor = b.style.backgroundColor = "");
 
-                                    b.style.borderColor = "#0F0";
-                                    b.style.backgroundColor = "#0108";
-                                })()));
+                                        b.style.borderColor = "#0F0";
+                                        b.style.backgroundColor = "#0108";
+                                    })()));
 
-                                buttons[i + 2 * h].push(b);
-                            });
+                                    buttons[i + 2 * h].push(b);
+                                });
                         }
 
                         otx.fillText("Health", i ? 375 : 1125, 871.875);
@@ -211,10 +228,9 @@ export const level = await (async () => {
                         const input = makeElement("input", `health-${i ? "player" : "bot"}`),
                             h = memoryManager.getItem([...path, `health-${i ? "player" : "bot"}-preset`]);
 
-                        input.type = "number";
-                        input.min = "1";
-                        input.max = "Infinity";
+                        input.type = "text";
                         input.value = `${h ?? entity.health}`;
+                        input.autocomplete = "off";
 
                         input.style.position = "absolute";
                         input.style.left = i ? "25%" : "75%";
@@ -230,11 +246,13 @@ export const level = await (async () => {
                         entity.maxHealth = Math.max(100, entity.health = +input.value);
 
                         input.addEventListener("change", () => {
-                            const v = +(input.value || Infinity);
+                            const v = (() => {
+                                const v = +input.value;
+                                return Number.isNaN(v) ? 0 : v;
+                            })();
 
-                            if (!checkBounds(v, 0, "inf", { inclusion: { lower: false } })) {
-                                input.value = `${Number.isFinite(v) ? clamp(v, 0) : Number.MAX_VALUE}`;
-                            }
+                            input.value = `${+clamp(v, Number.MIN_VALUE)}`;
+
                             memoryManager.setItem([...path, `health-${i ? "player" : "bot"}-preset`], input.value, true);
                             entity.maxHealth = Math.max(100, entity.health = v);
                         });
@@ -252,7 +270,7 @@ export const level = await (async () => {
                             input.checked = d;
 
                             input.style.aspectRatio = "1";
-                            input.style.width = "5%";
+                            input.style.width = "2%";
                             input.style.top = "70%";
                             input.style.left = `${75 - 50 * i}%`;
                             input.style.transform = "translate(-50%, 0)";
@@ -295,7 +313,7 @@ export const level = await (async () => {
                         p = (memoryManager.getItem([...path, "player-scope-pref"], "number")),
                         preset = Number.isNaN(p) ? 1 : p!;
 
-                    level.levelData.players[0].view = ({
+                    levelData.players[0].view = ({
                         1: 1330,
                         2: 1680,
                         4: 2359,
@@ -322,7 +340,7 @@ export const level = await (async () => {
                             button.style.borderColor = "#0F0";
                             button.style.backgroundColor = "#0108";
 
-                            level.levelData.players[0].view = ({
+                            levelData.players[0].view = ({
                                 1: 1330,
                                 2: 1680,
                                 4: 2359,
@@ -341,5 +359,6 @@ export const level = await (async () => {
                 })();
             }
         };
+
     return level;
 })();

@@ -37,9 +37,10 @@ class AI {
             document.body.appendChild(doc);
         }
         const l = $(`ai-${this.#player.body.id}-debug`);
-        l.innerText = [`state: ${this.#state}`,
+        l.innerText = [
+            `state: ${this.#state}`,
             `subState: ${this.#subState}`,
-            `target: ${this.#target?.body.id}`,
+            `targetPos: (${Math.round(100 * this.#target?.body?.position?.x) / 100}, ${Math.round(100 * this.#target?.body?.position?.y) / 100})`,
             `position: (${Math.round(100 * this.#player.body.position.x) / 100}, ${Math.round(100 * this.#player.body.position.y) / 100})`,
             `wanderTarget: ${this.#memory.wanderTarget ? `(${this.#memory.wanderTarget.x}, ${this.#memory.wanderTarget.y})` : "none"}`,
             `angle: ${Math.round(100 * this.#player.angle) / 100}`,
@@ -48,7 +49,9 @@ class AI {
             `ammo: ${this.#player.inventory.activeItem.ammo}`,
             `reloading: ${this.#player.state.reloading}`,
             `activeWeapon: ${this.#player.inventory.activeItem.proto.name}`,
-            `activeIndex: ${this.#player.inventory.activeIndex}`]
+            `activeIndex: ${this.#player.inventory.activeIndex}`,
+            `aimTarget: (${Math.round(100 * this.#player?.aimTarget?.x) / 100}, ${Math.round(100 * this.#player?.aimTarget?.y) / 100})`
+        ]
             .join("\n");
     }
     update() {
@@ -77,14 +80,14 @@ class AI {
                 }
                 else {
                     this.#moveTowardsPoint(this.#memory.wanderTarget = {
-                        x: +clamp(Math.round(100 * (this.#player.body.position.x + ((Math.abs(this.#player.body.position.x - gamespace._currentLevel.world.width / 2) >= 7 * gamespace._currentLevel.world.width / 16)
-                            ? -Math.sign(this.#player.body.position.x - gamespace._currentLevel.world.width / 2)
+                        x: +clamp(Math.round(100 * (this.#player.body.position.x + ((Math.abs(this.#player.body.position.x - gamespace.currentLevel.world.width / 2) >= 7 * gamespace.currentLevel.world.width / 16)
+                            ? -Math.sign(this.#player.body.position.x - gamespace.currentLevel.world.width / 2)
                             : (2 * Math.round(Math.random()) - 1))
-                            * (Math.random() * 2000 + 500))) / 100, 0, gamespace._currentLevel.world.width),
-                        y: +clamp(Math.round(100 * (this.#player.body.position.y + ((Math.abs(this.#player.body.position.y - gamespace._currentLevel.world.height / 2) >= 7 * gamespace._currentLevel.world.height / 16)
-                            ? -Math.sign(this.#player.body.position.y - gamespace._currentLevel.world.height / 2)
+                            * (Math.random() * 2000 + 500))) / 100, 0, gamespace.currentLevel.world.width),
+                        y: +clamp(Math.round(100 * (this.#player.body.position.y + ((Math.abs(this.#player.body.position.y - gamespace.currentLevel.world.height / 2) >= 7 * gamespace.currentLevel.world.height / 16)
+                            ? -Math.sign(this.#player.body.position.y - gamespace.currentLevel.world.height / 2)
                             : (2 * Math.round(Math.random()) - 1))
-                            * (Math.random() * 2000 + 500))) / 100, 0, gamespace._currentLevel.world.height)
+                            * (Math.random() * 2000 + 500))) / 100, 0, gamespace.currentLevel.world.height)
                     });
                 }
                 this.#resolveTargets();
@@ -98,10 +101,10 @@ class AI {
                     this.#state = "idle";
                     break;
                 }
-                const d = +squaredDist(this.#player.body.position, this.#target.body.position), pos = this.#target.body.position, f = () => !!Math.round(Math.random()), r = ip[`${ip.altReload && !i.ammo ? "altR" : "r"}eload`].duration;
+                const d = +squaredDist(this.#player.body.position, this.#target.body.position), pos = this.#target.body.position, f = () => !!Math.round(Math.random()), args = [i, this.#player], r = extractValue(ip[`${ip.altReload && !i.ammo ? "altR" : "r"}eload`].duration, args);
                 if (pl.state.reloading) {
                     this.#memory.weaponLoadState[pl.inventory.activeIndex] = false;
-                    if ((d < (ip.summary.class == "sniper_rifle" ? 1000 : 750) ** 2 || (this.#memory.cancelReloadOnSpot && r - gamespace._currentUpdate + pl.state.reloading >= 1500))
+                    if ((d < (ip.summary.class == "sniper_rifle" ? 1000 : 750) ** 2 || (this.#memory.cancelReloadOnSpot && r - gamespace.currentUpdate + pl.state.reloading >= 1500))
                         && r >= 1000
                         && this.#memory.weaponLoadState[1 - pl.inventory.activeIndex]) {
                         if (this.#memory.cancelReloadOnSpot && i.ammo) {
@@ -127,7 +130,7 @@ class AI {
                 else {
                     this.#memory.weaponLoadState[pl.inventory.activeIndex] = true;
                 }
-                if (gamespace._currentUpdate - this.#memory.strafe.timestamp >= (this.#subState == "reloading" ? (Math.random() * 500 + 100) : (Math.random() * 1000 + 250))) {
+                if (gamespace.currentUpdate - this.#memory.strafe.timestamp >= (this.#subState == "reloading" ? (Math.random() * 500 + 100) : (Math.random() * 1000 + 250))) {
                     const dy = Math.round((pl.body.position.y - this.#target.body.position.y) / 10) * 10, dx = Math.round((pl.body.position.x - this.#target.body.position.x) / 10) * 10, r = this.#subState == "reloading";
                     this.#memory.strafe = {
                         dir: [
@@ -136,10 +139,10 @@ class AI {
                             r && Math.random() > 0.3 ? Math.sign(dy) != -1 : f(),
                             r && Math.random() > 0.3 ? Math.sign(dx) != -1 : f()
                         ],
-                        timestamp: gamespace._currentUpdate
+                        timestamp: gamespace.currentUpdate
                     };
                 }
-                if (["shotgun", "sniper_rifle", "semi_pistol_move"].includes(ip.summary.class) ||
+                if (["shotgun", "sniper_rifle", "semi_pistol_move"].includes(extractValue(ip.summary.class, [])) ||
                     ["strafe", "reloading"].includes(this.#subState) &&
                         !["moveTowards", "moveAway"].includes(this.#subState)) {
                     this.#player.move(...this.#memory.strafe.dir);
@@ -150,11 +153,11 @@ class AI {
                 if (this.#subState != "strafe" && this.#subState != "reloading") {
                     this.#subState = "default";
                 }
-                if (d >= ((this.#subState == "moveTowards" ? 0.9 : 1) * ip.summary.engagementDistance.max) ** 2) {
+                if (d >= ((this.#subState == "moveTowards" ? 0.9 : 1) * extractValue(ip.summary.engagementDistance.max, [])) ** 2) {
                     this.#subState = "moveTowards";
                     this.#moveTowardsPoint(pos);
                 }
-                if (d <= (this.#subState == "moveAway" ? 1.25 : 1) * ip.summary.engagementDistance.min ** 2) {
+                if (d <= (this.#subState == "moveAway" ? 1.25 : 1) * extractValue(ip.summary.engagementDistance.min, []) ** 2) {
                     this.#subState = "moveAway";
                     this.#moveTowardsPoint(pos, true);
                 }
@@ -167,7 +170,7 @@ class AI {
                         x: pos.x,
                         y: pos.y
                     } : pos);
-                    if (ip.summary.class == "assault_rifle" && pl.state.fired > ip.magazineCapacity.normal * (Math.random() * 0.2 + 0.3)) {
+                    if (ip.summary.class == "assault_rifle" && pl.state.fired > extractValue(ip.magazineCapacity.normal, []) * (Math.random() * 0.2 + 0.3)) {
                         this.#subState = "strafe";
                         setTimeout(() => {
                             if (this.#subState == "strafe") {
@@ -183,7 +186,7 @@ class AI {
                             }
                         }, Math.random() * 200 + 400);
                     }
-                    if ((gamespace._currentUpdate - pl.state.lastSwitch >= pl.state.eSwitchDelay)) {
+                    if ((gamespace.currentUpdate - pl.state.lastSwitch >= pl.state.eSwitchDelay)) {
                         pl.state.attacking = true;
                         if (!pl.state.firing) {
                             pl.inventory.activeItem.primary(pl);
@@ -221,7 +224,7 @@ class AI {
             pl.switchSlots(+(range1 > range0));
             return;
         }
-        const d = +squaredDist(pl.body.position, t.body.position), r0 = (weapon0.summary.engagementDistance.max / 2) ** 2 - d, r1 = (weapon1.summary.engagementDistance.max / 2) ** 2 - d;
+        const d = +squaredDist(pl.body.position, t.body.position), r0 = (extractValue(weapon0.summary.engagementDistance.max, []) / 2) ** 2 - d, r1 = (extractValue(weapon1.summary.engagementDistance.max, []) / 2) ** 2 - d;
         pl.switchSlots(+(r1 > r0));
     }
     #resolveTargets() {
@@ -236,11 +239,17 @@ class AI {
         if (candidate.dist <= botConfig.detectionRange ** 2) {
             if (candidate.player.body.id != t?.body?.id && candidate.dist / d <= 0.8) {
                 this.#target = candidate.player;
+                this.#player.aimTarget = candidate.player.body.position;
             }
             this.#state = "engage";
         }
         else {
             this.#target = void 0;
+            this.#player.aimTarget = {
+                x: this.#player.body.position.x + Math.sin(this.#player.angle) * 100,
+                y: this.#player.body.position.y - Math.cos(this.#player.angle) * 100
+            };
+            ;
             this.#state = "wander";
         }
     }
@@ -251,6 +260,12 @@ class AI {
     #lookInDirection(dir) {
         const d = dir - this.#player.angle, e = Math.abs(d);
         this.#player.angle += Math.sign(d) * +clamp(e >= Math.PI ? e - 2 * Math.PI : e, void 0, botConfig.maxTurnSpeed);
+        if (this.#state != "engage") {
+            this.#player.aimTarget = {
+                x: this.#player.body.position.x + Math.sin(this.#player.angle) * 100,
+                y: this.#player.body.position.y - Math.cos(this.#player.angle) * 100
+            };
+        }
     }
     #lookAtPoint(pt) {
         this.#lookInDirection(+normalizeAngle(Math.atan2(pt.y - this.player.body.position.y, pt.x - this.player.body.position.x) + Math.PI / 2, { normalizeTo: "radians" }));
