@@ -1,33 +1,39 @@
 const keyBindings: {
     [key: string]: {
         key: string,
-        callback(type?: `${string}${"down" | "up"}`): void;
+        allowedModifiers: ("alt" | "ctrl" | "meta" | "shift")[],
+        callback(type: `${"key" | "mouse"}${"down" | "up"}` | "wheel", modifiers: { altKey: boolean, ctrlKey: boolean, metaKey: boolean, shiftKey: boolean; }): void;
     };
 } = (() => {
     return {
         "forward": {
             key: "w",
+            allowedModifiers: [],
             callback() { }
         },
         "backward": {
             key: "s",
+            allowedModifiers: [],
             callback() { }
         },
         "strafe-left": {
             key: "a",
+            allowedModifiers: [],
             callback() { }
         },
         "strafe-right": {
             key: "d",
+            allowedModifiers: [],
             callback() { }
         },
         "reload": {
             key: "r",
-            callback(type: `${string}${"down" | "up"}`) {
+            allowedModifiers: [],
+            callback(type) {
                 const p = gamespace.player;
 
                 if (type.endsWith("down") && p) {
-                    if (gamespace._currentUpdate - p.state.lastSwitch > p.state.eSwitchDelay) {
+                    if (gamespace.currentUpdate - p.state.lastSwitch > p.state.eSwitchDelay) {
                         p.inventory.activeItem.reload(p);
                     }
                 }
@@ -35,18 +41,21 @@ const keyBindings: {
         },
         "primary_fire": {
             key: "mouse0",
-            callback(type: `${string}${"down" | "up"}`) {
+            allowedModifiers: [],
+            callback(type) {
                 gamespace.player && (gamespace.player.state.attacking = type.endsWith("down"));
                 type.endsWith("down") && gamespace?.player?.inventory?.activeItem?.primary?.(gamespace?.player);
             }
         },
         "secondary_fire": {
             key: "mouse2",
+            allowedModifiers: [],
             callback() { }
         },
         "slot0": {
             key: "1",
-            callback(type: `${string}${"down" | "up"}`) {
+            allowedModifiers: [],
+            callback(type) {
                 if (type.endsWith("down") && gamespace.player !== void 0) {
                     gamespace.player.switchSlots(0);
                 };
@@ -54,7 +63,8 @@ const keyBindings: {
         },
         "slot1": {
             key: "2",
-            callback(type: `${string}${"down" | "up"}`) {
+            allowedModifiers: [],
+            callback(type) {
                 if (type.endsWith("down") && gamespace.player !== void 0) {
                     gamespace.player.switchSlots(1);
                 };
@@ -62,15 +72,18 @@ const keyBindings: {
         },
         "slot2": {
             key: "3",
+            allowedModifiers: [],
             callback() { }
         },
         "slot3": {
             key: "4",
+            allowedModifiers: [],
             callback() { }
         },
         "last_item": {
             key: "q",
-            callback(type: `${string}${"down" | "up"}`) {
+            allowedModifiers: [],
+            callback(type) {
                 if (type.endsWith("down") && gamespace.player !== void 0) {
                     gamespace.player.switchSlots((1 - gamespace.player.inventory.activeIndex) as 0 | 1);
                 };
@@ -78,6 +91,7 @@ const keyBindings: {
         },
         "next_item": {
             key: "mwheelup",
+            allowedModifiers: [],
             callback() {
                 if (gamespace.player !== void 0) {
                     gamespace.player.switchSlots((gamespace.player.inventory.activeIndex + 1) % 2 as 0 | 1);
@@ -86,6 +100,7 @@ const keyBindings: {
         },
         "prev_item": {
             key: "mwheeldown",
+            allowedModifiers: [],
             callback() {
                 if (gamespace.player !== void 0) {
                     gamespace.player.switchSlots(Math.abs((gamespace.player.inventory.activeIndex - 1) % 2) as 0 | 1);
@@ -94,11 +109,13 @@ const keyBindings: {
         },
         "interact": {
             key: "e",
+            allowedModifiers: [],
             callback() { }
         },
         "cancel": {
             key: "x",
-            callback(type: `${string}${"down" | "up"}`) {
+            allowedModifiers: [],
+            callback(type) {
                 if (type.endsWith("down") && gamespace.player !== void 0) {
                     gamespace.player?.inventory?.activeItem?.stopReload?.(gamespace.player);
                 };
@@ -106,7 +123,8 @@ const keyBindings: {
         },
         "other_gun": {
             key: "e",
-            callback(type: `${string}${"down" | "up"}`) {
+            allowedModifiers: [],
+            callback(type) {
                 if (type.endsWith("down") && gamespace.player !== void 0) {
                     gamespace.player.switchSlots((1 - gamespace.player.inventory.activeIndex) as 0 | 1);
                 };
@@ -114,7 +132,8 @@ const keyBindings: {
         },
         "switch_guns": {
             key: "t",
-            callback(type: `${string}${"down" | "up"}`) {
+            allowedModifiers: [],
+            callback(type) {
                 if (type.endsWith("down") && gamespace.player !== void 0) {
                     [gamespace.player.inventory.slot0, gamespace.player.inventory.slot1] = [gamespace.player.inventory.slot1, gamespace.player.inventory.slot0];
                     gamespace.player.inventory.activeIndex = 1 - gamespace.player.inventory.activeIndex as 0 | 1;
@@ -123,15 +142,18 @@ const keyBindings: {
         },
         "map": {
             key: "m",
+            allowedModifiers: [],
             callback() { }
         },
         "minimap": {
             key: "v",
+            allowedModifiers: [],
             callback() { }
         },
         "hide_ui": {
             key: "p",
-            callback(type: `${string}${"down" | "up"}`) {
+            allowedModifiers: [],
+            callback(type) {
                 if (type.endsWith("down")) {
                     gamespace.settings.visual.hud = !gamespace.settings.visual.hud;
 
@@ -141,9 +163,10 @@ const keyBindings: {
         },
         "escape": {
             key: "escape",
-            callback(type: `${string}${"down" | "up"}`) {
+            allowedModifiers: [],
+            callback(type) {
                 if (type.endsWith("down")) {
-                    if (gamespace._currentLevel) {
+                    if (gamespace.currentLevel) {
                         ui.add({
                             name: "pause menu",
                             create(uiContainer) {
@@ -175,24 +198,50 @@ const keyBindings: {
                             },
                             callCreateImmediately: true
                         });
+                    } else if (gamespace.console.opened) {
+                        gamespace.console.close();
                     }
                 }
             }
+        },
+        "console": {
+            key: "§",
+            allowedModifiers: [],
+            callback(type) {
+                if (type.endsWith("down")) {
+                    gamespace.console[gamespace.console.opened ? "close" : "open"]();
+                }
+            },
+        },
+        "clear_console": {
+            key: "k",
+            allowedModifiers: ["meta"],
+            callback(type, modifers) {
+                if (gamespace.console.opened && modifers.metaKey) {
+                    gamespace.console.clear();
+                }
+            },
         }
     };
 })();
 
+//@ts-expect-error
+(cslData as cslData[]).push({ time: Date.now(), content: "Initialized keybinds" });
+
 function registerInput(event: KeyboardEvent | MouseEvent | WheelEvent) {
-    if (event.ctrlKey && (event as KeyboardEvent).key != "Control" ||
-        event.altKey && (event as KeyboardEvent).key != "Alt" ||
-        event.shiftKey && (event as KeyboardEvent).key != "Shift" ||
-        event.metaKey && (event as KeyboardEvent).key != "Meta") { return; }
+    const o = { altKey: event.altKey, ctrlKey: event.ctrlKey, metaKey: event.metaKey, shiftKey: event.shiftKey };
+
+    function validateModifiers(allowedModifiers: typeof keyBindings[string]["allowedModifiers"]) {
+        return Object.keys(o).map(key => !o[key] || allowedModifiers.includes(key.replace("Key", "") as badCodeDesign));
+    }
 
     if (event instanceof KeyboardEvent) {
         gamespace.keys[event.key.toLowerCase()] = event.type == "keydown";
         for (const action in keyBindings) {
-            if (keyBindings[action].key == event.key.toLowerCase()) {
-                keyBindings[action].callback(event.type as any);
+            const k = keyBindings[action];
+
+            if (k.key == event.key.toLowerCase() && validateModifiers(k.allowedModifiers)) {
+                k.callback(event.type as badCodeDesign, o);
             }
         }
     }
@@ -200,13 +249,14 @@ function registerInput(event: KeyboardEvent | MouseEvent | WheelEvent) {
         gamespace.keys[`mouse${event.button}`] = event.type == "mousedown";
         if (["exit-game", "resume-game"].every(v => v != (event.target as HTMLElement).id)) {
             for (const action in keyBindings) {
-                if (keyBindings[action].key == `mouse${event.button}`) {
-                    keyBindings[action].callback(event.type as any);
+                const k = keyBindings[action];
+
+                if (k.key == `mouse${event.button}` && validateModifiers(k.allowedModifiers)) {
+                    k.callback(event.type as badCodeDesign, o);
                 }
             }
         }
-    }
-    else {
+    } else {
         const m = (function cleanUpMWheelName(event: WheelEvent) {
             return `mwheel${(() => {
                 if (event.deltaY > 0) { return "down"; }
@@ -220,12 +270,14 @@ function registerInput(event: KeyboardEvent | MouseEvent | WheelEvent) {
 
         gamespace.keys[m] = true;
         for (const action in keyBindings) {
-            if (keyBindings[action].key == m) {
+            const k = keyBindings[action];
+
+            if (k.key == m && validateModifiers(k.allowedModifiers)) {
                 if (m == "mwheelright" || m == "mwheelleft") {
                     event.preventDefault();
                 }
 
-                keyBindings[action].callback();
+                k.callback(event.type as badCodeDesign, o);
             }
         }
     }

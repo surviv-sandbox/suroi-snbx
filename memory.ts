@@ -144,28 +144,32 @@ class manager {
     }
 
     #initialize() {
-        const s = localStorage.getItem("surviv_sandbox") ?? "";
+        const s = localStorage.getItem("surviv_sandbox") ?? "{}";
 
         try {
             this.#cache = JSON.parse(s) ?? {};
         } catch (e) {
-            console.warn("Failed to initialize cache from localStorage value; JSON.parse failed with the following error:");
-            console.log(e);
+            gamespace.console.warn({
+                main: "Failed to initialize cache from localStorage value; JSON.parse failed with the following message:",
+                detail: e
+            }, true);
         }
 
         if (this.#cache.version != gamespace.version) {
-            this.#cache;
-
-            ; this.setItem("version", gamespace.version);
+            this.setItem("version", gamespace.version);
         }
+
+        gamespace.console.log("memoryManager initialized");
     }
 
     #pushToLocalStorage() {
         try {
             localStorage.setItem("surviv_sandbox", JSON.stringify(this.#cache));
         } catch (e) {
-            console.error(`Failed to push cache to localStorage; JSON.stringify failed with the following error:`);
-            console.log(e);
+            gamespace.console.warn({
+                main: "Failed pushing cache to localStorage; JSON.stringify failed with the following error:",
+                detail: e
+            }, true);
         }
     }
 }

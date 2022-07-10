@@ -150,7 +150,7 @@ ui.add(
                 ctx.beginPath();
                 ctx.lineWidth = 70;
                 ctx.strokeStyle = "#FFF";
-                ctx.arc(425, 425, 390, -Math.PI / 2, ((gamespace._currentUpdate - p.state.reloading as number) / i.proto[i.proto.altReload && !i.ammo ? "altReload" : "reload"]!.duration) * 2 * Math.PI - Math.PI / 2);
+                ctx.arc(425, 425, 390, -Math.PI / 2, ((gamespace.currentUpdate - p.state.reloading as number) / extractValue(i.proto[i.proto.altReload && !i.ammo ? "altReload" : "reload"]!.duration, [i, p])) * 2 * Math.PI - Math.PI / 2);
                 ctx.stroke();
 
                 ctx.beginPath();
@@ -163,7 +163,7 @@ ui.add(
 
 
                 const a = gamespace.player.inventory.activeItem,
-                    t = Math.round((a.proto[`${a.proto.altReload && !a.ammo ? "altR" : "r"}eload`!].duration - (gamespace._currentUpdate - p.state.reloading)) / 100) / 10,
+                    t = Math.round((a.proto[`${a.proto.altReload && !a.ammo ? "altR" : "r"}eload`!].duration - (gamespace.currentUpdate - p.state.reloading)) / 100) / 10,
                     s = t % 1 ? `${t}` : `${t}.0`;
                 ctx.strokeText(s, 425, 600);
                 ctx.fillText(s, 425, 600);
@@ -183,9 +183,9 @@ ui.add(
                     $("ui-container")!.appendChild(cont);
                 }
 
-                gamespace.kills.filter(k => gamespace._currentUpdate - k.timestamp > 2000).forEach(k => $(`killfeed-kill-${k.id}`)?.remove?.());
+                gamespace.kills.filter(k => gamespace.currentUpdate - k.timestamp > 2000).forEach(k => $(`killfeed-kill-${k.id}`)?.remove?.());
 
-                gamespace.kills = gamespace.kills.filter(k => gamespace._currentUpdate - k.timestamp <= 2000);
+                gamespace._overrideKills(gamespace.kills.filter(k => gamespace.currentUpdate - k.timestamp <= 2000));
 
                 const doc = new DocumentFragment();
 
@@ -194,7 +194,7 @@ ui.add(
 
                     if (!$(`killfeed-kill-${k.id}`)) {
                         if (gamespace.settings.bonusFeatures.csgoStyleKillfeed) {
-                            p.innerHTML = `${k.killer ? `${k.killer}&nbsp;&nbsp;&nbsp;` : ""}<img src="${(gamespace.guns.find(g => g.name == k.weapon)!.images.silhouette as { src: string; }).src}" class="killfeed-image"${k.crit ? ` style="background: content-box radial-gradient(#f00, transparent);"` : ""}/>&nbsp;&nbsp;&nbsp;${k.killed}`;
+                            p.innerHTML = `${k.killer ? `${k.killer}&nbsp;&nbsp;&nbsp;` : ""}<img src="${(gamespace.guns.get(k.weapon)!.images.silhouette as { src: string; }).src}" class="killfeed-image"${k.crit ? ` style="background: content-box radial-gradient(#f00, transparent);"` : ""}/>&nbsp;&nbsp;&nbsp;${k.killed}`;
 
                             p.style.backgroundColor = k.killed == gamespace.settings.name ? "#8008" : "";
                             p.style.outline = k.killer == gamespace.settings.name ? "calc(2vh / 9) solid #C00" : "";
@@ -208,7 +208,7 @@ ui.add(
                     }
 
                     p.style.top = `${3.9 * i + 5}%`;
-                    p.style.opacity = `${gamespace._currentUpdate - k.timestamp >= 1250 ? 1 - (((gamespace._currentUpdate - k.timestamp) - 1250) / 750) : 1}`;
+                    p.style.opacity = `${gamespace.currentUpdate - k.timestamp >= 1250 ? 1 - (((gamespace.currentUpdate - k.timestamp) - 1250) / 750) : 1}`;
                 });
 
                 $("killfeed-container")!.appendChild(doc);

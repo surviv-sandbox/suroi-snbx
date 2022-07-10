@@ -2,142 +2,124 @@
 declare class gunPrototype {
     name: string;
     summary: {
-        class: string;
+        class: TOrFT<string, []>;
         engagementDistance: {
-            min: number;
-            max: number;
+            min: TOrFT<number, []>;
+            max: TOrFT<number, []>;
         };
-        shouldNoslow: boolean;
-        role: "primary" | "secondary";
+        shouldNoslow: TOrFT<boolean, []>;
+        role: TOrFT<"primary" | "secondary", []>;
     };
-    dual: boolean;
+    dual: TOrFT<boolean, [gun, playerLike]>;
     images: {
         loot: {
-            img: import("p5").Image | void;
-            src: string | false;
-        } | void;
+            img: TOrFT<import("p5").Image, [gun, playerLike]>;
+            src: TOrFT<string, [gun, playerLike]>;
+        };
         held: {
-            img: import("p5").Image | void;
-            src: string | false;
-        } | void;
+            img: TOrFT<import("p5").Image, [gun, playerLike]>;
+            src: TOrFT<string, [gun, playerLike]>;
+        };
         silhouette: {
-            img: import("p5").Image | void;
-            src: string | false;
-        } | void;
+            img: TOrFT<import("p5").Image, [gun, playerLike]>;
+            src: TOrFT<string, [gun, playerLike]>;
+        };
     };
     ballistics: {
-        damage: number;
-        velocity: number;
-        range: number;
-        obstacleMult: number;
-        headshotMult: number;
+        damage: TOrFT<number, [gun, playerLike]>;
+        velocity: TOrFT<number, [gun, playerLike]>;
+        range: TOrFT<number, [gun, playerLike]>;
+        obstacleMult: TOrFT<number, [gun, playerLike]>;
+        headshotMult: TOrFT<number, [gun, playerLike]>;
         tracer: {
-            width: number;
-            height: number;
+            width: TOrFT<number, [gun, playerLike]>;
+            height: TOrFT<number, [gun, playerLike]>;
         };
-        projectiles: number;
-        falloff: number;
-        fsaCooldown: number;
+        hitboxLength: TOrFT<number, [gun, playerLike]>;
+        projectiles: TOrFT<number, [gun, playerLike]>;
+        falloff: TOrFT<number, [gun, playerLike]>;
+        fsaCooldown: TOrFT<number, [gun, playerLike]>;
     };
-    caliber: string;
-    delay: number;
+    caliber: TOrFT<string, [gun, playerLike]>;
+    delay: TOrFT<number, [gun, playerLike]>;
     accuracy: {
-        default: number;
-        moving: number;
+        default: TOrFT<number, [gun, playerLike]>;
+        moving: TOrFT<number, [gun, playerLike]>;
     };
     imageOffset: {
-        x: number;
-        y: number;
+        perp: TOrFT<number, [gun, playerLike]>;
+        parr: TOrFT<number, [gun, playerLike]>;
     };
     dimensions: {
-        width: number;
-        height: number;
-        layer: 0 | 1 | 2;
+        width: TOrFT<number, [gun, playerLike]>;
+        height: TOrFT<number, [gun, playerLike]>;
+        layer: TOrFT<0 | 1 | 2, [gun, playerLike]>;
     };
-    switchDelay: number;
+    switchDelay: TOrFT<number, [gun, playerLike]>;
     hands: {
         lefthand: {
-            x: number;
-            y: number;
+            perp: TOrFT<number, [gun, playerLike]>;
+            parr: TOrFT<number, [gun, playerLike]>;
         };
         righthand?: {
-            x: number;
-            y: number;
+            perp: TOrFT<number, [gun, playerLike]>;
+            parr: TOrFT<number, [gun, playerLike]>;
         };
     };
-    tint: string;
+    tint: TOrFT<hexColor, [gun, playerLike]>;
     spawnOffset: {
-        x: number;
-        y: number;
+        perp: TOrFT<number, [gun, playerLike]>;
+        parr: TOrFT<number, [gun, playerLike]>;
     };
-    suppressed: boolean;
+    suppressed: TOrFT<boolean, [gun, playerLike]>;
     casing: {
         spawnOffset: {
-            perp: number;
-            parr: number;
+            perp: TOrFT<number, [gun, playerLike]>;
+            parr: TOrFT<number, [gun, playerLike]>;
         };
         velocity: {
-            perp: {
-                value: number;
-                variation: {
-                    value: number;
-                    plusOrMinus: boolean;
-                };
-            };
-            parr: {
-                value: number;
-                variation: {
-                    value: number;
-                    plusOrMinus: boolean;
-                };
-            };
-            angular: {
-                value: number;
-                variation: {
-                    value: number;
-                    plusOrMinus: boolean;
-                };
-            };
+            perp: TOrFT<number, [gun, playerLike]>;
+            parr: TOrFT<number, [gun, playerLike]>;
+            angular: TOrFT<number, [gun, playerLike]>;
         };
-        spawnOn: "fire" | "reload";
-        spawnDelay: number;
+        spawnOn: TOrFT<"fire" | "reload", [gun, playerLike]>;
+        spawnDelay: TOrFT<number, [gun, playerLike]>;
     };
     recoilImpulse: {
-        x: number;
-        y: number;
-        duration: number;
+        perp: TOrFT<number, [gun, playerLike]>;
+        parr: TOrFT<number, [gun, playerLike]>;
+        duration: TOrFT<number, [gun, playerLike]>;
     };
-    fireModes: ("automatic" | "semi" | `${"auto-" | ""}burst-${number}`)[];
+    fireModes: TOrFT<("automatic" | "semi" | `${"auto-" | ""}burst-${number}`)[], []>;
     burstProps: {
-        shotDelay: number;
-        burstDelay: number;
+        shotDelay: TOrFT<number, [gun, playerLike]>;
+        burstDelay: TOrFT<number, [gun, playerLike]>;
     };
     reload: {
-        duration: number;
-        ammoReloaded: number | "all";
-        chain: boolean;
+        duration: TOrFT<number, [gun, playerLike]>;
+        ammoReloaded: TOrFT<number | "all", [gun, playerLike]>;
+        chain: TOrFT<boolean, [gun, playerLike]>;
     };
     altReload?: {
-        duration: number;
-        ammoReloaded: number | "all";
-        chain: boolean;
+        duration: TOrFT<number, [gun, playerLike]>;
+        ammoReloaded: TOrFT<number | "all", [gun, playerLike]>;
+        chain: TOrFT<boolean, [gun, playerLike]>;
     };
     magazineCapacity: {
-        normal: number;
-        firepower: number;
+        normal: TOrFT<number, []>;
+        firepower: TOrFT<number, []>;
     };
     moveSpeedPenalties: {
-        active: number;
-        firing: number;
+        active: TOrFT<number, [gun, playerLike]>;
+        firing: TOrFT<number, [gun, playerLike]>;
     };
-    deployGroup: number;
-    constructor(name: string, summary: typeof gunPrototype.prototype.summary, dual: boolean, images: typeof gunPrototype.prototype.images, tint: string, ballistics: typeof gunPrototype.prototype.ballistics, caliber: string, delay: number, accuracy: typeof gunPrototype.prototype.accuracy, imageOffset: typeof gunPrototype.prototype.imageOffset, dimensions: typeof gunPrototype.prototype.dimensions, hands: typeof gunPrototype.prototype.hands, spawnOffset: typeof gunPrototype.prototype.spawnOffset, suppressed: boolean, recoilImpulse: typeof gunPrototype.prototype.recoilImpulse, fireMode: typeof gunPrototype.prototype.fireModes, burstProps: typeof gunPrototype.prototype.burstProps, reload: typeof gunPrototype.prototype.reload, capacity: typeof gunPrototype.prototype.magazineCapacity, switchDelay: number, casing: typeof gunPrototype.prototype.casing, moveSpeedPenalties: typeof gunPrototype.prototype.moveSpeedPenalties, deployGroup: number, altReload?: typeof gunPrototype.prototype.altReload);
+    deployGroup: TOrFT<number, [gun, playerLike]>;
+    constructor(name: typeof gunPrototype.prototype.name, summary: typeof gunPrototype.prototype.summary, dual: typeof gunPrototype.prototype.dual, images: typeof gunPrototype.prototype.images, tint: typeof gunPrototype.prototype.tint, ballistics: typeof gunPrototype.prototype.ballistics, caliber: typeof gunPrototype.prototype.caliber, delay: typeof gunPrototype.prototype.delay, accuracy: typeof gunPrototype.prototype.accuracy, imageOffset: typeof gunPrototype.prototype.imageOffset, dimensions: typeof gunPrototype.prototype.dimensions, hands: typeof gunPrototype.prototype.hands, spawnOffset: typeof gunPrototype.prototype.spawnOffset, suppressed: typeof gunPrototype.prototype.suppressed, recoilImpulse: typeof gunPrototype.prototype.recoilImpulse, fireMode: typeof gunPrototype.prototype.fireModes, burstProps: typeof gunPrototype.prototype.burstProps, reload: typeof gunPrototype.prototype.reload, capacity: typeof gunPrototype.prototype.magazineCapacity, switchDelay: typeof gunPrototype.prototype.switchDelay, casing: typeof gunPrototype.prototype.casing, moveSpeedPenalties: typeof gunPrototype.prototype.moveSpeedPenalties, deployGroup: typeof gunPrototype.prototype.deployGroup, altReload?: typeof gunPrototype.prototype.altReload);
 }
 declare class gun {
     #private;
     get proto(): gunPrototype;
-    get activeFireModeIndex(): number;
-    set activeFireModeIndex(v: number);
+    activeFireModeIndex: number;
     get activeFireMode(): "automatic" | "semi" | `burst-${number}` | `auto-burst-${number}`;
     get ammo(): number;
     set ammo(v: number);
@@ -153,6 +135,7 @@ declare abstract class projectile {
     get body(): Matter.Body;
     get shooter(): playerLike;
     get emitter(): gunPrototype;
+    get emitterInst(): gun;
     get angle(): number;
     get trajectory(): number;
     get start(): {
@@ -169,50 +152,42 @@ declare abstract class projectile {
     get damage(): number;
     get sqauredDistance(): number;
     get shrapnel(): boolean;
-    constructor(body: Matter.Body, shooter: playerLike, emitter: gunPrototype, angle: number, start: {
+    constructor(body: Matter.Body, shooter: playerLike, emitterInst: gun, angle: number, start: {
         x: number;
         y: number;
     }, end: {
         x: number;
         y: number;
     }, created: number, crit: boolean, damage: number, isShrapnel: boolean);
-    update(lifetime: number, spinVel: number, type: typeof gamespace.bulletInfo[string]["projectileInfo"]["type"], explosionInfo: {
-        explosionType: string;
-        explodeOnContact: boolean;
-        maxDist: number;
-        heightPeak: number;
+    update(lifetime: number, spinVel: number, type: bulletInfo["projectileInfo"]["type"], explosionInfo: {
+        explosionType: TOrFT<string, [projectile]>;
+        explodeOnContact: TOrFT<boolean, [projectile]>;
+        maxDist: TOrFT<number, [projectile]>;
+        heightPeak: TOrFT<number, [projectile]>;
     }): void;
     draw(info: {
-        tints: {
-            normal: string;
-            saturated: string;
-            saturated_alt?: string;
-            chambered: string;
-        };
         alpha: {
-            rate: number;
-            min: number;
-            max: number;
+            min: TOrFT<number, [gun, playerLike]>;
+            max: TOrFT<number, [gun, playerLike]>;
+            rate: TOrFT<number, [gun, playerLike]>;
         };
         imageOffset: {
-            parr: number;
-            perp: number;
+            perp: TOrFT<number, [gun, playerLike]>;
+            parr: TOrFT<number, [gun, playerLike]>;
         };
         dimensions: {
-            width: number;
-            height: number;
+            width: TOrFT<number, [gun, playerLike]>;
+            height: TOrFT<number, [gun, playerLike]>;
         };
-        projectileInfo: ({
-            type: "explosive";
-            explosionType: string;
-            explodeOnContact: boolean;
-            maxDist: number;
-            heightPeak: number;
-        } | {
-            type: "bullet";
-        }) & {
-            img: import("p5").Image;
-            spinVel: number;
+        projectileInfo: {
+            type: TOrFT<string, [gun, playerLike]>;
+            heightPeak: TOrFT<number, [gun, playerLike]>;
+            img: TOrFT<import("p5").Image, [gun, playerLike]>;
+        };
+        tints: {
+            normal: TOrFT<hexColor, [gun, playerLike]>;
+            saturated: TOrFT<hexColor, [gun, playerLike]>;
+            chambered: TOrFT<hexColor, [gun, playerLike]>;
         };
     }, lifetime: number): void;
     destroy(): void;
@@ -220,53 +195,10 @@ declare abstract class projectile {
 declare class bullet extends projectile {
     #private;
     get lifetime(): number;
-    get info(): {
-        tints: {
-            normal: string;
-            saturated: string;
-            saturated_alt?: string;
-            chambered: string;
-        };
-        alpha: {
-            rate: number;
-            min: number;
-            max: number;
-        };
-        spawnVar: {
-            mean: number;
-            variation: number;
-            plusOrMinus: boolean;
-        };
-        imageOffset: {
-            parr: number;
-            perp: number;
-        };
-        projectileInfo: ({
-            type: "explosive";
-            explosionType: string;
-            explodeOnContact: boolean;
-            maxDist: number;
-            heightPeak: number;
-        } | {
-            type: "bullet";
-        }) & {
-            img: import("p5").Image;
-            spinVel: number;
-        };
-        casing: {
-            img: import("p5").Image;
-            lifetime: {
-                value: number;
-                variation: number;
-                plusOrMinus: boolean;
-            };
-            width: number;
-            height: number;
-        };
-    };
+    get info(): bulletInfo;
     get type(): "explosive" | "bullet";
     get sqauredDistance(): number;
-    constructor(body: Matter.Body, shooter: playerLike, emitter: gunPrototype, angle: number, start: {
+    constructor(body: Matter.Body, shooter: playerLike, emitterInst: gun, angle: number, start: {
         x: number;
         y: number;
     }, created: number, crit: boolean, type: typeof bullet.prototype.type);
@@ -278,25 +210,19 @@ declare class shrapnel extends projectile {
     get lifetime(): number;
     get range(): number;
     get info(): {
-        count: number;
-        damage: number;
-        color: `#${string}`;
-        img: import("p5").Image;
-        velocity: number;
-        range: {
-            value: number;
-            variation: {
-                value: number;
-                plusOrMinus: boolean;
-            };
-        };
-        falloff: number;
+        count: TOrFT<number, []>;
+        damage: TOrFT<number, []>;
+        color: TOrFT<colorModes, []>;
+        img: TOrFT<import("p5").Image, []>;
+        velocity: TOrFT<number, []>;
+        range: TOrFT<number, []>;
+        falloff: TOrFT<number, []>;
         tracer: {
-            width: number;
-            height: number;
+            width: TOrFT<number, []>;
+            height: TOrFT<number, []>;
         };
     };
-    constructor(body: Matter.Body, shooter: playerLike, emitter: gunPrototype, angle: number, start: {
+    constructor(body: Matter.Body, shooter: playerLike, emitterInst: gun, angle: number, start: {
         x: number;
         y: number;
     }, created: number, crit: boolean);
@@ -312,56 +238,17 @@ declare class explosion {
     get createdAt(): number;
     get shooter(): playerLike;
     get emitter(): gunPrototype;
+    get emitterInst(): gun;
     get crit(): boolean;
     get damage(): number;
     get id(): number;
-    get info(): {
-        damage: number;
-        obstacleMult: number;
-        radii: {
-            visual: {
-                min: number;
-                max: number;
-            };
-            damage: {
-                min: number;
-                max: number;
-            };
-        };
-        lifetime: number;
-        color: [number, number, number];
-        decal: {
-            img: import("p5").Image;
-            width: number;
-            height: number;
-            tint: `#${string}`;
-        };
-        shrapnel: {
-            count: number;
-            damage: number;
-            color: `#${string}`;
-            img: import("p5").Image;
-            velocity: number;
-            range: {
-                value: number;
-                variation: {
-                    value: number;
-                    plusOrMinus: boolean;
-                };
-            };
-            falloff: number;
-            tracer: {
-                width: number;
-                height: number;
-            };
-        };
-    };
+    get info(): explosionInfo;
     get steps(): number;
     get alpha(): number;
     constructor(origin: {
         x: number;
         y: number;
-    }, shooter: playerLike, emitter: gunPrototype, crit: boolean);
+    }, shooter: playerLike, emitterInst: gun, crit: boolean);
     update(): void;
     draw(): void;
 }
@@ -369,6 +256,7 @@ declare class casing {
     #private;
     get body(): Matter.Body;
     get emitter(): gunPrototype;
+    get emitterInst(): gun;
     get angle(): number;
     get trajectory(): number;
     get lifetime(): number;
@@ -386,7 +274,7 @@ declare class casing {
         perp: number;
         angular: number;
     };
-    constructor(body: Matter.Body, emitter: gunPrototype, angle: number, start: {
+    constructor(body: Matter.Body, emitterInst: gun, shooter: playerLike, start: {
         x: number;
         y: number;
     }, created: number, vel: {

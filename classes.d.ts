@@ -1,5 +1,9 @@
+/// <reference types="p5" />
+/// <reference types="p5" />
+/// <reference types="p5" />
+/// <reference types="p5" />
 /**
- * @deprecated This class hasn't really been touched since… ever. Use of this class may or may not yield expected results.
+* @deprecated This class hasn't really been touched since… ever. Use of this class may or may not yield expected results.
  */
 declare class obstacle {
     #private;
@@ -31,7 +35,7 @@ declare class decal {
     image: import("p5").Image;
     width: number;
     height: number;
-    tint: string;
+    tint: colorModes;
     angle: number;
     position: {
         x: number;
@@ -40,7 +44,7 @@ declare class decal {
     constructor(angle: number, image: import("p5").Image, dimensions: {
         width: number;
         height: number;
-    }, tint: string, position: {
+    }, tint: colorModes, position: {
         x: number;
         y: number;
     });
@@ -56,11 +60,9 @@ declare class playerLike {
     maxHealth: number;
     name: string;
     inventory: inventory;
-    options: {
-        friction: number;
-        restitution: number;
-        inertia?: number;
-        density: number;
+    aimTarget: {
+        x: number;
+        y: number;
     };
     get renderDist(): number;
     state: {
@@ -69,6 +71,14 @@ declare class playerLike {
         fired: number;
         firing: boolean;
         frozen: boolean;
+        hitsGiven: Map<string, {
+            hits: number;
+            amount: number;
+        }>;
+        hitsTaken: Map<string, {
+            hits: number;
+            amount: number;
+        }>;
         invuln: boolean;
         lastShot: [number, number, number, number];
         lastFreeSwitch: number;
@@ -91,6 +101,7 @@ declare class playerLike {
             all: boolean;
         };
     };
+    get velocity(): number;
     get view(): number;
     set view(v: number);
     constructor(body: Matter.Body, angle: number, health: number, loadout: {
@@ -109,6 +120,8 @@ declare class playerLike {
     damage(amount: number, source: projectile | explosion): void;
 }
 declare class player extends playerLike {
+    #private;
+    get shakeInt(): number;
     constructor(body: Matter.Body, angle: number, health: number, loadout: {
         guns: string[];
         activeIndex: number;
@@ -118,6 +131,10 @@ declare class player extends playerLike {
         inertia?: number;
         density: number;
     }, view: number);
+    addShake(source: string, origin: {
+        x: number;
+        y: number;
+    }, strength: number): void;
 }
 declare class inventory {
     #private;
@@ -155,176 +172,115 @@ declare class customEvent {
     dispatchEvent(event: string | Event, ...args: Parameters<listener["callback"]>[1][]): boolean;
 }
 declare type bulletInfo = {
-    [key: string]: {
-        tints: {
-            normal: string;
-            saturated: string;
-            saturated_alt?: string;
-            chambered: string;
-        };
-        alpha: {
-            rate: number;
-            min: number;
-            max: number;
-        };
-        spawnVar: {
-            mean: number;
-            variation: number;
-            plusOrMinus: boolean;
-        };
-        imageOffset: {
-            parr: number;
-            perp: number;
-        };
-        projectileInfo: ({
-            type: "explosive";
-            explosionType: string;
-            explodeOnContact: boolean;
-            maxDist: number;
-            heightPeak: number;
-        } | {
-            type: "bullet";
-        }) & {
-            img: import("p5").Image;
-            spinVel: number;
-        };
-        casing: {
-            img: import("p5").Image;
-            lifetime: {
-                value: number;
-                variation: number;
-                plusOrMinus: boolean;
-            };
-            width: number;
-            height: number;
-        };
+    name: string;
+    tints: {
+        normal: TOrFT<string, [projectile]>;
+        saturated: TOrFT<string, [projectile]>;
+        chambered: TOrFT<string, [projectile]>;
+    };
+    alpha: {
+        rate: TOrFT<number, [projectile]>;
+        min: TOrFT<number, [projectile]>;
+        max: TOrFT<number, [projectile]>;
+    };
+    spawnVar: TOrFT<number, []>;
+    imageOffset: {
+        parr: TOrFT<number, [projectile]>;
+        perp: TOrFT<number, [projectile]>;
+    };
+    projectileInfo: ({
+        type: "explosive";
+        explosionType: TOrFT<string, [projectile]>;
+        explodeOnContact: TOrFT<boolean, [projectile]>;
+        maxDist: TOrFT<number, [projectile]>;
+        heightPeak: TOrFT<number, [projectile]>;
+    } | {
+        type: "bullet";
+    }) & {
+        img: TOrFT<import("p5").Image, [projectile]>;
+        spinVel: TOrFT<number, [projectile]>;
+    };
+    casing: {
+        img: TOrFT<import("p5").Image, [casing]>;
+        lifetime: TOrFT<number, [casing]>;
+        width: TOrFT<number, [casing]>;
+        height: TOrFT<number, [casing]>;
     };
 };
 declare type explosionInfo = {
-    [key: string]: {
-        damage: number;
-        obstacleMult: number;
-        radii: {
-            visual: {
-                min: number;
-                max: number;
-            };
-            damage: {
-                min: number;
-                max: number;
-            };
+    name: string;
+    damage: TOrFT<number, []>;
+    obstacleMult: TOrFT<number, []>;
+    radii: {
+        visual: {
+            min: TOrFT<number, []>;
+            max: TOrFT<number, []>;
         };
-        lifetime: number;
-        color: [number, number, number];
-        decal: {
-            img: import("p5").Image;
-            width: number;
-            height: number;
-            tint: hexColor;
+        damage: {
+            min: TOrFT<number, []>;
+            max: TOrFT<number, []>;
         };
-        shrapnel: {
-            count: number;
-            damage: number;
-            color: hexColor;
-            img: import("p5").Image;
-            velocity: number;
-            range: {
-                value: number;
-                variation: {
-                    value: number;
-                    plusOrMinus: boolean;
-                };
-            };
-            falloff: number;
-            tracer: {
-                width: number;
-                height: number;
-            };
+    };
+    lifetime: TOrFT<number, []>;
+    shakeStrength: TOrFT<number, []>;
+    shakeDuration: TOrFT<number, []>;
+    color: TOrFT<colorModes, []>;
+    decal: {
+        img: TOrFT<import("p5").Image, []>;
+        width: TOrFT<number, []>;
+        height: TOrFT<number, []>;
+        tint: TOrFT<colorModes, []>;
+    };
+    shrapnel: {
+        count: TOrFT<number, []>;
+        damage: TOrFT<number, []>;
+        color: TOrFT<colorModes, []>;
+        img: TOrFT<import("p5").Image, []>;
+        velocity: TOrFT<number, []>;
+        range: TOrFT<number, []>;
+        falloff: TOrFT<number, []>;
+        tracer: {
+            width: TOrFT<number, []>;
+            height: TOrFT<number, []>;
         };
     };
 };
-declare const gamespace: {
-    readonly version: string;
-    bots: InstanceType<typeof import("./assets/scripts/std_ai").default>[];
-    bulletInfo: bulletInfo;
-    camera: import("p5").Camera;
-    cleanUp(options?: {
-        reloadJSONBasedFields?: boolean;
-        reloadFontsAndImages?: boolean;
-        clearEvents?: boolean;
-    }): void;
-    _currentLevel: {
-        color?: string;
-        description: string;
-        initializer: () => void;
-        jsonPath: string;
-        levelData: ReturnType<typeof parseLevelData>;
-        name: string;
-        thumbnail?: string;
-        world: {
-            width: number;
-            height: number;
-            color: string;
-            gridColor: hexColor;
-        };
-    };
-    created: timestamp;
-    _currentUpdate: timestamp;
-    currentUpdate: timestamp;
-    deltaTime: number;
-    engine: Matter.Engine;
-    events: customEvent;
-    explosionInfo: explosionInfo;
-    exitLevel(): void;
-    fonts: {
-        [key: string]: {
-            src: string;
-            font: import("p5").Font;
-        };
-    };
-    freeze(): void;
-    _frozen: boolean;
-    readonly frozen: boolean;
-    guns: gunPrototype[];
-    images: {
-        [key: string]: {
-            src: string;
-            img: import("p5").Image;
-        };
-    };
-    keys: {
+declare class gsp {
+    #private;
+    get version(): string;
+    get bots(): import("./assets/scripts/std_ai").default[];
+    get bulletInfo(): Map<string, bulletInfo>;
+    get camera(): import("p5").Camera;
+    get console(): csl;
+    get currentLevel(): level;
+    get currentUpdate(): number;
+    get created(): number;
+    get deltaTime(): number;
+    get engine(): Matter.Engine;
+    get events(): customEvent;
+    get explosionInfo(): Map<string, explosionInfo>;
+    get fonts(): Map<string, import("p5").Font>;
+    get frozen(): boolean;
+    get guns(): Map<string, gunPrototype>;
+    get images(): Map<string, import("p5").Image>;
+    get keys(): {
         [key: number]: boolean;
     };
-    kills: {
+    get kills(): {
         crit: boolean;
         killed: string;
         killer: string;
-        timestamp: timestamp;
+        timestamp: number;
         weapon: string;
         id: number;
     }[];
-    lastUpdate: timestamp;
-    levels: {
-        color?: string;
-        description: string;
-        initializer(): void;
-        jsonPath: string;
-        levelData: ReturnType<typeof parseLevelData>;
-        name: string;
-        thumbnail?: string;
-        world: {
-            width: number;
-            height: number;
-            color: string;
-            gridColor: hexColor;
-        };
-    }[];
-    objects: {
+    get levels(): Map<string, level>;
+    get objects(): {
         bullets: (bullet | shrapnel)[];
         casings: casing[];
         damageNumbers: {
             amount: number;
-            createdTimestamp: timestamp;
+            createdTimestamp: number;
             crit: boolean;
             lethal: boolean;
             position: {
@@ -342,18 +298,14 @@ declare const gamespace: {
         obstacles: obstacle[];
         players: playerLike[];
     };
-    _oldStats: {
-        ammo: DeepPartial<bulletInfo>;
-        explosions: DeepPartial<explosionInfo>;
-        guns: DeepPartial<gunPrototype>[];
-    };
-    player: player;
-    p5: import("p5");
-    settings: {
+    get player(): player;
+    get p5(): import("p5");
+    get ready(): boolean;
+    get settings(): {
         visual: {
             graphicsQuality: number;
             debug: boolean;
-            monitors: [0 | 1 | 2, 0 | 1 | 2];
+            monitors: [0 | 2 | 1, 0 | 2 | 1];
             hud: boolean;
             maxDecals: number;
         };
@@ -371,8 +323,9 @@ declare const gamespace: {
             weapons: {
                 general: {
                     noslow: boolean;
-                    quickswitch: boolean;
+                    quickswitch: 0 | 2 | 1;
                     headshots: boolean;
+                    noBuckshotSpawnVar: boolean;
                 };
                 m79: {
                     grenadeSpin: boolean;
@@ -385,6 +338,22 @@ declare const gamespace: {
             };
         };
     };
-    update(p5: import("p5")): void;
-    world: Matter.Composite;
-};
+    get world(): Matter.Composite;
+    constructor();
+    cleanUp(options: {
+        reloadFontsAndImages?: boolean;
+        clearEvents?: boolean;
+    }): void;
+    exitLevel(): void;
+    freeze(): void;
+    update(): void;
+    makeMenu(first: boolean): void;
+    _removePlayer(): void;
+    _overrideKills(val: typeof gsp.prototype.kills): void;
+    _overrideSettings(val: typeof gsp.prototype.settings): void;
+    stdLevelSetup(engine: Matter.Engine, world: Matter.World, p5: import("p5"), level: level, levelData: ReturnType<typeof parseLevelData>, AI: typeof import("./assets/scripts/std_ai.js").default, font?: {
+        font: string | import("p5").Font;
+        size?: number;
+    }): void;
+}
+declare const gamespace: gsp;

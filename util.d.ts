@@ -1,4 +1,6 @@
+/// <reference types="p5" />
 declare type TOrArrayT<T> = T | T[];
+declare type TOrFT<T, U extends any[]> = T | ((...args: U) => T);
 declare type JSONValue = string | number | boolean | null;
 declare type JSONObject = {
     [key: string]: JSONContent;
@@ -27,6 +29,20 @@ declare type HSBAColor = HSBColor & {
     alpha: number;
 };
 declare type colorModes = hexColor | RGBColor | RGBAColor | HSLColor | HSLAColor | HSBColor | HSBAColor;
+declare type level = {
+    name: string;
+    jsonPath: string;
+    description: string;
+    color?: string;
+    world: {
+        width: number;
+        height: number;
+        color: string;
+        gridColor: hexColor;
+    };
+    initializer(): void;
+    thumbnail?: string;
+};
 /**
  * Make all properties in T optional, and if a given property holds an object, make all of its properties optional
  */
@@ -135,14 +151,11 @@ declare function parseLevelData(data: JSONLevel): {
     obstacles: obstacle[];
     players: playerLike[];
 };
-declare type scaleOrAbsolute = {
-    givenIn: "scale" | "absolute";
-    value: number;
-};
-declare type ratioOrAbsolute = {
-    givenIn: "ratio" | "absolute";
-    value: number;
-};
+declare function extractValue<T, U extends any[]>(x: TOrFT<T, U>, args: U): T;
+declare function imageLoadWrapper<T extends any[]>(path: TOrFT<string, T>): ((...args: T) => import("p5").Image) | (() => void | import("p5").Image);
+declare function resolveVersionDiscrepencies(target: {
+    targetVersion: string;
+}): "NO_VERSION" | "OK" | "PATCH" | "MINOR" | "MAJOR" | "BETAS" | "FUTURE" | "FAR_FUTURE";
 declare type angleModes = {
     givenIn: "degrees" | "radians" | "gradians" | "turns";
     value: number;
@@ -151,192 +164,199 @@ declare type timeModes = {
     givenIn: "RPM" | "ms" | "s";
     value: number;
 };
-declare type offsetData = {
-    perp: scaleOrAbsolute;
-    parr: scaleOrAbsolute;
-};
-declare type variation = {
-    variation: ratioOrAbsolute & {
-        plusOrMinus: boolean;
-    };
-};
-declare type offsetDataVariation = offsetData & {
-    parr: variation;
-    perp: variation;
-};
 declare type JSONGun = {
     name: string;
+    targetVersion: string;
     summary: {
-        class: string;
+        class: TOrFT<string, []>;
         engagementDistance: {
-            min: scaleOrAbsolute;
-            max: scaleOrAbsolute;
+            min: TOrFT<number, []>;
+            max: TOrFT<number, []>;
         };
-        shouldNoslow: boolean;
-        role: "primary" | "secondary";
+        shouldNoslow: TOrFT<boolean, []>;
+        role: TOrFT<"primary" | "secondary", []>;
     };
-    dual: boolean;
+    dual: TOrFT<boolean, [gun, playerLike]>;
     images: {
-        loot: false | string;
-        held: false | string;
-        silhouette: false | string;
+        loot: TOrFT<string, [gun, playerLike]>;
+        held: TOrFT<string, [gun, playerLike]>;
+        silhouette: TOrFT<string, [gun, playerLike]>;
     };
-    tint: string;
+    tint: TOrFT<colorModes, [gun, playerLike]>;
     ballistics: {
-        damage: number;
-        velocity: scaleOrAbsolute;
-        range: scaleOrAbsolute;
+        damage: TOrFT<number, [gun, playerLike]>;
+        velocity: TOrFT<number, [gun, playerLike]>;
+        range: TOrFT<number, [gun, playerLike]>;
         tracer: {
-            width: scaleOrAbsolute;
-            height: scaleOrAbsolute;
+            width: TOrFT<number, [gun, playerLike]>;
+            height: TOrFT<number, [gun, playerLike]>;
         };
-        obstacleMult: number;
-        headshotMult: number;
+        hitboxLength: TOrFT<number, [gun, playerLike]>;
+        obstacleMult: TOrFT<number, [gun, playerLike]>;
+        headshotMult: TOrFT<number, [gun, playerLike]>;
         fsa: {
-            enabled: boolean;
-            rechargeTime: timeModes;
+            enabled: TOrFT<boolean, [gun, playerLike]>;
+            rechargeTime: TOrFT<number, [gun, playerLike]>;
         };
-        falloff: number;
-        projectiles: number;
+        falloff: TOrFT<number, [gun, playerLike]>;
+        projectiles: TOrFT<number, [gun, playerLike]>;
     };
-    suppressed: boolean;
-    caliber: string;
-    firingDelay: timeModes;
-    deployGroup: number;
+    suppressed: TOrFT<boolean, [gun, playerLike]>;
+    caliber: TOrFT<string, [gun, playerLike]>;
+    firingDelay: TOrFT<number, [gun, playerLike]>;
+    deployGroup: TOrFT<number, [gun, playerLike]>;
     accuracy: {
-        default: angleModes;
-        moving: angleModes;
+        default: TOrFT<number, [gun, playerLike]>;
+        moving: TOrFT<number, [gun, playerLike]>;
     };
     moveSpeedPenalties: {
-        active: scaleOrAbsolute;
-        firing: scaleOrAbsolute;
+        active: TOrFT<number, [gun, playerLike]>;
+        firing: TOrFT<number, [gun, playerLike]>;
     };
-    imageOffset: offsetData;
+    imageOffset: {
+        perp: TOrFT<number, [gun, playerLike]>;
+        parr: TOrFT<number, [gun, playerLike]>;
+    };
     dimensions: {
-        width: scaleOrAbsolute;
-        height: scaleOrAbsolute;
-        layer: 0 | 1 | 2;
+        width: TOrFT<number, [gun, playerLike]>;
+        height: TOrFT<number, [gun, playerLike]>;
+        layer: TOrFT<0 | 1 | 2, [gun, playerLike]>;
     };
     reload: {
-        duration: timeModes;
-        ammoReloaded: number | "all";
-        chain: boolean;
+        duration: TOrFT<number, [gun, playerLike]>;
+        ammoReloaded: TOrFT<number | "all", [gun, playerLike]>;
+        chain: TOrFT<boolean, [gun, playerLike]>;
     };
     altReload?: {
-        duration: timeModes;
-        ammoReloaded: number | "all";
-        chain: boolean;
+        duration: TOrFT<number, [gun, playerLike]>;
+        ammoReloaded: TOrFT<number | "all", [gun, playerLike]>;
+        chain: TOrFT<boolean, [gun, playerLike]>;
     };
     magazineCapacity: {
-        normal: number;
-        firepower: number;
+        normal: TOrFT<number, []>;
+        firepower: TOrFT<number, []>;
     };
-    switchDelay: timeModes;
+    switchDelay: TOrFT<number, [gun, playerLike]>;
     handPositions: {
-        leftHand: offsetData;
-        rightHand?: offsetData;
-    };
-    projectileSpawnOffset: offsetData;
-    casings: {
-        spawnOffset: offsetData;
-        velocity: offsetDataVariation & {
-            angular: angleModes & variation;
+        leftHand: {
+            perp: TOrFT<number, [gun, playerLike]>;
+            parr: TOrFT<number, [gun, playerLike]>;
         };
-        spawnOn: "fire" | "reload";
-        spawnDelay: timeModes;
+        rightHand?: {
+            perp: TOrFT<number, [gun, playerLike]>;
+            parr: TOrFT<number, [gun, playerLike]>;
+        };
+    };
+    projectileSpawnOffset: {
+        perp: TOrFT<number, [gun, playerLike]>;
+        parr: TOrFT<number, [gun, playerLike]>;
+    };
+    casings: {
+        spawnOffset: {
+            perp: TOrFT<number, [gun, playerLike]>;
+            parr: TOrFT<number, [gun, playerLike]>;
+        };
+        velocity: {
+            perp: TOrFT<number, [gun, playerLike]>;
+            parr: TOrFT<number, [gun, playerLike]>;
+            angular: TOrFT<number, [gun, playerLike]>;
+        };
+        spawnOn: TOrFT<"fire" | "reload", [gun, playerLike]>;
+        spawnDelay: TOrFT<number, [gun, playerLike]>;
     };
     recoilImpulse: {
-        direction: offsetData;
-        duration: timeModes;
+        direction: {
+            perp: TOrFT<number, [gun, playerLike]>;
+            parr: TOrFT<number, [gun, playerLike]>;
+        };
+        duration: TOrFT<number, [gun, playerLike]>;
     };
-    possibleFireModes: ("automatic" | "semi" | `${"auto-" | ""}burst-${number}`)[];
+    possibleFireModes: TOrFT<("semi" | "automatic" | `${"auto-" | ""}burst-${number}`)[], []>;
     burstProps?: {
-        shotDelay: timeModes;
-        burstDelay: timeModes;
+        shotDelay: TOrFT<number, [gun, playerLike]>;
+        burstDelay: TOrFT<number, [gun, playerLike]>;
     };
 };
 declare function parseGunData(gunData: JSONGun[]): gunPrototype[];
+declare type explosiveProjData = {
+    type: "explosive";
+    explosionType: TOrFT<string, []>;
+    explodeOnContact: TOrFT<boolean, [projectile]>;
+    maxDist: TOrFT<number, [projectile]>;
+    heightPeak: TOrFT<number, [projectile]>;
+};
 declare type ammoData = {
+    name: string;
+    targetVersion: string;
     tints: {
-        normal: string;
-        saturated: string;
-        saturated_alt?: string;
-        chambered: string;
+        normal: TOrFT<string, [projectile]>;
+        saturated: TOrFT<string, [projectile]>;
+        chambered: TOrFT<string, [projectile]>;
     };
     alpha: {
-        rate: number;
-        min: number;
-        max: number;
+        rate: TOrFT<number, [projectile]>;
+        min: TOrFT<number, [projectile]>;
+        max: TOrFT<number, [projectile]>;
     };
-    spawnVar: {
-        mean: number;
-        variation: number;
-        plusOrMinus: boolean;
-    };
+    spawnVar: TOrFT<number, []>;
     imageOffset: {
-        parr: number;
-        perp: number;
+        parr: TOrFT<number, [projectile]>;
+        perp: TOrFT<number, [projectile]>;
     };
-    projectileInfo: ({
-        type: "explosive";
-        explosionType: string;
-        explodeOnContact: boolean;
-        maxDist: scaleOrAbsolute;
-        heightPeak: number;
-    } | {
+    projectileInfo: (explosiveProjData | {
         type: "bullet";
     }) & {
-        img: string;
-        spinVel?: angleModes;
+        img: TOrFT<string, [projectile]>;
+        spinVel?: TOrFT<number, [projectile]>;
     };
     casing: {
-        img: string;
-        lifetime: timeModes & variation;
-        width: number;
-        height: number;
+        img: TOrFT<string, [casing]>;
+        lifetime: TOrFT<number, [casing]>;
+        width: TOrFT<number, [casing]>;
+        height: TOrFT<number, [casing]>;
     };
 };
-declare function parseAmmoData(data: {
-    [key: string]: ammoData;
-}): bulletInfo;
+declare function parseAmmoData(data: ammoData[][]): bulletInfo[];
 declare type explosionData = {
-    damage: number;
-    obstacleMult: number;
+    name: string;
+    targetVersion: string;
+    damage: TOrFT<number, []>;
+    obstacleMult: TOrFT<number, []>;
     radii: {
         visual: {
-            min: scaleOrAbsolute;
-            max: scaleOrAbsolute;
+            min: TOrFT<number, []>;
+            max: TOrFT<number, []>;
         };
         damage: {
-            min: scaleOrAbsolute;
-            max: scaleOrAbsolute;
+            min: TOrFT<number, []>;
+            max: TOrFT<number, []>;
         };
     };
-    lifetime: timeModes;
+    lifetime: TOrFT<number, []>;
+    shakeStrength: TOrFT<number, []>;
+    shakeDuration: TOrFT<number, []>;
     color: colorModes;
     decal: {
         img: string;
-        width: scaleOrAbsolute;
-        height: scaleOrAbsolute;
-        tint: colorModes;
+        width: TOrFT<number, []>;
+        height: TOrFT<number, []>;
+        tint: hexColor;
     };
     shrapnel: {
-        count: number;
-        damage: number;
+        count: TOrFT<number, []>;
+        damage: TOrFT<number, []>;
         color: colorModes;
         img: string;
-        velocity: scaleOrAbsolute;
-        range: scaleOrAbsolute & variation;
-        falloff: number;
+        velocity: TOrFT<number, []>;
+        range: TOrFT<number, []>;
+        falloff: TOrFT<number, []>;
         tracer: {
-            width: scaleOrAbsolute;
-            height: scaleOrAbsolute;
+            width: TOrFT<number, []>;
+            height: TOrFT<number, []>;
         };
     };
 };
-declare function parseExplosionData(data: {
-    [key: string]: explosionData;
-}): explosionInfo;
+declare function parseExplosionData(data: explosionData[]): explosionInfo[];
 declare function $(ele: string): HTMLElement | null;
 declare function average(options: {
     useNativeMath: boolean;
@@ -439,7 +459,8 @@ declare function toRGB(color: colorModes, options?: {
 declare function toHex(color: colorModes, options?: {
     useNativeMath: boolean;
 }): `#${string}`;
-declare function loadJSONBasedGamespaceFields(): Promise<void>;
+declare function createCSLEntry(content: cslData["content"] | string, type?: cslData["type"]): cslData;
+declare function generateExports(): void;
 /**
  * Literally the best function in this entire project.
  * @link https://areweyeetyet.rs

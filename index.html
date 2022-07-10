@@ -2,24 +2,27 @@
 <html lang="en">
 
 <head>
-  <title>SURVIV.IO sandbox</title>
+  <title>surviv.io sandbox</title>
   <meta charset="utf-8"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; style-src 'unsafe-inline'; style-src-elem 'self' 'unsafe-inline'; script-src-elem 'self' blob:; img-src 'self'; worker-src 'self' blob:; ">
   <link rel="stylesheet" type="text/css" href="style.css">
 
   <script src="libraries/p5/p5.min.js"></script>
   <script src="libraries/p5/p5.sound.min.js"></script>
-  <script src="libraries/matter/matter.min.js"> </script>
+  <script src="libraries/matter/matter.js"> </script>
   <script src="libraries/poly-decomp/decomp.min.js"> </script>
   <script src="libraries/decimaljs/decimal.js"> </script>
 
   <script src="util.js" defer></script>
   <script src="input.js" defer></script>
+  <script src="console.js" defer></script>
   <script src="classes.js" defer></script>
   <script src="guns.js" defer></script>
   <script src="memory.js" defer></script>
 
-  <script src="loadLevels.js" type="module" defer></script>
+  <script src="loadImports.js" type="module" defer></script>
 
   <script src="perf.js" defer></script>
   <script src="ui.js" defer></script>

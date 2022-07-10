@@ -1,4 +1,6 @@
 type TOrArrayT<T> = T | T[];
+type TOrFT<T, U extends any[]> = T | ((...args: U) => T);
+
 type JSONValue = string | number | boolean | null;
 type JSONObject = { [key: string]: JSONContent; };
 type JSONArray = JSONObject["string"][];
@@ -22,6 +24,21 @@ type HSBColor = {
 type HSLAColor = HSLColor & { alpha: number; };
 type HSBAColor = HSBColor & { alpha: number; };
 type colorModes = hexColor | RGBColor | RGBAColor | HSLColor | HSLAColor | HSBColor | HSBAColor;
+
+type level = {
+    name: string,
+    jsonPath: string,
+    description: string,
+    color?: string,
+    world: {
+        width: number,
+        height: number,
+        color: string,
+        gridColor: hexColor;
+    };
+    initializer(): void,
+    thumbnail?: string,
+};
 
 /**
  * Make all properties in T optional, and if a given property holds an object, make all of its properties optional
@@ -91,6 +108,15 @@ interface Math {
     acot: (x: number) => number;
 }
 
+// Give code that runs before the console's initialization somewhere to dump data it wants logged to the console, then destroy the temporary wrapper
+// The way that I've implemented this is to be as ephemeral as possible, but that means upsetting Typescript and using "@ts-expect-error"
+Object.defineProperty(window, "cslData", {
+    configurable: true,
+    enumerable: false,
+    writable: false,
+    value: []
+});
+
 const generateId = (function* () {
     let i = 0;
     while (true) {
@@ -143,7 +169,6 @@ function RPMToMSDelay(rpm: number, options?: { useNativeMath: boolean; }) {
     return options.useNativeMath ? 60000 / rpm : Decimal.div(60000, rpm);
 }
 
-
 function parseLevelData(data: JSONLevel): { obstacles: obstacle[]; players: playerLike[]; } {
     return {
         obstacles: data.obstacles.map(o => {
@@ -190,8 +215,7 @@ function parseLevelData(data: JSONLevel): { obstacles: obstacle[]; players: play
             (p, i) => new (i ? playerLike : player)(
                 (() => {
                     const body = Matter.Bodies.circle(p.x, p.y, 50, p.options);
-                    body.mass = body.inverseMass = 1;
-                    body.frictionAir = 1;
+                    body.mass = body.inverseMass = body.frictionAir = 1;
 
                     return body;
                 })(),
@@ -219,15 +243,76 @@ function parseLevelData(data: JSONLevel): { obstacles: obstacle[]; players: play
     };
 }
 
-type scaleOrAbsolute = {
-    givenIn: "scale" | "absolute",
-    value: number;
-};
+function extractValue<T, U extends any[]>(x: TOrFT<T, U>, args: U): T {
+    return typeof x == "function" ? (x as (...args: U[]) => T)(...args) : x;
+}
 
-type ratioOrAbsolute = {
-    givenIn: "ratio" | "absolute",
-    value: number;
-};
+function imageLoadWrapper<T extends any[]>(path: TOrFT<string, T>) {
+    if (typeof path == "function") {
+        const map = new Map<string, import("p5").Image>;
+
+        return (...args: T) => {
+            let newSrc = extractValue(path, args);
+
+            if (map.has(newSrc)) {
+                return map.get(newSrc)!;
+            }
+
+            const img = loadImg(newSrc, true) as import("p5").Image;
+
+            map.set(newSrc, img);
+            return img;
+        };
+    }
+    const img = loadImg(path, true)!;
+
+    return () => img;
+}
+
+function resolveVersionDiscrepencies(target: { targetVersion: string; }): "NO_VERSION" | "OK" | "PATCH" | "MINOR" | "MAJOR" | "BETAS" | "FUTURE" | "FAR_FUTURE" {
+    type a<T extends object> = {
+        [key in keyof T]: key
+    };
+    const results: a<{
+        NO_VERSION: string;
+        OK: string;
+        PATCH: string;
+        MINOR: string;
+        MAJOR: string;
+        BETAS: string;
+        FUTURE: string;
+        FAR_FUTURE: string;
+    }> = {
+        NO_VERSION: "NO_VERSION",
+        OK: "OK",
+        PATCH: "PATCH",
+        MINOR: "MINOR",
+        MAJOR: "MAJOR",
+        BETAS: "BETAS",
+        FUTURE: "FUTURE",
+        FAR_FUTURE: "FAR_FUTURE"
+    };
+
+    const v = target.targetVersion?.match?.(/^\d+\.\d+\.\d+$/g)?.map?.(v => v[0])!;
+
+    if (v === null) {
+        return results.NO_VERSION;
+    } else {
+        const [gMaj, gMin, gPatch] = target.targetVersion.split(".").map(v => +v),
+            [maj, min, patch] = gamespace.version.split(".").map(v => +v),
+            r = ["PATCH", "MINOR", "MAJOR", "BETAS", "FUTURE", "FAR_FUTURE"];
+
+        let i = 5;
+
+        for (const c of (`${+(gMaj > maj)}${+((gMaj == maj && gMin > min) || (gMaj == maj && gMin == min && gPatch > patch))}${+(maj != gMaj)}${+(min != gMin && +maj == 0)}${+(min != gMin)}${+(patch != gPatch)}` as badCodeDesign as string[])) {
+            if (+c) {
+                return results[r[i]];
+            }
+            i--;
+        }
+        return results.OK;
+    }
+}
 
 type angleModes = {
     givenIn: "degrees" | "radians" | "gradians" | "turns",
@@ -239,102 +324,117 @@ type timeModes = {
     value: number;
 };
 
-type offsetData = {
-    perp: scaleOrAbsolute,
-    parr: scaleOrAbsolute;
-};
-
-type variation = { variation: ratioOrAbsolute & { plusOrMinus: boolean; }; };
-
-type offsetDataVariation = offsetData & { parr: variation, perp: variation; };
-
 type JSONGun = {
     name: string,
+    targetVersion: string,
     summary: {
-        class: string,
+        class: TOrFT<string, []>,
         engagementDistance: {
-            min: scaleOrAbsolute,
-            max: scaleOrAbsolute;
+            min: TOrFT<number, []>,
+            max: TOrFT<number, []>;
         },
-        shouldNoslow: boolean,
-        role: "primary" | "secondary";
+        shouldNoslow: TOrFT<boolean, []>,
+        role: TOrFT<"primary" | "secondary", []>;
     },
-    dual: boolean,
+    dual: TOrFT<boolean, [gun, playerLike]>,
     images: {
-        loot: false | string,
-        held: false | string,
-        silhouette: false | string;
+        loot: TOrFT<string, [gun, playerLike]>,
+        held: TOrFT<string, [gun, playerLike]>,
+        silhouette: TOrFT<string, [gun, playerLike]>;
     },
-    tint: string,
+    tint: TOrFT<colorModes, [gun, playerLike]>,
     ballistics: {
-        damage: number,
-        velocity: scaleOrAbsolute,
-        range: scaleOrAbsolute,
+        damage: TOrFT<number, [gun, playerLike]>,
+        velocity: TOrFT<number, [gun, playerLike]>,
+        range: TOrFT<number, [gun, playerLike]>,
         tracer: {
-            width: scaleOrAbsolute,
-            height: scaleOrAbsolute;
+            width: TOrFT<number, [gun, playerLike]>,
+            height: TOrFT<number, [gun, playerLike]>;
         },
-        obstacleMult: number,
-        headshotMult: number,
+        hitboxLength: TOrFT<number, [gun, playerLike]>,
+        obstacleMult: TOrFT<number, [gun, playerLike]>,
+        headshotMult: TOrFT<number, [gun, playerLike]>,
         fsa: {
-            enabled: boolean,
-            rechargeTime: timeModes;
+            enabled: TOrFT<boolean, [gun, playerLike]>,
+            rechargeTime: TOrFT<number, [gun, playerLike]>;
         },
-        falloff: number,
-        projectiles: number;
+        falloff: TOrFT<number, [gun, playerLike]>,
+        projectiles: TOrFT<number, [gun, playerLike]>;
     },
-    suppressed: boolean,
-    caliber: string,
-    firingDelay: timeModes,
-    deployGroup: number,
+    suppressed: TOrFT<boolean, [gun, playerLike]>,
+    caliber: TOrFT<string, [gun, playerLike]>,
+    firingDelay: TOrFT<number, [gun, playerLike]>,
+    deployGroup: TOrFT<number, [gun, playerLike]>,
     accuracy: {
-        default: angleModes,
-        moving: angleModes;
+        default: TOrFT<number, [gun, playerLike]>,
+        moving: TOrFT<number, [gun, playerLike]>;
     },
     moveSpeedPenalties: {
-        active: scaleOrAbsolute,
-        firing: scaleOrAbsolute;
+        active: TOrFT<number, [gun, playerLike]>,
+        firing: TOrFT<number, [gun, playerLike]>;
     },
-    imageOffset: offsetData,
+    imageOffset: {
+        perp: TOrFT<number, [gun, playerLike]>,
+        parr: TOrFT<number, [gun, playerLike]>;
+    },
     dimensions: {
-        width: scaleOrAbsolute,
-        height: scaleOrAbsolute,
-        layer: 0 | 1 | 2;
+        width: TOrFT<number, [gun, playerLike]>,
+        height: TOrFT<number, [gun, playerLike]>,
+        layer: TOrFT<0 | 1 | 2, [gun, playerLike]>;
     },
     reload: {
-        duration: timeModes,
-        ammoReloaded: number | "all",
-        chain: boolean;
+        duration: TOrFT<number, [gun, playerLike]>,
+        ammoReloaded: TOrFT<number | "all", [gun, playerLike]>,
+        chain: TOrFT<boolean, [gun, playerLike]>;
     },
     altReload?: {
-        duration: timeModes,
-        ammoReloaded: number | "all",
-        chain: boolean;
+        duration: TOrFT<number, [gun, playerLike]>,
+        ammoReloaded: TOrFT<number | "all", [gun, playerLike]>,
+        chain: TOrFT<boolean, [gun, playerLike]>;
     },
     magazineCapacity: {
-        normal: number,
-        firepower: number;
+        normal: TOrFT<number, []>,
+        firepower: TOrFT<number, []>;
     },
-    switchDelay: timeModes,
+    switchDelay: TOrFT<number, [gun, playerLike]>,
     handPositions: {
-        leftHand: offsetData,
-        rightHand?: offsetData;
+        leftHand: {
+            perp: TOrFT<number, [gun, playerLike]>,
+            parr: TOrFT<number, [gun, playerLike]>;
+        },
+        rightHand?: {
+            perp: TOrFT<number, [gun, playerLike]>,
+            parr: TOrFT<number, [gun, playerLike]>;
+        };
     },
-    projectileSpawnOffset: offsetData,
+    projectileSpawnOffset: {
+        perp: TOrFT<number, [gun, playerLike]>,
+        parr: TOrFT<number, [gun, playerLike]>;
+    },
     casings: {
-        spawnOffset: offsetData,
-        velocity: offsetDataVariation & { angular: angleModes & variation; },
-        spawnOn: "fire" | "reload",
-        spawnDelay: timeModes;
+        spawnOffset: {
+            perp: TOrFT<number, [gun, playerLike]>,
+            parr: TOrFT<number, [gun, playerLike]>;
+        },
+        velocity: {
+            perp: TOrFT<number, [gun, playerLike]>,
+            parr: TOrFT<number, [gun, playerLike]>,
+            angular: TOrFT<number, [gun, playerLike]>;
+        },
+        spawnOn: TOrFT<"fire" | "reload", [gun, playerLike]>,
+        spawnDelay: TOrFT<number, [gun, playerLike]>;
     },
     recoilImpulse: {
-        direction: offsetData,
-        duration: timeModes;
+        direction: {
+            perp: TOrFT<number, [gun, playerLike]>,
+            parr: TOrFT<number, [gun, playerLike]>;
+        },
+        duration: TOrFT<number, [gun, playerLike]>;
     },
-    possibleFireModes: ("automatic" | "semi" | `${"auto-" | ""}burst-${number}`)[],
+    possibleFireModes: TOrFT<("semi" | "automatic" | `${"auto-" | ""}burst-${number}`)[], []>,
     burstProps?: {
-        shotDelay: timeModes,
-        burstDelay: timeModes;
+        shotDelay: TOrFT<number, [gun, playerLike]>,
+        burstDelay: TOrFT<number, [gun, playerLike]>;
     };
 };
 
@@ -342,14 +442,46 @@ function parseGunData(gunData: JSONGun[]) {
     const playerSize = 50;
 
     return gunData.map(g => {
+        const v = g.targetVersion,
+            d = resolveVersionDiscrepencies(g);
+
+        switch (d) {
+            case "NO_VERSION": {
+                gamespace.console.error(`Gun '${g.name}' has an invalid version field '${v}'.\nVersion fields must respect the 'major.minor.patch' format.`);
+                break;
+            }
+            case "PATCH": {
+                gamespace.console.warn(`Gun '${g.name}' had a version that differs from the current game's version by one or multiple patches (gun: ${g.targetVersion}, game: ${gamespace.version}). Unexpected behaviour may occur.`);
+                break;
+            }
+            case "MINOR": {
+                gamespace.console.warn(`Gun '${g.name}' had a version that differs from the current game's version by one or multiple minor versions (gun: ${g.targetVersion}, game: ${gamespace.version}). It is therefore not improbable that this gun will not function properly.`, true);
+                break;
+            }
+            case "MAJOR": {
+                gamespace.console.error(`Gun '${g.name}' had a version that differs from the current game's version by one or multiple major versions (gun: ${g.targetVersion}, game: ${gamespace.version}). It is therefore overwhelmingly likely that this gun will not function properly.`);
+                break;
+            }
+            case "BETAS": {
+                gamespace.console.error(`Gun '${g.name}' had a version that differs from the current game's version by one or multiple betas (gun: ${g.targetVersion}, game: ${gamespace.version}). It is therefore overwhelmingly likely that this gun will not function properly.`);
+                break;
+            }
+            case "FUTURE":
+            case "FAR_FUTURE": {
+                const far = d == "FAR_FUTURE";
+                gamespace.console[far ? "error" : "warn"](`Gun '${g.name}' comes from the ${far ? "far" : ""} future, (gun: ${g.targetVersion}, game: ${gamespace.version}) and ${far ? "will therefore almost certainly" : "may therefore"} not be interpreted correctly by this ${far ? "vastly" : ""} inferior version of the sandbox.`, true);
+                break;
+            }
+        }
+
         return new gunPrototype(
             g.name,
             (() => {
                 return {
                     class: g.summary.class,
                     engagementDistance: {
-                        min: g.summary.engagementDistance.min.givenIn == "absolute" ? g.summary.engagementDistance.min.value : g.summary.engagementDistance.min.value * playerSize,
-                        max: g.summary.engagementDistance.max.givenIn == "absolute" ? g.summary.engagementDistance.max.value : g.summary.engagementDistance.max.value * playerSize
+                        min: (...args) => extractValue(g.summary.engagementDistance.min, args) * playerSize,
+                        max: (...args) => extractValue(g.summary.engagementDistance.max, args) * playerSize
                     },
                     shouldNoslow: g.summary.shouldNoslow,
                     role: g.summary.role
@@ -357,65 +489,77 @@ function parseGunData(gunData: JSONGun[]) {
             })(),
             g.dual,
             (() => {
+                const f = (p: TOrFT<string, [gun, playerLike]>) => {
+                    const map = new Map<string, import("p5").Image>,
+                        o = {
+                            img: (...args: [gun, playerLike]) => {
+                                const path = extractValue(p, args);
+
+                                o.src = path;
+
+                                if (map.has(path)) {
+                                    return map.get(path)!;
+                                }
+
+                                const img = loadImg(path) as import("p5").Image;
+                                map.set(path, img);
+                                return img;
+                            },
+                            src: typeof p == "string" ? p : ""
+                        };
+
+                    return o;
+                };
+
                 return {
-                    loot: g.images.loot != false ? {
-                        img: loadImg(g.images.loot, true),
-                        src: g.images.loot
-                    } : void 0,
-                    held: g.images.held != false ? {
-                        img: loadImg(g.images.held, true),
-                        src: g.images.held
-                    } : void 0,
-                    silhouette: g.images.silhouette != false ? {
-                        img: loadImg(g.images.silhouette, true),
-                        src: g.images.silhouette
-                    } : void 0
+                    loot: f(g.images.loot),
+                    held: f(g.images.held),
+                    silhouette: f(g.images.silhouette)
                 };
             })(),
-            g.tint,
+            (...args) => toHex(extractValue(g.tint, args)),
             (() => {
                 const b = g.ballistics,
                     t = b.tracer;
 
                 return {
                     damage: b.damage,
-                    range: b.range.value * (b.range.givenIn == "scale" ? playerSize : 1),
-                    velocity: b.velocity.value * (b.velocity.givenIn == "scale" ? playerSize : 1),
+                    range: (...args) => extractValue(b.range, args) * playerSize,
+                    velocity: (...args) => extractValue(b.velocity, args) * playerSize,
                     obstacleMult: b.obstacleMult,
                     headshotMult: b.headshotMult,
                     tracer: {
-                        width: t.width.value * (t.width.givenIn == "absolute" ? 1 : playerSize),
-                        height: t.height.value * (t.height.givenIn == "absolute" ? 1 : playerSize)
+                        width: (...args) => extractValue(t.width, args) * playerSize,
+                        height: (...args) => extractValue(t.height, args) * playerSize
                     },
+                    hitboxLength: (...args) => extractValue(b.hitboxLength, args) * playerSize,
                     projectiles: b.projectiles,
                     falloff: b.falloff,
-                    fsaCooldown: b.fsa.enabled ? toMS(b.fsa.rechargeTime) : Infinity
+                    fsaCooldown: b.fsa.enabled ? b.fsa.rechargeTime : Infinity
                 };
             })(),
             g.caliber,
-            toMS(g.firingDelay),
+            g.firingDelay,
             (() => {
-                const def = g.accuracy.default,
-                    mov = g.accuracy.moving;
-
                 return {
-                    default: toRad(def),
-                    moving: toRad(mov)
+                    default: (...args) => extractValue(g.accuracy.default, args),
+                    moving: (...args) => extractValue(g.accuracy.moving, args)
                 };
             })(),
             (() => {
                 const i = g.imageOffset;
                 return {
-                    x: i.perp.value / (i.perp.givenIn == "scale" ? 1 : playerSize),
-                    y: i.parr.value / (i.parr.givenIn == "scale" ? 1 : playerSize)
+                    perp: (...args) => extractValue(i.perp, args) * playerSize,
+                    parr: (...args) => extractValue(i.parr, args) * playerSize
                 };
             })(),
             (() => {
                 const d = g.dimensions;
+
                 return {
-                    width: d.width.value / (d.width.givenIn == "scale" ? 1 : playerSize),
-                    height: d.height.value / (d.height.givenIn == "scale" ? 1 : playerSize),
-                    layer: d.layer
+                    width: (...args) => extractValue(d.width, args) * playerSize,
+                    height: (...args) => extractValue(d.height, args) * playerSize,
+                    layer: (...args) => extractValue(d.layer, args)
                 };
             })(),
             (() => {
@@ -424,292 +568,319 @@ function parseGunData(gunData: JSONGun[]) {
 
                 return {
                     lefthand: {
-                        x: l.perp.value / (l.perp.givenIn == "scale" ? 1 : playerSize),
-                        y: l.parr.value / (l.parr.givenIn == "scale" ? 1 : playerSize)
+                        perp: (...args) => extractValue(l.perp, args) * playerSize,
+                        parr: (...args) => extractValue(l.parr, args) * playerSize
                     },
                     righthand: r && {
-                        x: r.perp.value / (r.perp.givenIn == "scale" ? 1 : playerSize),
-                        y: r.parr.value / (r.parr.givenIn == "scale" ? 1 : playerSize)
+                        perp: (...args) => extractValue(r.perp, args) * playerSize,
+                        parr: (...args) => extractValue(r.parr, args) * playerSize
                     }
                 };
             })(),
             (() => {
                 const s = g.projectileSpawnOffset;
+
                 return {
-                    x: s.perp.value * (s.perp.givenIn == "scale" ? playerSize : 1),
-                    y: s.parr.value * (s.parr.givenIn == "scale" ? playerSize : 1)
+                    perp: (...args) => extractValue(s.perp, args) * playerSize,
+                    parr: (...args) => extractValue(s.parr, args) * playerSize
                 };
             })(),
-            g.suppressed,
+            (...args) => extractValue(g.suppressed, args),
             (() => {
                 const r = g.recoilImpulse,
-                    di = r.direction,
-                    du = r.duration;
+                    di = r.direction;
+
                 return {
-                    x: di.perp.value * (di.perp.givenIn == "scale" ? 1 : playerSize),
-                    y: di.parr.value * (di.parr.givenIn == "scale" ? 1 : playerSize),
-                    duration: toMS(du)
+                    perp: (...args) => extractValue(di.perp, args) * playerSize,
+                    parr: (...args) => extractValue(di.parr, args) * playerSize,
+                    duration: (...args) => extractValue(r.duration, args)
                 };
             })(),
             g.possibleFireModes,
             (() => {
-                const b = g.burstProps;
+                const b = extractValue(g.burstProps, []);
 
                 return {
-                    shotDelay: b ? toMS(b.shotDelay as badCodeDesign) : Infinity,
-                    burstDelay: b ? toMS(b.burstDelay as badCodeDesign) : Infinity
+                    shotDelay: (...args) => b ? extractValue(b.shotDelay, args) : Infinity,
+                    burstDelay: (...args) => b ? extractValue(b.burstDelay, args) : Infinity
                 };
             })(),
             {
-                duration: toMS(g.reload.duration),
+                duration: g.reload.duration,
                 ammoReloaded: g.reload.ammoReloaded,
                 chain: g.reload.chain
             },
             g.magazineCapacity,
-            toMS(g.switchDelay),
+            g.switchDelay,
             (() => {
                 const c = g.casings,
                     sO = c.spawnOffset,
                     sOpe = sO.perp,
                     sOpa = sO.parr,
                     v = c.velocity,
-                    vPe = v.perp,
-                    vPeV = v.perp.variation,
-                    vPa = v.parr,
-                    vPaV = v.parr.variation,
                     vA = c.velocity.angular,
-                    vAv = vA.variation,
-                    vPeVal = vPe.givenIn == "absolute" ? vPe.value : vPe.value * playerSize,
-                    vPaVal = vPa.givenIn == "absolute" ? vPa.value : vPa.value * playerSize,
-                    vAVal = toRad(vA);
+                    vAVal = vA;
 
                 return {
                     spawnOffset: {
-                        perp: sOpe.givenIn == "absolute" ? sOpe.value : sOpe.value * playerSize,
-                        parr: sOpa.givenIn == "absolute" ? sOpa.value : sOpa.value * playerSize
+                        perp: (...args) => extractValue(sOpe, args) * playerSize,
+                        parr: (...args) => extractValue(sOpa, args) * playerSize
                     },
                     velocity: {
-                        perp: {
-                            value: vPeVal,
-                            variation: {
-                                value: vPeV.givenIn == "absolute" ? vPeV.value : vPeV.value * vPeVal,
-                                plusOrMinus: vPeV.plusOrMinus
-                            }
-                        },
-                        parr: {
-                            value: vPaVal,
-                            variation: {
-                                value: vPaV.givenIn == "absolute" ? vPaV.value : vPaV.value * vPaVal,
-                                plusOrMinus: vPaV.plusOrMinus
-                            }
-                        },
-                        angular: {
-                            value: vAVal,
-                            variation: {
-                                value: vAv.givenIn == "absolute" ? vAv.value : vAv.value * vAVal,
-                                plusOrMinus: vAv.plusOrMinus
-                            }
-                        }
+                        perp: (...args) => extractValue(v.perp, args) * playerSize,
+                        parr: (...args) => extractValue(v.parr, args) * playerSize,
+                        angular: vAVal
                     },
-                    spawnDelay: toMS(c.spawnDelay),
-                    spawnOn: c.spawnOn
+                    spawnDelay: c.spawnDelay,
+                    spawnOn: (...args) => extractValue(c.spawnOn, args)
                 };
             })(),
             {
-                active: g.moveSpeedPenalties.active.givenIn == "absolute" ? g.moveSpeedPenalties.active.value / playerSize : g.moveSpeedPenalties.active.value,
-                firing: g.moveSpeedPenalties.firing.givenIn == "absolute" ? g.moveSpeedPenalties.firing.value / playerSize : g.moveSpeedPenalties.firing.value
+                active: g.moveSpeedPenalties.active,
+                firing: g.moveSpeedPenalties.firing
             },
             g.deployGroup,
-            g.altReload && {
-                duration: toMS(g.altReload?.duration),
-                ammoReloaded: g.altReload?.ammoReloaded,
-                chain: g.altReload?.chain
-            },
+            (() => {
+                const a = extractValue(g.altReload, []);
+
+                return a && {
+                    duration: a.duration,
+                    ammoReloaded: a.ammoReloaded,
+                    chain: a.chain
+                };
+            })()
         );
     });
 }
 
+type explosiveProjData = {
+    type: "explosive",
+    explosionType: TOrFT<string, []>,
+    explodeOnContact: TOrFT<boolean, [projectile]>,
+    maxDist: TOrFT<number, [projectile]>,
+    heightPeak: TOrFT<number, [projectile]>;
+};
+
 type ammoData = {
+    name: string,
+    targetVersion: string,
     tints: {
-        normal: string,
-        saturated: string,
-        saturated_alt?: string,
-        chambered: string;
+        normal: TOrFT<string, [projectile]>,
+        saturated: TOrFT<string, [projectile]>,
+        chambered: TOrFT<string, [projectile]>;
     },
     alpha: {
-        rate: number,
-        min: number,
-        max: number;
+        rate: TOrFT<number, [projectile]>,
+        min: TOrFT<number, [projectile]>,
+        max: TOrFT<number, [projectile]>;
     },
-    spawnVar: {
-        mean: number,
-        variation: number,
-        plusOrMinus: boolean;
-    },
+    spawnVar: TOrFT<number, []>,
     imageOffset: {
-        parr: number,
-        perp: number;
+        parr: TOrFT<number, [projectile]>,
+        perp: TOrFT<number, [projectile]>;
     },
-    projectileInfo: ({
-        type: "explosive",
-        explosionType: string,
-        explodeOnContact: boolean,
-        maxDist: scaleOrAbsolute,
-        heightPeak: number;
-    } | {
-        type: "bullet";
-    }) & {
-        img: string,
-        spinVel?: angleModes;
+    projectileInfo: (explosiveProjData | { type: "bullet"; }) & {
+        img: TOrFT<string, [projectile]>,
+        spinVel?: TOrFT<number, [projectile]>;
     },
     casing: {
-        img: string,
-        lifetime: timeModes & variation,
-        width: number,
-        height: number;
+        img: TOrFT<string, [casing]>,
+        lifetime: TOrFT<number, [casing]>,
+        width: TOrFT<number, [casing]>,
+        height: TOrFT<number, [casing]>;
     };
 };
 
-function parseAmmoData(data: { [key: string]: ammoData; }) {
-    const final: typeof gamespace.bulletInfo = {};
+function parseAmmoData(data: ammoData[][]) {
+    const playerSize = 50;
 
-    for (const key in data) {
-        const a = data[key];
+    return data.flat().map(a => {
+        const v = a.targetVersion,
+            d = resolveVersionDiscrepencies(a);
 
-        final[key] = {
+        switch (d) {
+            case "NO_VERSION": {
+                gamespace.console.error(`Ammo type '${a.name}' has an invalid version field '${v}'.\nVersion fields must respect the 'major.minor.patch' format.`);
+                break;
+            }
+            case "PATCH": {
+                gamespace.console.warn(`Ammo type '${a.name}' had a version that differs from the current game's version by one or multiple patches (ammo: ${a.targetVersion}, game: ${gamespace.version}). Unexpected behaviour may occur.`);
+                break;
+            }
+            case "MINOR": {
+                gamespace.console.warn(`Ammo type '${a.name}' had a version that differs from the current game's version by one or multiple minor versions (ammo: ${a.targetVersion}, game: ${gamespace.version}). It is therefore not improbable that this ammo will not function properly.`, true);
+                break;
+            }
+            case "MAJOR": {
+                gamespace.console.error(`Ammo type '${a.name}' had a version that differs from the current game's version by one or multiple major versions (ammo: ${a.targetVersion}, game: ${gamespace.version}). It is therefore overwhelmingly likely that this ammo will not function properly.`);
+                break;
+            }
+            case "BETAS": {
+                gamespace.console.error(`Ammo type '${a.name}' had a version that differs from the current game's version by one or multiple betas (ammo: ${a.targetVersion}, game: ${gamespace.version}). It is therefore overwhelmingly likely that this ammo will not function properly.`);
+                break;
+            }
+            case "FUTURE":
+            case "FAR_FUTURE": {
+                const far = d == "FAR_FUTURE";
+                gamespace.console[far ? "error" : "warn"](`Ammo type '${a.name}' comes from the ${far ? "far" : ""} future, (ammo: ${a.targetVersion}, game: ${gamespace.version}) and ${far ? "will therefore almost certainly" : "may therefore"} not be interpreted correctly by this ${far ? "vastly" : ""} inferior version of the sandbox.`, true);
+                break;
+            }
+        }
+
+        return {
+            name: a.name,
             tints: a.tints,
             spawnVar: a.spawnVar,
-            imageOffset: a.imageOffset,
+            imageOffset: {
+                parr: (...args) => extractValue(a.imageOffset.parr, args) * playerSize,
+                perp: (...args) => extractValue(a.imageOffset.perp, args) * playerSize
+            },
             alpha: a.alpha,
             projectileInfo: Object.assign(a.projectileInfo.type == "explosive" ? {
                 type: "explosive",
                 explosionType: a.projectileInfo.explosionType,
                 explodeOnContact: a.projectileInfo.explodeOnContact,
-                maxDist: a.projectileInfo.maxDist.value * (a.projectileInfo.maxDist.givenIn == "absolute" ? 1 : 50),
+                maxDist: (...args: [projectile]) => extractValue((a.projectileInfo as explosiveProjData).maxDist, args) * playerSize,
                 heightPeak: a.projectileInfo.heightPeak
             } : {
                 type: "bullet",
             }, {
-                img: loadImg(a.projectileInfo.img),
-                spinVel: a.projectileInfo.spinVel ? toRad(a.projectileInfo.spinVel) : 0
-            }) as typeof gamespace.bulletInfo[string]["projectileInfo"],
+                img: imageLoadWrapper(a.projectileInfo.img),
+                spinVel: (...args: [projectile]) => extractValue(a.projectileInfo.spinVel, args) ?? 0
+            }) as bulletInfo["projectileInfo"],
             casing: {
-                img: loadImg(a.casing.img) as import("p5").Image,
-                lifetime: (() => {
-                    const l = a.casing.lifetime,
-                        v = l.variation,
-                        t = toMS(l);
-
-                    return {
-                        value: t,
-                        variation: v.value * (v.givenIn == "ratio" ? t : 1),
-                        plusOrMinus: v.plusOrMinus
-                    };
-                })(),
+                img: imageLoadWrapper(a.casing.img),
+                lifetime: a.casing.lifetime,
                 width: a.casing.width,
                 height: a.casing.height
             }
-        };
-    }
-    return final;
+        } as bulletInfo;
+    });
 }
 
 type explosionData = {
-    damage: number,
-    obstacleMult: number,
+    name: string,
+    targetVersion: string,
+    damage: TOrFT<number, []>;
+    obstacleMult: TOrFT<number, []>;
     radii: {
         visual: {
-            min: scaleOrAbsolute;
-            max: scaleOrAbsolute;
+            min: TOrFT<number, []>;
+            max: TOrFT<number, []>;
         };
         damage: {
-            min: scaleOrAbsolute;
-            max: scaleOrAbsolute;
+            min: TOrFT<number, []>;
+            max: TOrFT<number, []>;
         };
-    },
-    lifetime: timeModes,
-    color: colorModes,
+    };
+    lifetime: TOrFT<number, []>;
+    shakeStrength: TOrFT<number, []>,
+    shakeDuration: TOrFT<number, []>,
+    color: colorModes;
     decal: {
-        img: string,
-        width: scaleOrAbsolute,
-        height: scaleOrAbsolute,
-        tint: colorModes;
-    },
+        img: string;
+        width: TOrFT<number, []>;
+        height: TOrFT<number, []>;
+        tint: hexColor;
+    };
     shrapnel: {
-        count: number,
-        damage: number,
-        color: colorModes,
-        img: string,
-        velocity: scaleOrAbsolute,
-        range: scaleOrAbsolute & variation,
-        falloff: number,
+        count: TOrFT<number, []>;
+        damage: TOrFT<number, []>;
+        color: colorModes;
+        img: string;
+        velocity: TOrFT<number, []>;
+        range: TOrFT<number, []>;
+        falloff: TOrFT<number, []>;
         tracer: {
-            width: scaleOrAbsolute;
-            height: scaleOrAbsolute;
+            width: TOrFT<number, []>;
+            height: TOrFT<number, []>;
         };
     };
 };
 
-function parseExplosionData(data: { [key: string]: explosionData; }) {
-    const final: typeof gamespace.explosionInfo = {},
-        playerSize = 50;
+function parseExplosionData(data: explosionData[]) {
+    const playerSize = 50;
 
-    for (const key in data) {
-        const e = data[key];
+    return data.map(e => {
+        const v = e.targetVersion,
+            d = resolveVersionDiscrepencies(e);
 
-        final[key] = {
+        switch (d) {
+            case "NO_VERSION": {
+                gamespace.console.error(`Explosion '${e.name}' has an invalid version field '${v}'.\nVersion fields must respect the 'major.minor.patch' format.`);
+                break;
+            }
+            case "PATCH": {
+                gamespace.console.warn(`Explosion '${e.name}' had a version that differs from the current game's version by one or multiple patches (explosion: ${e.targetVersion}, game: ${gamespace.version}). Unexpected behaviour may occur.`);
+                break;
+            }
+            case "MINOR": {
+                gamespace.console.warn(`Explosion '${e.name}' had a version that differs from the current game's version by one or multiple minor versions (explosion: ${e.targetVersion}, game: ${gamespace.version}). It is therefore not improbable that this explosion will not function properly.`, true);
+                break;
+            }
+            case "MAJOR": {
+                gamespace.console.error(`Explosion '${e.name}' had a version that differs from the current game's version by one or multiple major versions (explosion: ${e.targetVersion}, game: ${gamespace.version}). It is therefore overwhelmingly likely that this explosion will not function properly.`);
+                break;
+            }
+            case "BETAS": {
+                gamespace.console.error(`Explosion '${e.name}' had a version that differs from the current game's version by one or multiple betas (explosion: ${e.targetVersion}, game: ${gamespace.version}). It is therefore overwhelmingly likely that this explosion will not function properly.`);
+                break;
+            }
+            case "FUTURE":
+            case "FAR_FUTURE": {
+                const far = d == "FAR_FUTURE";
+                gamespace.console[far ? "error" : "warn"](`Explosion '${e.name}' comes from the ${far ? "far" : ""} future, (explosion: ${e.targetVersion}, game: ${gamespace.version}) and ${far ? "will therefore almost certainly" : "may therefore"} not be interpreted correctly by this ${far ? "vastly" : ""} inferior version of the sandbox.`, true);
+                break;
+            }
+        }
+
+        return {
+            name: e.name,
             damage: e.damage,
             obstacleMult: e.obstacleMult,
             radii: {
                 visual: {
-                    min: e.radii.visual.min.value * (e.radii.visual.min.givenIn == "scale" ? playerSize : 1),
-                    max: e.radii.visual.max.value * (e.radii.visual.max.givenIn == "scale" ? playerSize : 1)
+                    min: () => extractValue(e.radii.visual.min, []) * playerSize,
+                    max: () => extractValue(e.radii.visual.max, []) * playerSize
                 },
                 damage: {
-                    min: e.radii.damage.min.value * (e.radii.damage.min.givenIn == "scale" ? playerSize : 1),
-                    max: e.radii.damage.max.value * (e.radii.damage.max.givenIn == "scale" ? playerSize : 1)
+                    min: () => extractValue(e.radii.damage.min, []) * playerSize,
+                    max: () => extractValue(e.radii.damage.max, []) * playerSize
                 }
             },
-            lifetime: toMS(e.lifetime),
-            color: toRGB(e.color) as badCodeDesign as RGBColor,
+            lifetime: e.lifetime,
+            shakeStrength: () => extractValue(e.shakeStrength, []) * playerSize,
+            shakeDuration: e.shakeDuration,
+            color: e.color,
             decal: (() => {
                 const d = e.decal;
 
                 return {
-                    img: loadImg(d.img) as import("p5").Image,
-                    tint: toHex(d.tint),
-                    width: d.width.value * (d.width.givenIn == "scale" ? playerSize : 1),
-                    height: d.height.value * (d.height.givenIn == "scale" ? playerSize : 1)
+                    img: imageLoadWrapper(d.img),
+                    tint: d.tint,
+                    width: () => extractValue(d.width, []) * playerSize,
+                    height: () => extractValue(d.height, []) * playerSize
                 };
             })(),
             shrapnel: (() => {
-                const s = e.shrapnel,
-                    sRVal = s.range.value * (s.range.givenIn == "scale" ? playerSize : 1);
+                const s = e.shrapnel;
 
                 return {
                     count: s.count,
                     damage: s.damage,
-                    color: toHex(s.color),
-                    img: loadImg(s.img) as import("p5").Image,
-                    velocity: s.velocity.value * (s.velocity.givenIn == "scale" ? playerSize : 1),
-                    range: {
-                        value: sRVal,
-                        variation: {
-                            value: s.range.variation.value * (s.range.variation.givenIn == "ratio" ? sRVal : 1),
-                            plusOrMinus: s.range.variation.plusOrMinus
-                        }
-                    },
+                    color: s.color,
+                    img: imageLoadWrapper(s.img),
+                    velocity: () => extractValue(s.velocity, []) * playerSize,
+                    range: () => extractValue(s.range, []) * playerSize,
                     falloff: s.falloff,
                     tracer: {
-                        width: s.tracer.width.value * (s.tracer.width.givenIn == "scale" ? playerSize : 1),
-                        height: s.tracer.height.value * (s.tracer.height.givenIn == "scale" ? playerSize : 1)
+                        width: () => extractValue(s.tracer.width, []) * playerSize,
+                        height: () => extractValue(s.tracer.height, []) * playerSize
                     }
                 };
             })()
-        };
-    }
-
-    return final;
+        } as explosionInfo;
+    });
 }
 
 function $(ele: string): HTMLElement | null { return document.getElementById(ele); }
@@ -897,12 +1068,12 @@ const getRenderDistFromView = (() => {
     const map = new Map<number, Decimal>();
 
     function getRenderDistFromView(v: number) {
-        /* 
+        /*
         √(642281v^2 + 34228610v + 714829400) / 722
-    
+
         calculated as
-    
-        (((v * 642281 34228610)v + 714829400) ^ 0.5) / 722
+
+        (((v * 642281 + 34228610)v + 714829400) ^ 0.5) / 722
         */
 
         return Decimal.mul((v + 720), 642281).add(34228610).mul((v + 720)).add(714829400).sqrt().div(722);
@@ -1130,10 +1301,23 @@ function toHex(color: colorModes, options?: { useNativeMath: boolean; }) {
     return "#000";
 }
 
-async function loadJSONBasedGamespaceFields() {
-    gamespace.guns = parseGunData((await (await fetch("assets/json/guns.json")).json()) as JSONGun[]);
-    gamespace.bulletInfo = parseAmmoData((await (await fetch("assets/json/ammo.json")).json()) as { [key: string]: ammoData; });
-    gamespace.explosionInfo = parseExplosionData((await (await fetch("assets/json/explosions.json")).json()) as { [key: string]: explosionData; });
+function createCSLEntry(content: cslData["content"] | string, type?: cslData["type"]): cslData {
+    return {
+        timestamp: Date.now(),
+        content,
+        type: type ?? "log"
+    };
+}
+
+function generateExports() {
+    console.log(
+        JSON.stringify({
+            guns: [...gamespace.guns.keys()],
+            ammos: [...gamespace.bulletInfo.keys()],
+            explosions: [...gamespace.explosionInfo.keys()]
+        })
+    );
+
 }
 
 /**
@@ -1156,6 +1340,15 @@ function yeet(e: any): never {
         if (a == b) { return 0; }
         return a > b ? 1 : -1;
     };
+
+    window.addEventListener("error", err => {
+        if (err.filename) {
+            gamespace.console.error({
+                main: `Javascript ${Object.getPrototypeOf(err.error).constructor.name} occured at ${err.filename.replace(location.origin + location.pathname, "./")}:${err.lineno}:${err.colno}`,
+                detail: err.error
+            }, true);
+        }
+    });
 
     // Just adding short circuits, like sin(π) = 0, sec, csc and cot
     // source: https://en.wikipedia.org/wiki/Exact_trigonometric_values#Common_angles

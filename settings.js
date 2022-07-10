@@ -5,15 +5,18 @@ export function makeSettings() {
     title.textContent = "Settings";
     back.addEventListener("click", e => void (!e.button && (() => {
         Array.from(menu.children).forEach(e => e.remove());
-        makeMenu(false);
+        gamespace.makeMenu(false);
     })()));
     doc.append(back, sidebar, title, header, body);
+    // The real UI code starts here
+    // Factories and factories and factories…
+    // Must be a lot of air pollution around these parts
     function makeWrapper(name, textContent) {
         const div = makeElement("div", `settings-${name}-cont`, "setting-cont");
         div.textContent = textContent;
         return div;
     }
-    function makeContainer(textContent, contId, folded) {
+    function makeContainer(textContent, children, contId, folded) {
         const cont = makeElement("div", `settings-category-${contId}`), button = makeElement("button", `setting-category-${contId}-button`, "setting-cat"), div = makeElement("div", `settings-category-${contId}-cont`, "setting-cat-cont");
         button.innerHTML = `<span style="font-family: monospace">▾</span>&nbsp;${textContent}`;
         if (folded) {
@@ -33,9 +36,10 @@ export function makeSettings() {
             }
         });
         cont.append(button, div);
-        return { cont, button, div };
+        div.append(...children);
+        return cont;
     }
-    function makeSelectMenu(name, options, inputCallback) {
+    function _makeSelectMenu(name, options, inputCallback) {
         const select = makeElement("select", `settings-${name}-select`, "setting-select");
         select.append(...options.map(o => {
             const op = makeElement("option", `settings-${name}-select-opt-${o.text}`);
@@ -50,7 +54,7 @@ export function makeSettings() {
         });
         return select;
     }
-    function makeCheckbox(name, checked, inputCallback) {
+    function _makeCheckbox(name, checked, inputCallback) {
         const checkbox = makeElement("input", `settings-${name}-checkbox`, "setting-checkbox");
         checkbox.type = "checkbox";
         checkbox.checked = checked;
@@ -62,10 +66,22 @@ export function makeSettings() {
         }
         return checkbox;
     }
-    function setupToggleListeners(cont, checkbox, path, inverted) {
+    function assignAtPath(path, value) {
+        let o = gamespace.settings;
+        for (const i in path) {
+            const p = path[i];
+            if (+i == path.length - 1) {
+                o[p] = value;
+            }
+            else {
+                o = o[p];
+            }
+        }
+    }
+    function _setupToggleListeners(cont, checkbox, path, inverted, additionalCallback) {
         cont.classList.add("checkbox-cont");
         [cont, checkbox].forEach((ele, i) => {
-            ele.addEventListener(i ? "input" : "click", ev => {
+            ele.addEventListener(i ? "input" : "click", function (ev) {
                 if (ev instanceof MouseEvent && ev.target.id == checkbox.id) {
                     return;
                 }
@@ -73,23 +89,15 @@ export function makeSettings() {
                     checkbox.checked = !checkbox.checked;
                 }
                 if (!(ev instanceof MouseEvent) || !ev.button) {
-                    let o = gamespace.settings;
-                    for (const i in path) {
-                        const p = path[i];
-                        if (+i == path.length - 1) {
-                            o[p] = inverted ? !checkbox.checked : checkbox.checked;
-                        }
-                        else {
-                            o = o[p];
-                        }
-                    }
+                    assignAtPath(path, inverted ? !checkbox.checked : checkbox.checked);
+                    additionalCallback?.call?.(this);
                 }
                 memoryManager.setItem("settings", gamespace.settings);
             });
         });
         cont.appendChild(checkbox);
     }
-    function makeNumericField(name, min, max, initialValue, integersOnly, changeCallback) {
+    function _makeNumericField(name, min, max, initialValue, integersOnly, path, changeCallback) {
         const input = makeElement("input", `settings-${name}-numeric-field`, "setting-numeric-field");
         input.type = "text";
         input.value = `${initialValue}`;
@@ -98,12 +106,13 @@ export function makeSettings() {
                 const v = +(input.value || Infinity);
                 return Number.isNaN(v) ? 0 : v;
             })();
-            if (!checkBounds(v, 0, "inf", { inclusion: { lower: false } })) {
+            if (!checkBounds(v, min, max, { inclusion: { lower: false } })) {
                 input.value = `${clamp(v, 0)}`;
             }
             if (integersOnly) {
                 input.value = `${Math.round(+input.value)}`;
             }
+            assignAtPath(path, +input.value);
             if (changeCallback) {
                 (typeof changeCallback == "function" ? changeCallback : changeCallback.handleEvent).call(this, ev);
             }
@@ -111,92 +120,82 @@ export function makeSettings() {
         });
         return input;
     }
+    function makeToggleSetting(name, textContent, checked, path, inverted, additionalCallback) {
+        const wrapper = makeWrapper(name, textContent), checkbox = _makeCheckbox(name, checked);
+        _setupToggleListeners(wrapper, checkbox, path, inverted, additionalCallback);
+        return wrapper;
+    }
+    function makeSelectSetting(name, textContent, options, path, additionalCallback) {
+        const wrapper = makeWrapper(name, textContent), select = _makeSelectMenu(name, options, function () {
+            assignAtPath(path, +this.selectedOptions.item(0).value);
+            additionalCallback?.call?.(this);
+        });
+        wrapper.appendChild(select);
+        return wrapper;
+    }
+    function makeNumericFieldSetting(name, textContent, min, max, initialValue, integersOnly, path, changeCallback) {
+        const wrapper = makeWrapper(name, textContent), field = _makeNumericField(name, min, max, initialValue, integersOnly, path, changeCallback);
+        wrapper.appendChild(field);
+        return wrapper;
+    }
     const tabNames = ["Visual", "Balance changes", "Bonus features", "Technical"], tabs = [], initializers = {
         visual() {
-            {
-                const cont = makeWrapper("graphicsQuality", "Graphics quality"), f = (v) => gamespace.settings.visual.graphicsQuality == +v;
-                cont.appendChild(makeSelectMenu("graphicsQuality", [
-                    { text: "Ultra Low", value: "0.25", selected: f("0.25") },
-                    { text: "Very Low", value: "0.5", selected: f("0.5") },
-                    { text: "Low", value: "1", selected: f("1") },
-                    { text: "Normal", value: "1.5", selected: f("1.5") },
-                    { text: "High", value: "2", selected: f("2") },
-                    { text: "Very High", value: "3", selected: f("3") },
-                    { text: "Ultra High", value: "4", selected: f("4") }
-                ], function () {
-                    gamespace.settings.visual.graphicsQuality = +this.selectedOptions.item(0).value;
-                }));
-                body.append(cont);
-            }
-            {
-                const cont = makeWrapper("hud", "HUD");
-                setupToggleListeners(cont, makeCheckbox("hud", gamespace.settings.visual.hud), ["visual", "hud"], false);
-                body.append(cont);
-            }
-            {
-                const cont = makeWrapper("decals", "Maximum decal count");
-                cont.append(makeNumericField("decals", 0, Infinity, gamespace.settings.visual.maxDecals, true, function () {
-                    gamespace.settings.visual.maxDecals = +(this.value || Infinity);
-                }));
-                body.append(cont);
-            }
+            const f = (v) => gamespace.settings.visual.graphicsQuality == +v;
+            body.append(makeSelectSetting("graphicsQuality", "Graphics Quality", [
+                { text: "Ultra Low", value: "0.25", selected: f("0.25") },
+                { text: "Very Low", value: "0.5", selected: f("0.5") },
+                { text: "Low", value: "1", selected: f("1") },
+                { text: "Normal", value: "1.5", selected: f("1.5") },
+                { text: "High", value: "2", selected: f("2") },
+                { text: "Very High", value: "3", selected: f("3") },
+                { text: "Ultra High", value: "4", selected: f("4") }
+            ], ["visual", "graphicsQuality"]), makeToggleSetting("hud", "HUD", gamespace.settings.visual.hud, ["visual", "hud"], false), makeNumericFieldSetting("decals", "Maximum decal count", 0, Infinity, gamespace.settings.visual.maxDecals, true, ["visual", "decals"]));
         },
         balance_changes() {
-            const cont = makeContainer("Weapon balance", "weapon-balance"), general = makeContainer("General", "balance-general"), m79Fixes = makeContainer("M79", "balance-m79"), mp220 = makeContainer("MP220", "balance-mp220");
-            {
-                const noNS = makeWrapper("no_ns", "No noslow"), noQS = makeWrapper("no_qs", "No quickswitch"), noHS = makeWrapper("no_hs", "No headshots"), spin = makeWrapper("m79_spin", "No grenade spin"), move = makeWrapper("m79_move", "No movement penalty"), casing = makeWrapper("m79_casing", "Spawn casing on reload"), dual = makeWrapper("mp220_trig", "Pull both triggers on fire"), w = gamespace.settings.balanceChanges.weapons;
-                [
-                    { cont: noNS, checkbox: makeCheckbox("no_ns", !w.general.noslow), path: ["balanceChanges", "weapons", "general", "noslow"], inverted: true },
-                    { cont: noQS, checkbox: makeCheckbox("no_qs", !w.general.quickswitch), path: ["balanceChanges", "weapons", "general", "quickswitch"], inverted: true },
-                    { cont: noHS, checkbox: makeCheckbox("no_hs", !w.general.headshots), path: ["balanceChanges", "weapons", "general", "headshots"], inverted: true },
-                    { cont: spin, checkbox: makeCheckbox("m79_spin", !w.m79.grenadeSpin), path: ["balanceChanges", "weapons", "m79", "grenadeSpin"], inverted: true },
-                    { cont: move, checkbox: makeCheckbox("m79_move", !w.m79.moveSpeedPenalty), path: ["balanceChanges", "weapons", "m79", "moveSpeedPenalty"], inverted: true },
-                    { cont: casing, checkbox: makeCheckbox("m79_casing", w.m79.spawnCasingOnReload), path: ["balanceChanges", "weapons", "m79", "spawnCasingOnReload"], inverted: false },
-                    { cont: dual, checkbox: makeCheckbox("mp_trig", w.mp220.pullBothTriggers), path: ["balanceChanges", "weapons", "mp220", "pullBothTriggers"], inverted: false }
-                ].forEach(e => {
-                    setupToggleListeners(e.cont, e.checkbox, e.path, e.inverted);
-                });
-                general.div.append(noNS, noQS, noHS);
-                m79Fixes.div.append(spin, move, casing);
-                mp220.div.append(dual);
-            }
-            cont.div.append(general.cont, m79Fixes.cont, mp220.cont);
-            body.append(cont.cont);
+            const w = gamespace.settings.balanceChanges.weapons, f = (v) => gamespace.settings.balanceChanges.weapons.general.quickswitch == +v;
+            body.append(makeContainer("Weapon balance", [
+                makeContainer("General", [
+                    makeToggleSetting("no_ns", "No noslow", !w.general.noslow, ["balanceChanges", "weapons", "general", "noslow"], true),
+                    makeSelectSetting("qs", "Quickswitch", [
+                        { text: "Disabled", value: "0", selected: f("0") },
+                        { text: "Different non-zero deployGroups", value: "1", selected: f("1") },
+                        { text: "All", value: "2", selected: f("2") },
+                    ], ["balanceChanges", "weapons", "general", "quickswitch"]),
+                    makeToggleSetting("no_hs", "No headshots", !w.general.headshots, ["balanceChanges", "weapons", "general", "headshots"], true),
+                    makeToggleSetting("no_bsv", "Buckshot spawn variance", !w.general.headshots, ["balanceChanges", "weapons", "general", "headshots"], true)
+                ], "balance-general"),
+                makeContainer("M79", [
+                    makeToggleSetting("m79_spin", "No grenade spin", !w.m79.grenadeSpin, ["balanceChanges", "weapons", "m79", "grenadeSpin"], true),
+                    makeToggleSetting("m79_move", "No movement penalty", !w.m79.moveSpeedPenalty, ["balanceChanges", "weapons", "m79", "moveSpeedPenalty"], true),
+                    makeToggleSetting("m79_casing", "Spawn casing on reload", !w.m79.spawnCasingOnReload, ["balanceChanges", "weapons", "m79", "spawnCasingOnReload"], true)
+                ], "balance-m79"),
+                makeContainer("MP220", [
+                    makeToggleSetting("mp_trig", "Pull both triggers on fire", !w.mp220.pullBothTriggers, ["balanceChanges", "weapons", "mp220", ".pullBothTriggers"], true)
+                ], "balance-mp220")
+            ], "weapon-balance"));
         },
         bonus_features() {
-            const arr = [], nameMap = {
+            const nameMap = {
                 botDebug: "Bot debug",
                 csgoStyleKillfeed: "CSGO-style killfeed",
                 damageNumbersStack: "Damage numbers stack",
                 headshotsUseSaturatedTracers: "Headshots use saturated tracers",
-                showDamageNumbers: "SHow damage numbers",
+                showDamageNumbers: "Show damage numbers",
                 useInterpolatedSaturatedTracers: "Use interpolated saturated tracers"
             };
-            for (const f in gamespace.settings.bonusFeatures) {
-                const cont = makeWrapper(f, nameMap[f]);
-                setupToggleListeners(cont, makeCheckbox(f, gamespace.settings.bonusFeatures[f]), ["bonusFeatures", f], false);
-                arr.push(cont);
-            }
-            body.append(...arr);
+            body.append(...Object.keys(gamespace.settings.bonusFeatures).map(f => makeToggleSetting(f, nameMap[f], gamespace.settings.bonusFeatures[f], ["bonusFeatures", f], false)));
         },
         technical() {
-            {
-                const cont = makeWrapper("draw-hitboxes", "Draw hitboxes");
-                setupToggleListeners(cont, makeCheckbox("draw-hitboxes", gamespace.settings.visual.debug), ["visual", "debug"], false);
-                body.append(cont);
-            }
-            ["tps", "fps"].forEach((e, i) => {
-                const cont = makeWrapper(e, `Show ${e.toUpperCase()}`), f = (v) => perf.mode[e] == +v;
-                cont.appendChild(makeSelectMenu(e, [
+            body.append(makeToggleSetting("draw-hitboxes", "Draw hitboxes", gamespace.settings.visual.debug, ["visual", "debug"], false), ...["tps", "fps"].map((e, i) => {
+                const f = (v) => perf.mode[e] == +v;
+                return makeSelectSetting(e, `Show ${e.toUpperCase()}`, [
                     { text: "No", value: "0", selected: f("0") },
                     { text: "Text only", value: "1", selected: f("1") },
                     { text: "Text & graph", value: "2", selected: f("2") }
-                ], function () {
-                    gamespace.settings.visual.monitors[i] = +this.selectedOptions.item(0).value;
+                ], ["visual", "monitors", `${i}`], function () {
                     perf.showMeters(...gamespace.settings.visual.monitors);
-                }));
-                body.append(cont);
-            });
+                });
+            }));
         }
     };
     let active = tabNames[0];
