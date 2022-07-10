@@ -13,11 +13,55 @@
     <button id="back">Back</button>
     <title>Changelog</title>
     <div id="main-cont">
+        <h2>v0.8.0</h2>
+        <h3>July 9<sup>th</sup> 2022</h3>
+
+        <ul>
+            <li> NEW: The AWM-S and USAS-12 have been added. <span style="font-size: 4px">Something else made it in
+                    too?</span>
+            <li>Added a read-only console for debugging purposes
+            <li>If the game fails to load its assets for whatever reason, it should be reported there
+            <li>Added screen shake from explosions
+            <li>Changed the title from "SURVIV.IO sandbox" to "surviv.io sandbox"
+            <li>Retired the technical changes section because too many things change between builds, as this is an
+                alpha version.
+            <li> Bug fixes
+                <ul>
+                    <li>Fixed the M870 and MP220 not correctly spawning pellets</li>
+                    <li>Fixed FSA not working</li>
+                </ul>
+            </li>
+            <li> Settings
+                <ul>
+                    <li>Diversified quickswitch to also allow to enable quickswitch between weapons with identical
+                        non-zero <code>deployGroups</code> (like two M870s)</li>
+                    <li>Added a setting to toggle buckshot's spawn variance</li>
+                </ul>
+            </li>
+            <li> Bot 1v1
+                <ul>
+                    <li>Fixed checkbox size</li>
+                    <li>Made the HP fields a little less finnicky</li>
+                </ul>
+            </li>
+            <li>
+                Miscellaneous game-related stuff
+                <ul>
+                    <li>Improved some hitboxes</li>
+                    <li>Corrected the Dual OTs-38's firing rate</li>
+                    <li>Changed various <code>engagementDistance</code>s</li>
+                    <li>The game should no longer (rarely) fail to load its levels</li>
+                    <li>Made the "Loading…" text a little prettier</li>
+                </ul>
+            </li>
+        </ul>
+
         <h2>v0.7.0</h2>
         <h3>June 28<sup>th</sup> 2022</h3>
 
         <ul>
-            <li> NEW: <a href="../guides/basics/index.html">Guides are here</a>! Some basic how-to's for adding in guns,
+            <li> NEW: <a href="" style="cursor: not-allowed;">Guides are here</a>! Some basic how-to's for adding in
+                guns,
                 ammos and explosions to the game
                 <ul>
                     <li>That being said, since the game changes often, anything made using them might not be compatible
@@ -27,7 +71,7 @@
             <li> NEW: An actual settings menu for your enjoyment
             <li> NEW: Added the MP220—for your shotgun-quickswitching enjoyment—M1911 and Dual M1911
             <li>
-                Bug fixes:
+                Bug fixes
                 <ul>
                     <li> Fixed menus occaionally persisting when entering a level
                     <li> Fixed a bug where exiting a level would stop any performance monitoring
@@ -54,7 +98,7 @@
                 </ul>
             </li>
             <li>
-                Settings:
+                Settings
                 <ul>
                     <li> Added settings to
                         <ul>
@@ -107,109 +151,6 @@
                 </ul>
             </li>
         </ul>
-
-        <div>
-            <button class="tech-changes-toggle"><span style="font-family: monospace">▴</span> Technical
-                changes:</button>
-            <div class="tech-changes">
-                <ul>
-                    <li>
-                        Renamed <code>gunPrototype.prototype.offset</code> to
-                        <code>gunPrototype.prototype.imageOffset</code>
-                    </li>
-                    <li>
-
-                        Renamed <code>gunPrototype.prototype.fireMode</code> to
-                        <code>gunPrototype.prototype.fireModes</code>
-                    </li>
-                    <li>
-                        <code>gamespace.bulletInfo[string].imageOffset.y</code>,
-                        <code>gunPrototype.prototype.imageOffset.y</code>,
-                        <code>gunPrototype.prototype.recoilImpulse.y</code>,
-                        <code>gunPrototype.prototype.hands.leftHand.y</code> and
-                        <code>gunPrototype.prototype.hands.rightHand.y</code> (which corresponds to
-                        <code>imageOffset.parr</code> in ammo.json and to <code>imageOffset.parr.value</code>,
-                        <code>recoilImpulse.direction.parr.value</code>, <code>handPositions.leftHand.parr.value</code>
-                        and <code>handPositions.rightHand.parr.value</code> in guns.json respectively) have had their
-                        signs flipped.
-                    </li>
-                    <li>
-                        Moved <code>gunPrototype</code>, <code>gun</code>, <code>bullet</code>, <code>shrapnel</code>
-                        and <code>casing</code> to a new file, <code>guns.ts</code>.
-                    </li>
-                    <li>
-                        New file <code>settings.ts</code> responsible for the entire settings menu.
-                    </li>
-                    <li>
-                        <code>perf._timers.b</code> replaced by <code>perf._timers.c</code>, which has accordingly been
-                        renamed.
-                    </li>
-                    <li>
-                        Refactored some code for exiting level by having it call a new method on the gamespace:
-                        <code>gamespace.exitLevel</code>.
-                    </li>
-                    <li>
-                        <code>gun.primary</code> and <code>gun.reload</code> now much more aggressively (and
-                        consistently) clear the appropriate timers as well as setting them to false.
-                    </li>
-                    <li>
-                        New property <code>gamespace.settings.balanceChanges</code> is typed as
-                        <code>{ weapons: { general: { noslow: boolean; quickswitch: boolean; headshots: boolean; }; m79: { grenadeSpin: boolean; moveSpeedPenalty: boolean; spawnCasingOnReload: boolean; }; mp220: { pullBothTriggers: boolean; }; }; }</code>
-                    </li>
-                    <li>
-                        Renamed <code>gamespace.settings.bonus_features</code> to
-                        <code>gamespace.settings.bonusFeatures</code>
-                    </li>
-                    <li>
-                        All the bonus features are now named using camelCase instead of using_underscores.
-                    </li>
-                    <li>
-                        New property <code>gamespace._oldStats</code> holds partial versions of some guns, ammo and
-                        explosions.<br>
-                        <code>DeepPartial&lt;T&gt;</code>, defined as
-                        <code>{ [P in keyof T]?: T[P] extends object ? DeepPartial&lt;T[P]&gt; : T[P] }</code>,
-                        is the type encapsulating the appropriate inner type. (ex:
-                        <code>gamespace._oldStats.guns</code> has type <code>DeepPartial&lt;gunPrototype&gt;</code>)
-                    </li>
-                    <li>
-                        Classes <code>bullet</code> and <code>shrapnel</code> are now both extensions of a new class,
-                        <code>projectile</code>, which combines the commmon points of these two classes
-                    </li>
-                    <li>
-                        Changed <code>playerLike.damage</code>'s type signature to have its second argument be of type
-                        <code>projectile | explosion</code>
-                    </li>
-                    <li>
-                        <code>projectile</code> instances and <code>casing</code> instances now linearly interpolate
-                        between their start and end positions, the latter being calculated when the instance is created.
-                    </li>
-                    <li>
-                        Added some code to coax the GC into cleaning up unneeded WEBGL rendering contexts sooner after
-                        exiting a level.
-                    </li>
-                    <li>
-                        Added <code>gamespace.settings.monitors</code> to keep track of the performance monitor's modes
-                    </li>
-                    <li>
-                        Added <code>gamespace.settings.maxDecals</code> to limit the amount of decals that can exist at
-                        once
-                    </li>
-                    <li>
-                        Added <code>projectile.shrapnel</code> to keep track of whether a projectile can damage its
-                        shooter
-                    </li>
-                    <li>
-                        Renamed <code>gamespace.settings.ui</code> to <code>gamespace.settings.hud</code>
-                    </li>
-                    <li>
-                        Moved <code>gamespace.settings.graphicsQuality</code>,
-                        <code>gamespace.settings.hud</code>, <code>gamespace.settings.monitors</code> and
-                        <code>gamespace.settings.debug</code> to a new property, <code>gamespace.settings.visual</code>
-                    </li>
-                    <li>Added the ability to <code>yeet</code></li>
-                </ul>
-            </div>
-        </div>
 
         <h2>v0.6.1</h2>
         <h3>June 21<sup>st</sup> 2022</h3>
