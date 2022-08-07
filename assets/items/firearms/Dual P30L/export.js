@@ -4,7 +4,7 @@
  */
 export default {
     name: "Dual P30L",
-    targetVersion: "0.8.0",
+    targetVersion: "0.8.1",
     summary: {
         class: "semi_pistol_move",
         engagementDistance: {
@@ -16,9 +16,9 @@ export default {
     },
     dual: true,
     images: {
-        loot: "assets/items/firearms/Dual P30L/loot-weapon-p30l-dual.svg",
-        held: "assets/items/firearms/P30L/p30l.png",
-        silhouette: "assets/items/firearms/Dual P30L/p30l-dual-silhouette.png"
+        loot: "./loot-weapon-p30l-dual.svg",
+        held: "../P30L/p30l.png",
+        silhouette: "./p30l-dual-silhouette.png"
     },
     tint: "#FFFFFF",
     ballistics: {

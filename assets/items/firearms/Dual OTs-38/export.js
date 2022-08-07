@@ -4,7 +4,7 @@
  */
 export default {
     name: "Dual OTs-38",
-    targetVersion: "0.8.0",
+    targetVersion: "0.8.1",
     summary: {
         class: "semi_pistol",
         engagementDistance: {
@@ -16,9 +16,9 @@ export default {
     },
     dual: true,
     images: {
-        loot: "assets/items/firearms/Dual OTs-38/loot-weapon-ots38-dual.svg",
-        held: "assets/items/firearms/OTs-38/ots38.png",
-        silhouette: "assets/items/firearms/Dual OTs-38/ots38-dual-silhouette.png"
+        loot: "./loot-weapon-ots38-dual.svg",
+        held: "../OTs-38/ots38.png",
+        silhouette: "./ots38-dual-silhouette.png"
     },
     tint: "#FFFFFF",
     ballistics: {

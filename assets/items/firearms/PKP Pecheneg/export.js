@@ -4,7 +4,7 @@
  */
 export default {
     name: "PKP Pecheneg",
-    targetVersion: "0.8.0",
+    targetVersion: "0.8.1",
     summary: {
         class: "lmg",
         engagementDistance: {
@@ -16,9 +16,9 @@ export default {
     },
     dual: false,
     images: {
-        loot: "assets/items/firearms/PKP Pecheneg/loot-weapon-pkp.svg",
-        held: "assets/items/firearms/PKP Pecheneg/pkp.png",
-        silhouette: "assets/items/firearms/PKP Pecheneg/pkp-silhouette.png"
+        loot: "./loot-weapon-pkp.svg",
+        held: "./pkp.png",
+        silhouette: "./pkp-silhouette.png"
     },
     tint: "#FFFFFF",
     ballistics: {

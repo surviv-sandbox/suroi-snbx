@@ -4,7 +4,7 @@
  */
 export default {
     name: "M134",
-    targetVersion: "0.8.0",
+    targetVersion: "0.8.1",
     summary: {
         class: "lmg",
         engagementDistance: {
@@ -16,9 +16,9 @@ export default {
     },
     dual: false,
     images: {
-        loot: "assets/items/firearms/M134/loot-weapon-m134.svg",
-        held: "assets/items/firearms/M134/m134.svg",
-        silhouette: "assets/items/firearms/M134/m134-silhouette.png"
+        loot: "./loot-weapon-m134.svg",
+        held: "./m134.svg",
+        silhouette: "./m134-silhouette.png"
     },
     tint: "#FFFFFF",
     ballistics: {

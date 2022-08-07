@@ -4,7 +4,7 @@
  */
 export default {
     name: "Dual M1911",
-    targetVersion: "0.8.0",
+    targetVersion: "0.8.1",
     summary: {
         class: "semi_pistol",
         engagementDistance: {
@@ -16,9 +16,9 @@ export default {
     },
     dual: true,
     images: {
-        loot: "assets/items/firearms/Dual M1911/loot-weapon-m1911-dual.svg",
-        held: "assets/items/firearms/shared/gun-short.png",
-        silhouette: "assets/items/firearms/Dual M1911/m1911-dual-silhouette.png"
+        loot: "./loot-weapon-m1911-dual.svg",
+        held: "../shared/gun-short.png",
+        silhouette: "./m1911-dual-silhouette.png"
     },
     tint: "#929292",
     ballistics: {

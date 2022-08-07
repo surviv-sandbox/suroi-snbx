@@ -4,7 +4,7 @@
  */
 export default {
     name: "M79",
-    targetVersion: "0.8.0",
+    targetVersion: "0.8.1",
     summary: {
         class: "assault_rifle",
         engagementDistance: {
@@ -16,9 +16,9 @@ export default {
     },
     dual: false,
     images: {
-        loot: "assets/items/firearms/M79/loot-weapon-m79.svg",
-        held: "assets/items/firearms/M79/m79.svg",
-        silhouette: "assets/items/firearms/M79/m79-silhouette.png"
+        loot: "./loot-weapon-m79.svg",
+        held: "./m79.svg",
+        silhouette: "./m79-silhouette.png"
     },
     tint: "#FFFFFF",
     ballistics: {

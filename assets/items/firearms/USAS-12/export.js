@@ -4,7 +4,7 @@
  */
 export default {
     name: "USAS-12",
-    targetVersion: "0.8.0",
+    targetVersion: "0.8.1",
     summary: {
         class: "shotgun",
         engagementDistance: {
@@ -16,9 +16,9 @@ export default {
     },
     dual: false,
     images: {
-        loot: "assets/items/firearms/USAS-12/loot-weapon-usas.svg",
-        held: "assets/items/firearms/USAS-12/usas.svg",
-        silhouette: "assets/items/firearms/USAS-12/usas-silhouette.png"
+        loot: "./loot-weapon-usas.svg",
+        held: "./usas.svg",
+        silhouette: "./usas-silhouette.png"
     },
     tint: "#FFFFFF",
     ballistics: {

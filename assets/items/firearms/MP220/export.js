@@ -4,7 +4,7 @@
  */
 export default {
     name: "MP220",
-    targetVersion: "0.8.0",
+    targetVersion: "0.8.1",
     summary: {
         class: "shotgun",
         engagementDistance: {
@@ -16,9 +16,9 @@ export default {
     },
     dual: false,
     images: {
-        loot: "assets/items/firearms/MP220/loot-weapon-mp220.svg",
-        held: "assets/items/firearms/MP220/mp220.svg",
-        silhouette: "assets/items/firearms/MP220/mp220-silhouette.png"
+        loot: "./loot-weapon-mp220.svg",
+        held: "./mp220.svg",
+        silhouette: "./mp220-silhouette.png"
     },
     tint: "#FFFFFF",
     ballistics: {

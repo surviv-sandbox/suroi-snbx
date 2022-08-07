@@ -4,7 +4,7 @@
  */
 export default {
     name: "M870",
-    targetVersion: "0.8.0",
+    targetVersion: "0.8.1",
     summary: {
         class: "shotgun",
         engagementDistance: {
@@ -16,9 +16,9 @@ export default {
     },
     dual: false,
     images: {
-        loot: "assets/items/firearms/M870/loot-weapon-m870.svg",
-        held: "assets/items/firearms/shared/gun-long.png",
-        silhouette: "assets/items/firearms/M870/m870-silhouette.png"
+        loot: "./loot-weapon-m870.svg",
+        held: "../shared/gun-long.png",
+        silhouette: "./m870-silhouette.png"
     },
     tint: "#331A00",
     ballistics: {

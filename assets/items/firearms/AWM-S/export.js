@@ -4,7 +4,7 @@
  */
 export default {
     name: "AWM-S",
-    targetVersion: "0.8.0",
+    targetVersion: "0.8.1",
     summary: {
         class: "sniper_rifle",
         engagementDistance: {
@@ -16,9 +16,9 @@ export default {
     },
     dual: false,
     images: {
-        loot: "assets/items/firearms/AWM-S/loot-weapon-awc.svg",
-        held: "assets/items/firearms/AWM-S/awc.svg",
-        silhouette: "assets/items/firearms/AWM-S/awc-silhouette.png"
+        loot: "./loot-weapon-awc.svg",
+        held: "./awc.svg",
+        silhouette: "./awc-silhouette.png"
     },
     tint: "#FFFFFF",
     ballistics: {

@@ -4,7 +4,7 @@
  */
 export default {
     name: "AKM",
-    targetVersion: "0.8.0",
+    targetVersion: "0.8.1",
     summary: {
         class: "assault_rifle",
         engagementDistance: {
@@ -16,9 +16,9 @@ export default {
     },
     dual: false,
     images: {
-        loot: "assets/items/firearms/AKM/loot-weapon-akm.svg",
-        held: "assets/items/firearms/AKM/akm.png",
-        silhouette: "assets/items/firearms/AKM/akm-silhouette.png"
+        loot: "./loot-weapon-akm.png",
+        held: "./akm.png",
+        silhouette: "./akm-silhouette.png"
     },
     tint: "#FFFFFF",
     ballistics: {

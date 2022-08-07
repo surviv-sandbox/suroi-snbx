@@ -4,7 +4,7 @@
  */
 export default {
     name: "Dual M9",
-    targetVersion: "0.8.0",
+    targetVersion: "0.8.1",
     summary: {
         class: "dual_semi_pistol",
         engagementDistance: {
@@ -16,9 +16,9 @@ export default {
     },
     dual: true,
     images: {
-        loot: "assets/items/firearms/Dual M9/loot-weapon-m9-dual.svg",
-        held: "assets/items/firearms/shared/gun-short.png",
-        silhouette: "assets/items/firearms/Dual M9/m9-dual-silhouette.png"
+        loot: "./loot-weapon-m9-dual.svg",
+        held: "../shared/gun-short.png",
+        silhouette: "./m9-dual-silhouette.png"
     },
     tint: "#1E1E1E",
     ballistics: {

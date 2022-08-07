@@ -4,7 +4,7 @@
  */
 export default {
     name: "SV-98",
-    targetVersion: "0.8.0",
+    targetVersion: "0.8.1",
     summary: {
         class: "sniper_rifle",
         engagementDistance: {
@@ -16,9 +16,9 @@ export default {
     },
     dual: false,
     images: {
-        loot: "assets/items/firearms/SV-98/loot-weapon-sv98.svg",
-        held: "assets/items/firearms/shared/gun-long.png",
-        silhouette: "assets/items/firearms/SV-98/sv98-silhouette.png"
+        loot: "./loot-weapon-sv98.svg",
+        held: "../shared/gun-long.png",
+        silhouette: "./sv98-silhouette.png"
     },
     tint: "#658947",
     ballistics: {
