@@ -4,6 +4,7 @@ export const level = await (async () => {
         name: name,
         jsonPath: "assets/levels/level0/data.json",
         description: "Fight a very advanced and totally state-of-the art bot.",
+        targetVersion: "0.8.1",
         world: {
             width: 5000,
             height: 5000,
@@ -136,32 +137,32 @@ export const level = await (async () => {
                             .filter(v => v.name != "AKM" || a)
                             .concat({ name: "Random" })
                             .forEach((g, j) => {
-                            const b = makeElement("button", `gun-${i ? "player" : "bot"}-${g.name}-${h}`, "surviv-outline-button"), name = g.name, currentlySelected = entity.inventory[`slot${hCopy}`].proto.name == name && s != "Random", iCopy = i; // I love closures
-                            if (currentlySelected && (!s || (s == "AKM" && a))) {
-                                memoryManager.setItem([...path, "weapon-presets", i ? "player" : "bot", `${h}`], name, true);
-                            }
-                            b.textContent = name;
-                            b.style.borderColor = (currentlySelected || (s + name) == "RandomRandom") ? "#0F0" : "";
-                            b.style.backgroundColor = (currentlySelected || (s + name) == "RandomRandom") ? "#0108" : "";
-                            b.style.position = "absolute";
-                            b.style.left = `${(j % 5) * 20 + 0.5}%`;
-                            b.style.width = `19%`;
-                            b.style.height = `${76 / 3}%`;
-                            b.style.top = `${(76 / 3 + 1) * Math.floor(j / 5)}%`;
-                            b.addEventListener("click", e => (!e.button && (() => {
-                                if (entity.inventory[`slot${hCopy}`].name == name) {
-                                    return;
+                                const b = makeElement("button", `gun-${i ? "player" : "bot"}-${g.name}-${h}`, "surviv-outline-button"), name = g.name, currentlySelected = entity.inventory[`slot${hCopy}`].proto.name == name && s != "Random", iCopy = i; // I love closures
+                                if (currentlySelected && (!s || (s == "AKM" && a))) {
+                                    memoryManager.setItem([...path, "weapon-presets", i ? "player" : "bot", `${h}`], name, true);
                                 }
-                                entity.inventory[`slot${h}`] = new gun(gamespace.guns.get(name == "Random"
-                                    ? Array.from(gamespace.guns.keys())[Math.floor(Math.random() * gamespace.guns.size)]
-                                    : name));
-                                memoryManager.setItem([...path, "weapon-presets", i ? "player" : "bot", `${hCopy}`], name, true);
-                                buttons[iCopy + 2 * hCopy].forEach(b => b.style.borderColor = b.style.backgroundColor = "");
-                                b.style.borderColor = "#0F0";
-                                b.style.backgroundColor = "#0108";
-                            })()));
-                            buttons[i + 2 * h].push(b);
-                        });
+                                b.textContent = name;
+                                b.style.borderColor = (currentlySelected || (s + name) == "RandomRandom") ? "#0F0" : "";
+                                b.style.backgroundColor = (currentlySelected || (s + name) == "RandomRandom") ? "#0108" : "";
+                                b.style.position = "absolute";
+                                b.style.left = `${(j % 5) * 20 + 0.5}%`;
+                                b.style.width = `19%`;
+                                b.style.height = `${76 / 3}%`;
+                                b.style.top = `${(76 / 3 + 1) * Math.floor(j / 5)}%`;
+                                b.addEventListener("click", e => (!e.button && (() => {
+                                    if (entity.inventory[`slot${hCopy}`].name == name) {
+                                        return;
+                                    }
+                                    entity.inventory[`slot${h}`] = new gun(gamespace.guns.get(name == "Random"
+                                        ? Array.from(gamespace.guns.keys())[Math.floor(Math.random() * gamespace.guns.size)]
+                                        : name));
+                                    memoryManager.setItem([...path, "weapon-presets", i ? "player" : "bot", `${hCopy}`], name, true);
+                                    buttons[iCopy + 2 * hCopy].forEach(b => b.style.borderColor = b.style.backgroundColor = "");
+                                    b.style.borderColor = "#0F0";
+                                    b.style.backgroundColor = "#0108";
+                                })()));
+                                buttons[i + 2 * h].push(b);
+                            });
                     }
                     otx.fillText("Health", i ? 375 : 1125, 871.875);
                     const input = makeElement("input", `health-${i ? "player" : "bot"}`), h = memoryManager.getItem([...path, `health-${i ? "player" : "bot"}-preset`]);
@@ -218,7 +219,7 @@ export const level = await (async () => {
                 buttonContainers.forEach((b, i) => {
                     b.style.width = "50%";
                     b.style.height = "25%";
-                    b.style.overflow = "scroll";
+                    b.style.overflow = "auto";
                     b.style.position = "absolute";
                     b.style.left = `${50 - 50 * (i % 2)}%`;
                     b.style.top = `${30 * Math.floor(i / 2) + 10}%`;

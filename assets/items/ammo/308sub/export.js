@@ -5,7 +5,7 @@
 export default [
     {
         name: ".308 Subsonic",
-        targetVersion: "0.8.0",
+        targetVersion: "0.8.1",
         tints: {
             normal: "#252B00",
             saturated: "#465000",
@@ -23,10 +23,10 @@ export default [
         },
         projectileInfo: {
             type: "bullet",
-            img: "assets/items/ammo/shared/tracer.png"
+            img: "../shared/tracer.png"
         },
         casing: {
-            img: "assets/items/ammo/308sub/shell-308.svg",
+            img: "./shell-308.svg",
             lifetime: () => +meanDevPM_random(500, 250, false),
             width: 15,
             height: 1300 / 21

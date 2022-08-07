@@ -5,7 +5,7 @@
 export default [
     {
         name: "12 gauge (buckshot)",
-        targetVersion: "0.8.0",
+        targetVersion: "0.8.1",
         tints: {
             normal: "#FEDCDC",
             saturated: () => gamespace.settings.bonusFeatures.useInterpolatedSaturatedTracers ? "#FEC0C1" : "#FEDCDC",
@@ -23,10 +23,10 @@ export default [
         },
         projectileInfo: {
             type: "bullet",
-            img: "assets/items/ammo/shared/tracer.png"
+            img: "../shared/tracer.png"
         },
         casing: {
-            img: "assets/items/ammo/12 gauge/shell-12gauge.png",
+            img: "./shell-12gauge.png",
             lifetime: () => +meanDevPM_random(500, 250, false),
             width: 10.5,
             height: 30
@@ -34,7 +34,7 @@ export default [
     },
     {
         name: "FRAG-12",
-        targetVersion: "0.8.0",
+        targetVersion: "0.8.1",
         tints: {
             normal: "#CB0000",
             saturated: () => gamespace.settings.bonusFeatures.useInterpolatedSaturatedTracers ? "#E50000" : "#CB000",
@@ -53,13 +53,13 @@ export default [
         projectileInfo: {
             type: "explosive",
             explosionType: "explosion_usas",
-            img: "assets/items/ammo/shared/tracer.png",
+            img: "../shared/tracer.png",
             heightPeak: 0,
             explodeOnContact: true,
             maxDist: 24
         },
         casing: {
-            img: "assets/items/ammo/12 gauge/shell-12gauge.png",
+            img: "./shell-12gauge.png",
             lifetime: () => +meanDevPM_random(500, 250, false),
             width: 10.5,
             height: 30

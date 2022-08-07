@@ -5,7 +5,7 @@
 export default [
     {
         name: "40mm",
-        targetVersion: "0.8.0",
+        targetVersion: "0.8.1",
         tints: {
             normal: "#FFFFFF",
             saturated: "#FFFFFF",
@@ -24,14 +24,14 @@ export default [
         projectileInfo: {
             type: "explosive",
             explosionType: "explosion_frag",
-            img: "assets/items/ammo/40mm/40mm.png",
+            img: "./40mm.png",
             spinVel: () => gamespace.settings.balanceChanges.weapons.m79.grenadeSpin ? toRad({ givenIn: "turns", value: 2.5 }) : 0,
             heightPeak: 5,
             explodeOnContact: true,
             maxDist: 18
         },
         casing: {
-            img: "assets/items/ammo/40mm/shell-40mm.png",
+            img: "./shell-40mm.png",
             lifetime: () => +meanDevPM_random(500, 250, false),
             width: 490 / 33,
             height: 20

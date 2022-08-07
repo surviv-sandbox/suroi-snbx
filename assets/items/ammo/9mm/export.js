@@ -5,7 +5,7 @@
 export default [
     {
         name: "9x19mm",
-        targetVersion: "0.8.0",
+        targetVersion: "0.8.1",
         tints: {
             normal: "#FEDCDC",
             saturated: () => gamespace.settings.bonusFeatures.useInterpolatedSaturatedTracers ? "#FEBEAD" : "#FEDCDC",
@@ -23,10 +23,10 @@ export default [
         },
         projectileInfo: {
             type: "bullet",
-            img: "assets/items/ammo/shared/tracer.png"
+            img: "../shared/tracer.png"
         },
         casing: {
-            img: "assets/items/ammo/9mm/shell-9mm.png",
+            img: "./shell-9mm.png",
             lifetime: () => +meanDevPM_random(500, 250, false),
             width: 185 / 22,
             height: 20

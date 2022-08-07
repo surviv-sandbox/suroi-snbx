@@ -5,7 +5,7 @@
 export default [
     {
         name: "5.56x45mm",
-        targetVersion: "0.8.0",
+        targetVersion: "0.8.1",
         tints: {
             normal: "#A9FF92",
             saturated: () => gamespace.settings.bonusFeatures.useInterpolatedSaturatedTracers ? "#7EFF5C" : "#A9FF92",
@@ -23,10 +23,10 @@ export default [
         },
         projectileInfo: {
             type: "bullet",
-            img: "assets/items/ammo/shared/tracer.png"
+            img: "../shared/tracer.png"
         },
         casing: {
-            img: "assets/items/ammo/556mm/shell-556mm.png",
+            img: "./shell-556mm.png",
             lifetime: () => +meanDevPM_random(750, 250, false),
             width: 6762 / 437,
             height: 46

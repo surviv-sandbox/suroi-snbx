@@ -4,7 +4,7 @@
  */
 export default {
     name: "explosion_frag",
-    targetVersion: "0.8.0",
+    targetVersion: "0.8.1",
     damage: 125,
     obstacleMult: 1.1,
     radii: {
@@ -22,7 +22,7 @@ export default {
     shakeDuration: 350,
     color: [130, 37, 0],
     decal: {
-        img: "assets/decals/map-barrel-res-01.svg",
+        img: "../../decals/map-barrel-res-01.svg",
         width: 4,
         height: 4,
         tint: "#000000CC"
@@ -31,7 +31,7 @@ export default {
         count: 12,
         damage: 20,
         color: "#333",
-        img: "assets/items/ammo/shared/tracer.png",
+        img: "../../items/ammo/shared/tracer.png",
         velocity: 20,
         range: () => +meanDevPM_random(8, 12, false),
         falloff: 1,

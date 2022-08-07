@@ -4,6 +4,7 @@ export const level = await (async () => {
         name: name,
         jsonPath: "assets/levels/level2/data.json",
         description: "Fight bots for 5 minutes.",
+        targetVersion: "0.8.1",
         world: {
             width: 15000,
             height: 15000,

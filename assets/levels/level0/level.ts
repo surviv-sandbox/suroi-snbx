@@ -7,6 +7,7 @@ export const level = await (async () => {
             name: name,
             jsonPath: "assets/levels/level0/data.json",
             description: "Fight a very advanced and totally state-of-the art bot.",
+            targetVersion: "0.8.1",
             world: {
                 width: 5000,
                 height: 5000,
@@ -301,7 +302,7 @@ export const level = await (async () => {
                     buttonContainers.forEach((b, i) => {
                         b.style.width = "50%";
                         b.style.height = "25%";
-                        b.style.overflow = "scroll";
+                        b.style.overflow = "auto";
                         b.style.position = "absolute";
                         b.style.left = `${50 - 50 * (i % 2)}%`;
                         b.style.top = `${30 * Math.floor(i / 2) + 10}%`;
