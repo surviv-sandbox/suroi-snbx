@@ -162,15 +162,15 @@ export function makeSettings() {
                         { text: "All", value: "2", selected: f("2") },
                     ], ["balanceChanges", "weapons", "general", "quickswitch"]),
                     makeToggleSetting("no_hs", "No headshots", !w.general.headshots, ["balanceChanges", "weapons", "general", "headshots"], true),
-                    makeToggleSetting("no_bsv", "Buckshot spawn variance", !w.general.headshots, ["balanceChanges", "weapons", "general", "headshots"], true)
+                    makeToggleSetting("no_bsv", "Buckshot spawn variance", !w.general.noBuckshotSpawnVar, ["balanceChanges", "weapons", "general", "headshots"], true)
                 ], "balance-general"),
                 makeContainer("M79", [
                     makeToggleSetting("m79_spin", "No grenade spin", !w.m79.grenadeSpin, ["balanceChanges", "weapons", "m79", "grenadeSpin"], true),
                     makeToggleSetting("m79_move", "No movement penalty", !w.m79.moveSpeedPenalty, ["balanceChanges", "weapons", "m79", "moveSpeedPenalty"], true),
-                    makeToggleSetting("m79_casing", "Spawn casing on reload", !w.m79.spawnCasingOnReload, ["balanceChanges", "weapons", "m79", "spawnCasingOnReload"], true)
+                    makeToggleSetting("m79_casing", "Spawn casing on reload", w.m79.spawnCasingOnReload, ["balanceChanges", "weapons", "m79", "spawnCasingOnReload"], true)
                 ], "balance-m79"),
                 makeContainer("MP220", [
-                    makeToggleSetting("mp_trig", "Pull both triggers on fire", !w.mp220.pullBothTriggers, ["balanceChanges", "weapons", "mp220", ".pullBothTriggers"], true)
+                    makeToggleSetting("mp_trig", "Pull both triggers on fire", w.mp220.pullBothTriggers, ["balanceChanges", "weapons", "mp220", "pullBothTriggers"], true)
                 ], "balance-mp220")
             ], "weapon-balance"));
         },

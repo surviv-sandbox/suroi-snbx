@@ -1,4 +1,4 @@
-document.getElementById("back").addEventListener("click", e => void (!e.button && window.open("../", "_self")));
+document.getElementById("back").addEventListener("click", e => void (!e.button && window.open("../index.html", "_self")));
 
 (() => {
     document.querySelectorAll("h2").forEach((e, i) => {

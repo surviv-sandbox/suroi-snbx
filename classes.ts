@@ -711,7 +711,7 @@ type explosionInfo = {
 class gsp {
     static #initialized = false;
 
-    #version: string = "0.8.0";
+    #version: string = "0.8.1";
     get version() { return this.#version; }
 
     #bots: InstanceType<typeof import("./assets/scripts/std_ai").default>[];
@@ -722,6 +722,13 @@ class gsp {
 
     #camera: import("p5").Camera;
     get camera() { return this.#camera; }
+
+    #compatibilityData = (() => {
+        return (async () => {
+            this.#compatibilityData = JSON.parse((await (await fetch("./compatibility.jsonc")).text()).replace(/\/\*[\w\W]*\*\/\n/, ""));
+        })(), {};
+    })() as unknown as { [key: string]: { [key: string]: string[]; }; };
+    get compatibilityData() { return this.#compatibilityData; }
 
     #console = new csl;
     get console() { return this.#console; }
@@ -861,7 +868,7 @@ class gsp {
         };
     } = {
             visual: {
-                graphicsQuality: 1.25,
+                graphicsQuality: 1.5,
                 debug: false,
                 monitors: [0, 0],
                 hud: true,
@@ -1220,7 +1227,7 @@ class gsp {
                             main: "Loaded content:",
                             detail: `${d.map(v => `${v.n}: ${this[v.p].size ? "LOADED" : "MISSING"}`).join("\n")}`
                         }, true);
-                        window.alert("It's taking a while for things to load… check the console to see if there are any errors (the gray button below the name field).\nIf all else fails, try refreshing the page.");
+                        this.console.opened || window.alert("It's taking a while for things to load… check the console to see if there are any errors (the gray button below the name field).\nIf all else fails, try refreshing the page.");
                     }
 
                 }
@@ -1317,9 +1324,9 @@ class gsp {
                 }
             });
 
-            changelog.addEventListener("click", e => void (!e.button && window.open("./changelog/", "_self")));
+            changelog.addEventListener("click", e => void (!e.button && window.open("./changelog/index.html", "_self")));
 
-            attributions.addEventListener("click", e => void (!e.button && window.open("./attributions/", "_self")));
+            attributions.addEventListener("click", e => void (!e.button && window.open("./attributions/index.html", "_self")));
 
             function startGame(name: string) {
                 document.body.style.backgroundColor = "rgb(20, 20, 20)";

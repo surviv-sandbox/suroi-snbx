@@ -88,5 +88,14 @@
             "poly-decomp": "0.3.0",
             "decimaljs": "10.3.1"
         }
+    },
+    {
+        "version": "v0.8.1",
+        "frameworks": {
+            "p5": "1.4.1",
+            "matterjs": "0.18.0",
+            "poly-decomp": "0.3.0",
+            "decimaljs": "10.3.1"
+        }
     }
 ]

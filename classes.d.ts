@@ -251,6 +251,11 @@ declare class gsp {
     get bots(): import("./assets/scripts/std_ai").default[];
     get bulletInfo(): Map<string, bulletInfo>;
     get camera(): import("p5").Camera;
+    get compatibilityData(): {
+        [key: string]: {
+            [key: string]: string[];
+        };
+    };
     get console(): csl;
     get currentLevel(): level;
     get currentUpdate(): number;

@@ -102,10 +102,13 @@ function parseLevelData(data) {
             : void 0))
     };
 }
+function checkLevelVersions(lvls) {
+    return lvls.forEach(l => warnAboutVersionDiscrepencies(l, "level")), lvls;
+}
 function extractValue(x, args) {
     return typeof x == "function" ? x(...args) : x;
 }
-function imageLoadWrapper(path) {
+function imageLoadWrapper(path, basePath = "") {
     if (typeof path == "function") {
         const map = new Map;
         return (...args) => {
@@ -113,17 +116,17 @@ function imageLoadWrapper(path) {
             if (map.has(newSrc)) {
                 return map.get(newSrc);
             }
-            const img = loadImg(newSrc, true);
+            const img = loadImg(basePath + newSrc, true);
             map.set(newSrc, img);
             return img;
         };
     }
-    const img = loadImg(path, true);
+    const img = loadImg(basePath + path, true);
     return () => img;
 }
-function resolveVersionDiscrepencies(target) {
+function checkForVersionDiscrepencies(target, objectType = "") {
     const results = {
-        NO_VERSION: "NO_VERSION",
+        INVALID_VERSION: "INVALID_VERSION",
         OK: "OK",
         PATCH: "PATCH",
         MINOR: "MINOR",
@@ -133,10 +136,13 @@ function resolveVersionDiscrepencies(target) {
         FAR_FUTURE: "FAR_FUTURE"
     };
     const v = target.targetVersion?.match?.(/^\d+\.\d+\.\d+$/g)?.map?.(v => v[0]);
-    if (v === null) {
-        return results.NO_VERSION;
+    if (v === null || !("targetVersion" in target)) {
+        return results.INVALID_VERSION;
     }
     else {
+        if (gamespace.compatibilityData[gamespace.version]?.[objectType]?.includes?.(target.targetVersion)) {
+            return results.OK;
+        }
         const [gMaj, gMin, gPatch] = target.targetVersion.split(".").map(v => +v), [maj, min, patch] = gamespace.version.split(".").map(v => +v), r = ["PATCH", "MINOR", "MAJOR", "BETAS", "FUTURE", "FAR_FUTURE"];
         let i = 5;
         for (const c of `${+(gMaj > maj)}${+((gMaj == maj && gMin > min) || (gMaj == maj && gMin == min && gPatch > patch))}${+(maj != gMaj)}${+(min != gMin && +maj == 0)}${+(min != gMin)}${+(patch != gPatch)}`) {
@@ -148,38 +154,51 @@ function resolveVersionDiscrepencies(target) {
         return results.OK;
     }
 }
-function parseGunData(gunData) {
-    const playerSize = 50;
-    return gunData.map(g => {
-        const v = g.targetVersion, d = resolveVersionDiscrepencies(g);
+function warnAboutVersionDiscrepencies(target, objectType) {
+    const d = checkForVersionDiscrepencies(target, objectType), v = target.targetVersion, cmp = `(${objectType}: ${v}, game: ${gamespace.version})`, o = objectType[0].toUpperCase() + objectType.slice(1), message = (() => {
         switch (d) {
-            case "NO_VERSION": {
-                gamespace.console.error(`Gun '${g.name}' has an invalid version field '${v}'.\nVersion fields must respect the 'major.minor.patch' format.`);
-                break;
+            case "INVALID_VERSION": {
+                return `${o} has an invalid version string '${v}'.\nVersion numbers must follow the 'major.minor.patch' format.`;
+            }
+            case "OK": {
+                return `Nothing to say!`;
             }
             case "PATCH": {
-                gamespace.console.warn(`Gun '${g.name}' had a version that differs from the current game's version by one or multiple patches (gun: ${g.targetVersion}, game: ${gamespace.version}). Unexpected behaviour may occur.`);
-                break;
+                return `${o} has a version that differs from the game's by one or multiple patches ${cmp}. Unexpected behvaiour may occur.`;
             }
             case "MINOR": {
-                gamespace.console.warn(`Gun '${g.name}' had a version that differs from the current game's version by one or multiple minor versions (gun: ${g.targetVersion}, game: ${gamespace.version}). It is therefore not improbable that this gun will not function properly.`, true);
-                break;
+                return `${o} has a version that differs from the game's by one or multiple minor versions ${cmp}. It is therefore quite likely that this ${objectType} will not function properly.`;
             }
             case "MAJOR": {
-                gamespace.console.error(`Gun '${g.name}' had a version that differs from the current game's version by one or multiple major versions (gun: ${g.targetVersion}, game: ${gamespace.version}). It is therefore overwhelmingly likely that this gun will not function properly.`);
-                break;
+                return `${o} has a version that differs from the game's by one or multiple major versions ${cmp}. It is therefore overwhemingly likely that this ${objectType} will not function properly.`;
             }
             case "BETAS": {
-                gamespace.console.error(`Gun '${g.name}' had a version that differs from the current game's version by one or multiple betas (gun: ${g.targetVersion}, game: ${gamespace.version}). It is therefore overwhelmingly likely that this gun will not function properly.`);
-                break;
+                return `${o} has a version that differs from the game's by one or multiple betas ${cmp}. It is therefore overwhemingly likely that this ${objectType} will not function properly.`;
             }
-            case "FUTURE":
+            case "FUTURE": {
+                return `${o} comes from the future and may therefore not be interpreted correctly by this inferior version of the sandbox.`;
+            }
             case "FAR_FUTURE": {
-                const far = d == "FAR_FUTURE";
-                gamespace.console[far ? "error" : "warn"](`Gun '${g.name}' comes from the ${far ? "far" : ""} future, (gun: ${g.targetVersion}, game: ${gamespace.version}) and ${far ? "will therefore almost certainly" : "may therefore"} not be interpreted correctly by this ${far ? "vastly" : ""} inferior version of the sandbox.`, true);
-                break;
+                return `${o} comes from the FAR future and will therefore probably not be interpreted correctly by this vastly inferior version of the sandbox.`;
             }
         }
+    })();
+    ({
+        INVALID_VERSION: gamespace.console.error,
+        OK: () => { },
+        PATCH: gamespace.console.warn,
+        MINOR: (message) => { gamespace.console.warn(message, true); },
+        MAJOR: gamespace.console.error,
+        BETAS: gamespace.console.error,
+        FUTURE: gamespace.console.warn,
+        FAR_FUTURE: gamespace.console.error
+    })[d].call(gamespace.console, message);
+}
+function parseGunData(data) {
+    const playerSize = 50;
+    return data.map(dat => {
+        const [g, basePath] = dat;
+        warnAboutVersionDiscrepencies(g, "gun");
         return new gunPrototype(g.name, (() => {
             return {
                 class: g.summary.class,
@@ -193,17 +212,17 @@ function parseGunData(gunData) {
         })(), g.dual, (() => {
             const f = (p) => {
                 const map = new Map, o = {
-                    img: (...args) => {
-                        const path = extractValue(p, args);
-                        o.src = path;
+                    img: () => {
+                        const path = extractValue(p, []);
+                        o.src = basePath + path;
                         if (map.has(path)) {
                             return map.get(path);
                         }
-                        const img = loadImg(path);
+                        const img = loadImg(basePath + path);
                         map.set(path, img);
                         return img;
                     },
-                    src: typeof p == "string" ? p : ""
+                    src: typeof p == "string" ? basePath + p : ""
                 };
                 return o;
             };
@@ -312,36 +331,12 @@ function parseGunData(gunData) {
 }
 function parseAmmoData(data) {
     const playerSize = 50;
-    return data.flat().map(a => {
-        const v = a.targetVersion, d = resolveVersionDiscrepencies(a);
-        switch (d) {
-            case "NO_VERSION": {
-                gamespace.console.error(`Ammo type '${a.name}' has an invalid version field '${v}'.\nVersion fields must respect the 'major.minor.patch' format.`);
-                break;
-            }
-            case "PATCH": {
-                gamespace.console.warn(`Ammo type '${a.name}' had a version that differs from the current game's version by one or multiple patches (ammo: ${a.targetVersion}, game: ${gamespace.version}). Unexpected behaviour may occur.`);
-                break;
-            }
-            case "MINOR": {
-                gamespace.console.warn(`Ammo type '${a.name}' had a version that differs from the current game's version by one or multiple minor versions (ammo: ${a.targetVersion}, game: ${gamespace.version}). It is therefore not improbable that this ammo will not function properly.`, true);
-                break;
-            }
-            case "MAJOR": {
-                gamespace.console.error(`Ammo type '${a.name}' had a version that differs from the current game's version by one or multiple major versions (ammo: ${a.targetVersion}, game: ${gamespace.version}). It is therefore overwhelmingly likely that this ammo will not function properly.`);
-                break;
-            }
-            case "BETAS": {
-                gamespace.console.error(`Ammo type '${a.name}' had a version that differs from the current game's version by one or multiple betas (ammo: ${a.targetVersion}, game: ${gamespace.version}). It is therefore overwhelmingly likely that this ammo will not function properly.`);
-                break;
-            }
-            case "FUTURE":
-            case "FAR_FUTURE": {
-                const far = d == "FAR_FUTURE";
-                gamespace.console[far ? "error" : "warn"](`Ammo type '${a.name}' comes from the ${far ? "far" : ""} future, (ammo: ${a.targetVersion}, game: ${gamespace.version}) and ${far ? "will therefore almost certainly" : "may therefore"} not be interpreted correctly by this ${far ? "vastly" : ""} inferior version of the sandbox.`, true);
-                break;
-            }
-        }
+    return data
+        .map(v => v[0].map(a => { return [a, v[1]]; }))
+        .flat()
+        .map(dat => {
+        const [a, basePath] = dat;
+        warnAboutVersionDiscrepencies(a, "ammo");
         return {
             name: a.name,
             tints: a.tints,
@@ -360,11 +355,11 @@ function parseAmmoData(data) {
             } : {
                 type: "bullet",
             }, {
-                img: imageLoadWrapper(a.projectileInfo.img),
+                img: imageLoadWrapper(a.projectileInfo.img, basePath),
                 spinVel: (...args) => extractValue(a.projectileInfo.spinVel, args) ?? 0
             }),
             casing: {
-                img: imageLoadWrapper(a.casing.img),
+                img: imageLoadWrapper(a.casing.img, basePath),
                 lifetime: a.casing.lifetime,
                 width: a.casing.width,
                 height: a.casing.height
@@ -374,36 +369,9 @@ function parseAmmoData(data) {
 }
 function parseExplosionData(data) {
     const playerSize = 50;
-    return data.map(e => {
-        const v = e.targetVersion, d = resolveVersionDiscrepencies(e);
-        switch (d) {
-            case "NO_VERSION": {
-                gamespace.console.error(`Explosion '${e.name}' has an invalid version field '${v}'.\nVersion fields must respect the 'major.minor.patch' format.`);
-                break;
-            }
-            case "PATCH": {
-                gamespace.console.warn(`Explosion '${e.name}' had a version that differs from the current game's version by one or multiple patches (explosion: ${e.targetVersion}, game: ${gamespace.version}). Unexpected behaviour may occur.`);
-                break;
-            }
-            case "MINOR": {
-                gamespace.console.warn(`Explosion '${e.name}' had a version that differs from the current game's version by one or multiple minor versions (explosion: ${e.targetVersion}, game: ${gamespace.version}). It is therefore not improbable that this explosion will not function properly.`, true);
-                break;
-            }
-            case "MAJOR": {
-                gamespace.console.error(`Explosion '${e.name}' had a version that differs from the current game's version by one or multiple major versions (explosion: ${e.targetVersion}, game: ${gamespace.version}). It is therefore overwhelmingly likely that this explosion will not function properly.`);
-                break;
-            }
-            case "BETAS": {
-                gamespace.console.error(`Explosion '${e.name}' had a version that differs from the current game's version by one or multiple betas (explosion: ${e.targetVersion}, game: ${gamespace.version}). It is therefore overwhelmingly likely that this explosion will not function properly.`);
-                break;
-            }
-            case "FUTURE":
-            case "FAR_FUTURE": {
-                const far = d == "FAR_FUTURE";
-                gamespace.console[far ? "error" : "warn"](`Explosion '${e.name}' comes from the ${far ? "far" : ""} future, (explosion: ${e.targetVersion}, game: ${gamespace.version}) and ${far ? "will therefore almost certainly" : "may therefore"} not be interpreted correctly by this ${far ? "vastly" : ""} inferior version of the sandbox.`, true);
-                break;
-            }
-        }
+    return data.map(dat => {
+        const [e, basePath] = dat;
+        warnAboutVersionDiscrepencies(e, "explosion");
         return {
             name: e.name,
             damage: e.damage,
@@ -425,7 +393,7 @@ function parseExplosionData(data) {
             decal: (() => {
                 const d = e.decal;
                 return {
-                    img: imageLoadWrapper(d.img),
+                    img: imageLoadWrapper(d.img, basePath),
                     tint: d.tint,
                     width: () => extractValue(d.width, []) * playerSize,
                     height: () => extractValue(d.height, []) * playerSize
@@ -437,7 +405,7 @@ function parseExplosionData(data) {
                     count: s.count,
                     damage: s.damage,
                     color: s.color,
-                    img: imageLoadWrapper(s.img),
+                    img: imageLoadWrapper(s.img, basePath),
                     velocity: () => extractValue(s.velocity, []) * playerSize,
                     range: () => extractValue(s.range, []) * playerSize,
                     falloff: s.falloff,
@@ -772,13 +740,6 @@ function createCSLEntry(content, type) {
         content,
         type: type ?? "log"
     };
-}
-function generateExports() {
-    console.log(JSON.stringify({
-        guns: [...gamespace.guns.keys()],
-        ammos: [...gamespace.bulletInfo.keys()],
-        explosions: [...gamespace.explosionInfo.keys()]
-    }));
 }
 /**
  * Literally the best function in this entire project.

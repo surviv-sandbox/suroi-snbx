@@ -128,7 +128,7 @@ ui.add({
     core: true
 }, {
     name: "killfeed",
-    update(p, i) {
+    update() {
         if (gamespace.kills.length) {
             if (!$("killfeed-container")) {
                 const cont = makeElement("div", "killfeed-container");
@@ -141,7 +141,7 @@ ui.add({
                 const p = ($(`killfeed-kill-${k.id}`) ?? makeElement("div", `killfeed-kill-${k.id}`, "killfeed-entry"));
                 if (!$(`killfeed-kill-${k.id}`)) {
                     if (gamespace.settings.bonusFeatures.csgoStyleKillfeed) {
-                        p.innerHTML = `${k.killer ? `${k.killer}&nbsp;&nbsp;&nbsp;` : ""}<img src="${gamespace.guns.get(k.weapon).images.silhouette.src}" class="killfeed-image"${k.crit ? ` style="background: content-box radial-gradient(#f00, transparent);"` : ""}/>&nbsp;&nbsp;&nbsp;${k.killed}`;
+                        p.innerHTML = `${k.killer ? `${k.killer}&nbsp;&nbsp;&nbsp;` : ""}<img src="${extractValue(gamespace.guns.get(k.weapon).images.silhouette.src, [])}" class="killfeed-image"${k.crit ? ` style="background: content-box radial-gradient(#f00, transparent);"` : ""}/>&nbsp;&nbsp;&nbsp;${k.killed}`;
                         p.style.backgroundColor = k.killed == gamespace.settings.name ? "#8008" : "";
                         p.style.outline = k.killer == gamespace.settings.name ? "calc(2vh / 9) solid #C00" : "";
                     }

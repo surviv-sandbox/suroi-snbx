@@ -14,15 +14,15 @@ declare class gunPrototype {
     images: {
         loot: {
             img: TOrFT<import("p5").Image, [gun, playerLike]>;
-            src: TOrFT<string, [gun, playerLike]>;
+            src: TOrFT<string, []>;
         };
         held: {
             img: TOrFT<import("p5").Image, [gun, playerLike]>;
-            src: TOrFT<string, [gun, playerLike]>;
+            src: TOrFT<string, []>;
         };
         silhouette: {
             img: TOrFT<import("p5").Image, [gun, playerLike]>;
-            src: TOrFT<string, [gun, playerLike]>;
+            src: TOrFT<string, []>;
         };
     };
     ballistics: {

@@ -464,7 +464,7 @@ class customEvent {
 // If a method's name starts with an underscore, it means that you should only call it if you 1000% know what you're doing and if the wind outside is blowing at 42.9º W (aka almost never)
 class gsp {
     static #initialized = false;
-    #version = "0.8.0";
+    #version = "0.8.1";
     get version() { return this.#version; }
     #bots;
     get bots() { return this.#bots; }
@@ -472,6 +472,12 @@ class gsp {
     get bulletInfo() { return this.#bulletInfo; }
     #camera;
     get camera() { return this.#camera; }
+    #compatibilityData = (() => {
+        return (async () => {
+            this.#compatibilityData = JSON.parse((await (await fetch("./compatibility.jsonc")).text()).replace(/\/\*[\w\W]*\*\/\n/, ""));
+        })(), {};
+    })();
+    get compatibilityData() { return this.#compatibilityData; }
     #console = new csl;
     get console() { return this.#console; }
     #currentLevel;
@@ -527,7 +533,7 @@ class gsp {
     get ready() { return this.#ready; }
     #settings = {
         visual: {
-            graphicsQuality: 1.25,
+            graphicsQuality: 1.5,
             debug: false,
             monitors: [0, 0],
             hud: true,
@@ -811,7 +817,7 @@ class gsp {
                             main: "Loaded content:",
                             detail: `${d.map(v => `${v.n}: ${this[v.p].size ? "LOADED" : "MISSING"}`).join("\n")}`
                         }, true);
-                        window.alert("It's taking a while for things to load… check the console to see if there are any errors (the gray button below the name field).\nIf all else fails, try refreshing the page.");
+                        this.console.opened || window.alert("It's taking a while for things to load… check the console to see if there are any errors (the gray button below the name field).\nIf all else fails, try refreshing the page.");
                     }
                 }
             }, 5000);
@@ -872,8 +878,8 @@ class gsp {
                     (await import("./settings.js")).makeSettings();
                 }
             });
-            changelog.addEventListener("click", e => void (!e.button && window.open("./changelog/", "_self")));
-            attributions.addEventListener("click", e => void (!e.button && window.open("./attributions/", "_self")));
+            changelog.addEventListener("click", e => void (!e.button && window.open("./changelog/index.html", "_self")));
+            attributions.addEventListener("click", e => void (!e.button && window.open("./attributions/index.html", "_self")));
             function startGame(name) {
                 document.body.style.backgroundColor = "rgb(20, 20, 20)";
                 $("menu-container").remove();

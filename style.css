@@ -245,7 +245,7 @@ div#name-field {
   width: 10%;
   height: 5%;
   outline: none;
-  overflow: scroll;
+  overflow: auto;
 }
 
 div#name-field:hover {
@@ -285,7 +285,7 @@ div#console-wrapper {
   border: calc(3vh / 9) solid #888;
   border-radius: calc(7vh / 9);
   box-shadow: calc(5vh / 9) calc(5vh / 9) calc(5vh / 9) 0px #0008;
-  overflow: scroll;
+  overflow: auto;
   z-index: 10;
 }
 
@@ -586,8 +586,8 @@ input[type=text].setting-numeric-field {
 
 div.checkbox-cont:hover {
   cursor: pointer;
-  background-color: hsl(88, 37%, 42%);
-  color: #DDD;
+  background-color: hsl(88, 37%, 43%);
+  color: #EEE;
 }
 
 /* UI ELEMENT STYLING */

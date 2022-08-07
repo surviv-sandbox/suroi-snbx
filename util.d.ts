@@ -33,6 +33,7 @@ declare type level = {
     name: string;
     jsonPath: string;
     description: string;
+    targetVersion: string;
     color?: string;
     world: {
         width: number;
@@ -151,11 +152,15 @@ declare function parseLevelData(data: JSONLevel): {
     obstacles: obstacle[];
     players: playerLike[];
 };
+declare function checkLevelVersions(lvls: level[]): level[];
 declare function extractValue<T, U extends any[]>(x: TOrFT<T, U>, args: U): T;
-declare function imageLoadWrapper<T extends any[]>(path: TOrFT<string, T>): ((...args: T) => import("p5").Image) | (() => void | import("p5").Image);
-declare function resolveVersionDiscrepencies(target: {
+declare function imageLoadWrapper<T extends any[]>(path: TOrFT<string, T>, basePath?: string): ((...args: T) => import("p5").Image) | (() => void | import("p5").Image);
+declare function checkForVersionDiscrepencies(target: {
     targetVersion: string;
-}): "NO_VERSION" | "OK" | "PATCH" | "MINOR" | "MAJOR" | "BETAS" | "FUTURE" | "FAR_FUTURE";
+}, objectType?: string): "INVALID_VERSION" | "OK" | "PATCH" | "MINOR" | "MAJOR" | "BETAS" | "FUTURE" | "FAR_FUTURE";
+declare function warnAboutVersionDiscrepencies(target: {
+    targetVersion: string;
+}, objectType: string): void;
 declare type angleModes = {
     givenIn: "degrees" | "radians" | "gradians" | "turns";
     value: number;
@@ -178,9 +183,9 @@ declare type JSONGun = {
     };
     dual: TOrFT<boolean, [gun, playerLike]>;
     images: {
-        loot: TOrFT<string, [gun, playerLike]>;
-        held: TOrFT<string, [gun, playerLike]>;
-        silhouette: TOrFT<string, [gun, playerLike]>;
+        loot: TOrFT<string, []>;
+        held: TOrFT<string, []>;
+        silhouette: TOrFT<string, []>;
     };
     tint: TOrFT<colorModes, [gun, playerLike]>;
     ballistics: {
@@ -277,7 +282,7 @@ declare type JSONGun = {
         burstDelay: TOrFT<number, [gun, playerLike]>;
     };
 };
-declare function parseGunData(gunData: JSONGun[]): gunPrototype[];
+declare function parseGunData(data: [JSONGun, string][]): gunPrototype[];
 declare type explosiveProjData = {
     type: "explosive";
     explosionType: TOrFT<string, []>;
@@ -316,7 +321,7 @@ declare type ammoData = {
         height: TOrFT<number, [casing]>;
     };
 };
-declare function parseAmmoData(data: ammoData[][]): bulletInfo[];
+declare function parseAmmoData(data: [ammoData[], string][]): bulletInfo[];
 declare type explosionData = {
     name: string;
     targetVersion: string;
@@ -356,7 +361,7 @@ declare type explosionData = {
         };
     };
 };
-declare function parseExplosionData(data: explosionData[]): explosionInfo[];
+declare function parseExplosionData(data: [explosionData, string][]): explosionInfo[];
 declare function $(ele: string): HTMLElement | null;
 declare function average(options: {
     useNativeMath: boolean;
@@ -460,7 +465,6 @@ declare function toHex(color: colorModes, options?: {
     useNativeMath: boolean;
 }): `#${string}`;
 declare function createCSLEntry(content: cslData["content"] | string, type?: cslData["type"]): cslData;
-declare function generateExports(): void;
 /**
  * Literally the best function in this entire project.
  * @link https://areweyeetyet.rs

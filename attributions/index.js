@@ -140,5 +140,5 @@
     doc.appendChild(p);
 
     document.body.appendChild(doc);
-    document.getElementById("back").addEventListener("click", e => void (!e.button && window.open("../", "_self")));
+    document.getElementById("back").addEventListener("click", e => void (!e.button && window.open("../index.html", "_self")));
 })();
