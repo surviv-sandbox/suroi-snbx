@@ -711,7 +711,7 @@ type explosionInfo = {
 class gsp {
     static #initialized = false;
 
-    #version: string = "0.8.1";
+    #version: string = "0.8.2";
     get version() { return this.#version; }
 
     #bots: InstanceType<typeof import("./assets/scripts/std_ai").default>[];

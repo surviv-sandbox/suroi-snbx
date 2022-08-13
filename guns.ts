@@ -309,7 +309,7 @@ class gun {
                     );
                 }
 
-                if (ip.casing.spawnOn == "fire") {
+                if (extractValue(ip.casing.spawnOn, args) == "fire") {
                     try {
                         const d = extractValue(ip.casing.spawnDelay, args);
 
@@ -363,7 +363,7 @@ class gun {
             };
 
 
-        if (this.#proto.casing.spawnOn == "reload") {
+        if (extractValue(this.#proto.casing.spawnOn, args) == "reload") {
             const d = extractValue(this.#proto.casing.spawnDelay, args),
                 s = extractValue(this.#proto.magazineCapacity.normal, []);
 

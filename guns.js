@@ -144,7 +144,7 @@ class gun {
                     }, dev = p.angle + a * (Math.random() - 0.5), body = Matter.Bodies.rectangle(start.x, start.y, extractValue(ip.ballistics.tracer.width, args), l, { isStatic: false, friction: 1, restitution: 0, density: 1, angle: dev });
                     new bullet(body, p, weapon, dev, start, gamespace.currentUpdate, extractValue(weapon.#proto.ballistics.headshotMult, args) != 1 && gamespace.settings.balanceChanges.weapons.general.headshots && Math.random() >= 0.85, gamespace.bulletInfo.get(caliber).projectileInfo.type);
                 }
-                if (ip.casing.spawnOn == "fire") {
+                if (extractValue(ip.casing.spawnOn, args) == "fire") {
                     try {
                         const d = extractValue(ip.casing.spawnDelay, args);
                         if (!d) {
@@ -190,7 +190,7 @@ class gun {
             ammoReloaded: extractValue(r.ammoReloaded, args),
             chain: extractValue(r.chain, args)
         };
-        if (this.#proto.casing.spawnOn == "reload") {
+        if (extractValue(this.#proto.casing.spawnOn, args) == "reload") {
             const d = extractValue(this.#proto.casing.spawnDelay, args), s = extractValue(this.#proto.magazineCapacity.normal, []);
             try {
                 if (!d) {

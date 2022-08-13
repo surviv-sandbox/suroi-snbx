@@ -659,7 +659,7 @@ function parseGunData(data: [JSONGun, string][]) {
                         angular: vAVal
                     },
                     spawnDelay: c.spawnDelay,
-                    spawnOn: (...args) => extractValue(c.spawnOn, args)
+                    spawnOn: c.spawnOn
                 };
             })(),
             {

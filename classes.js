@@ -464,7 +464,7 @@ class customEvent {
 // If a method's name starts with an underscore, it means that you should only call it if you 1000% know what you're doing and if the wind outside is blowing at 42.9º W (aka almost never)
 class gsp {
     static #initialized = false;
-    #version = "0.8.1";
+    #version = "0.8.2";
     get version() { return this.#version; }
     #bots;
     get bots() { return this.#bots; }
