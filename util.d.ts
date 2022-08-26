@@ -321,7 +321,7 @@ declare type ammoData = {
         height: TOrFT<number, [casing]>;
     };
 };
-declare function parseAmmoData(data: [ammoData[], string][]): bulletInfo[];
+declare function parseAmmoData(data: [ammoData, string][]): bulletInfo[];
 declare type explosionData = {
     name: string;
     targetVersion: string;

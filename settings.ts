@@ -248,7 +248,7 @@ export function makeSettings() {
                                         ["balanceChanges", "weapons", "general", "quickswitch"]
                                     ),
                                     makeToggleSetting("no_hs", "No headshots", !w.general.headshots, ["balanceChanges", "weapons", "general", "headshots"], true),
-                                    makeToggleSetting("no_bsv", "Buckshot spawn variance", !w.general.noBuckshotSpawnVar, ["balanceChanges", "weapons", "general", "headshots"], true)
+                                    makeToggleSetting("no_bsv", "Buckshot spawn variance", !w.general.noBuckshotSpawnVar, ["balanceChanges", "weapons", "general", "noBuckshotSpawnVar"], true)
                                 ],
                                 "balance-general"
                             ),

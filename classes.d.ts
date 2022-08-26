@@ -356,7 +356,7 @@ declare class gsp {
     _removePlayer(): void;
     _overrideKills(val: typeof gsp.prototype.kills): void;
     _overrideSettings(val: typeof gsp.prototype.settings): void;
-    stdLevelSetup(engine: Matter.Engine, world: Matter.World, p5: import("p5"), level: level, levelData: ReturnType<typeof parseLevelData>, AI: typeof import("./assets/scripts/std_ai.js").default, font?: {
+    stdLevelSetup(engine: Matter.Engine, world: Matter.World, p5: import("p5"), level: level, levelData: ReturnType<typeof parseLevelData>, AI: typeof import("./assets/scripts/std_ai").default, font?: {
         font: string | import("p5").Font;
         size?: number;
     }): void;

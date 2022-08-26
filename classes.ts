@@ -711,7 +711,7 @@ type explosionInfo = {
 class gsp {
     static #initialized = false;
 
-    #version: string = "0.8.2";
+    #version: string = "0.8.3";
     get version() { return this.#version; }
 
     #bots: InstanceType<typeof import("./assets/scripts/std_ai").default>[];
@@ -1361,7 +1361,7 @@ class gsp {
         this.#settings = val;
     }
 
-    stdLevelSetup(engine: Matter.Engine, world: Matter.World, p5: import("p5"), level: level, levelData: ReturnType<typeof parseLevelData>, AI: typeof import("./assets/scripts/std_ai.js").default, font?: { font: string | import("p5").Font, size?: number; }) {
+    stdLevelSetup(engine: Matter.Engine, world: Matter.World, p5: import("p5"), level: level, levelData: ReturnType<typeof parseLevelData>, AI: typeof import("./assets/scripts/std_ai").default, font?: { font: string | import("p5").Font, size?: number; }) {
         engine.gravity.y = 0;
         gamespace.#engine = engine;
         gamespace.#world = world;

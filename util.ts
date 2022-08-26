@@ -118,6 +118,11 @@ Object.defineProperty(window, "cslData", {
     value: []
 });
 
+(() => {
+    //@ts-expect-error
+    "isElectron" in globalThis ? void 0 : cslData.push({ time: Date.now(), content: "Non-electron environment detected." });
+})();
+
 const generateId = (function* () {
     let i = 0;
     while (true) {
@@ -718,12 +723,10 @@ type ammoData = {
     };
 };
 
-function parseAmmoData(data: [ammoData[], string][]) {
+function parseAmmoData(data: [ammoData, string][]) {
     const playerSize = 50;
 
     return data
-        .map(v => v[0].map<[ammoData, string]>(a => { return [a, v[1]]; }))
-        .flat()
         .map(dat => {
             const [a, basePath] = dat;
 

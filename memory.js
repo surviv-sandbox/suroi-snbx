@@ -32,7 +32,7 @@ class manager {
                     o = (o[p] = Number.isNaN(+path[i]) ? {} : []);
                 }
                 else {
-                    throw new Error(`Cache path '${path.join(".")}' led to ${o !== void 0 ? "a non-object value" : "undefined"}, and key ${key} awas remaining.`);
+                    throw new Error(`Cache path '${path.join(".")}' led to ${o !== void 0 ? "a non-object value" : "undefined"}, and key ${key} was remaining.`);
                 }
             }
             else {

@@ -39,7 +39,7 @@ class manager {
                 if (fillEmptyKeys) {
                     o = (o[p] = Number.isNaN(+path[i]) ? {} : [] as JSONArray) as any;
                 } else {
-                    throw new Error(`Cache path '${(path as string[]).join(".")}' led to ${o !== void 0 ? "a non-object value" : "undefined"}, and key ${key} awas remaining.`);
+                    throw new Error(`Cache path '${(path as string[]).join(".")}' led to ${o !== void 0 ? "a non-object value" : "undefined"}, and key ${key} was remaining.`);
                 }
             } else {
                 o = preemptive;

@@ -162,7 +162,7 @@ export function makeSettings() {
                         { text: "All", value: "2", selected: f("2") },
                     ], ["balanceChanges", "weapons", "general", "quickswitch"]),
                     makeToggleSetting("no_hs", "No headshots", !w.general.headshots, ["balanceChanges", "weapons", "general", "headshots"], true),
-                    makeToggleSetting("no_bsv", "Buckshot spawn variance", !w.general.noBuckshotSpawnVar, ["balanceChanges", "weapons", "general", "headshots"], true)
+                    makeToggleSetting("no_bsv", "Buckshot spawn variance", !w.general.noBuckshotSpawnVar, ["balanceChanges", "weapons", "general", "noBuckshotSpawnVar"], true)
                 ], "balance-general"),
                 makeContainer("M79", [
                     makeToggleSetting("m79_spin", "No grenade spin", !w.m79.grenadeSpin, ["balanceChanges", "weapons", "m79", "grenadeSpin"], true),
