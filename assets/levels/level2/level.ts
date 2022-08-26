@@ -94,19 +94,21 @@ export const level = await (async () => {
                                         d.killer.state.custom.kills = (d.killer.state.custom.kills ?? 0) as number + 1;
                                         d.killer.state.custom.score = (d.killer.state.custom.score ?? 0) as number +
                                             ((className: string): number => {
-                                                switch (className) {
-                                                    case "assault_rifle": return 5;
-                                                    case "shotgun": return 8;
-                                                    case "lmg": return 2;
-                                                    case "semi_pistol": return 6;
-                                                    case "dual_semi_pistol": return 4;
-                                                    case "sniper_rifle": return 2;
-                                                    case "dmr": return 4;
-                                                    case "burst_ar": return 6;
-                                                    case "semi_pistol_move": return 6;
-                                                    case "grenade_launcher": return 7;
-                                                    default: return 4;
-                                                }
+                                                return ({
+                                                    "assault_rifle": /*   */ 5,
+                                                    "shotgun": /*         */ 8,
+                                                    "lmg": /*             */ 2,
+                                                    "smg": /*             */ 6,
+                                                    "auto_pistol": /*     */ 5,
+                                                    "semi_pistol": /*     */ 6,
+                                                    "dual_semi_pistol": /**/ 4,
+                                                    "dual_auto_pistol": /**/ 3,
+                                                    "sniper_rifle": /*    */ 2,
+                                                    "dmr": /*             */ 4,
+                                                    "burst_ar": /*         */6,
+                                                    "semi_pistol_move": /**/ 6,
+                                                    "grenade_launcher": /**/ 5,
+                                                })[className] ?? 4;
                                             })(extractValue((gamespace.guns.get(d.weapon) as gunPrototype).summary.class, []));
                                     }
                                     p.state.custom.deaths = (p.state.custom.deaths ?? 0) as number + 1;
