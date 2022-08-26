@@ -1,10 +1,11 @@
+// sndx_edtr_no_compat
 //@ts-check
 /**
  * @type {JSONGun}
  */
 export default {
     name: "AKM",
-    targetVersion: "0.8.1",
+    targetVersion: "0.8.2",
     summary: {
         class: "assault_rifle",
         engagementDistance: {
@@ -34,17 +35,17 @@ export default {
         headshotMult: 4,
         fsa: {
             enabled: false,
-            rechargeTime: toMS({ givenIn: "s", value: 1e10 })
+            rechargeTime: 10000000000000
         },
-        falloff: 0.98 ** (100 / /* 500Hu = */ 19.84375/* surviv units */),
+        falloff: 0.9032021201572175,
         projectiles: 1
     },
     suppressed: false,
     caliber: "7.62x39mm",
-    firingDelay: toMS({ givenIn: "RPM", value: 600 }),
+    firingDelay: 100,
     deployGroup: 0,
     accuracy: {
-        default: (() => {
+        default: (() => { // Not compatible with editor
             let s = 0;
 
             return (...args) => {
@@ -95,12 +96,12 @@ export default {
         parr: 1.65
     },
     dimensions: {
-        width: 3.15 * 428 / 3188,
+        width: 0.42289836888331245,
         height: 3.15,
         layer: 0
     },
     reload: {
-        duration: toMS({ givenIn: "s", value: 2.4 }),
+        duration: 2400,
         ammoReloaded: "all",
         chain: false
     },
@@ -108,7 +109,7 @@ export default {
         normal: 30,
         firepower: 40
     },
-    switchDelay: toMS({ givenIn: "s", value: 1 }),
+    switchDelay: 1000,
     handPositions: {
         leftHand: {
             perp: 0.1,
@@ -141,9 +142,7 @@ export default {
             perp: 0,
             parr: 0.12
         },
-        duration: toMS({ givenIn: "ms", value: 80 })
+        duration: 80
     },
-    possibleFireModes: [
-        "automatic"
-    ]
+    possibleFireModes: ["automatic"],
 };

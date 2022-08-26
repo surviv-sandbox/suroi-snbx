@@ -4,7 +4,7 @@
  */
 export default {
     name: "M870",
-    targetVersion: "0.8.1",
+    targetVersion: "0.8.2",
     summary: {
         class: "shotgun",
         engagementDistance: {
@@ -27,21 +27,21 @@ export default {
         range: 27,
         tracer: {
             width: 0.15,
-            height: 160 / 9
+            height: 17.77777777777778
         },
         hitboxLength: 3,
         obstacleMult: 1,
         headshotMult: 1.5,
         fsa: {
             enabled: false,
-            rechargeTime: toMS({ givenIn: "s", value: 1e10 })
+            rechargeTime: 10000000000000
         },
         falloff: 0.3,
         projectiles: 9
     },
     suppressed: false,
     caliber: "12 gauge (buckshot)",
-    firingDelay: toMS({ givenIn: "ms", value: 900 }),
+    firingDelay: 900,
     deployGroup: 1,
     accuracy: {
         default: toRad({ givenIn: "degrees", value: 10 }),
@@ -61,7 +61,7 @@ export default {
         layer: 0
     },
     reload: {
-        duration: toMS({ givenIn: "ms", value: 750 }),
+        duration: 750,
         ammoReloaded: 1,
         chain: true
     },
@@ -69,7 +69,7 @@ export default {
         normal: 5,
         firepower: 10
     },
-    switchDelay: toMS({ givenIn: "ms", value: 900 }),
+    switchDelay: 900,
     handPositions: {
         leftHand: {
             perp: 0.1,
@@ -95,16 +95,14 @@ export default {
             angular: () => +meanDevPM_random(toRad({ givenIn: "turns", value: 1 }), toRad({ givenIn: "turns", value: 1.5 }), false)
         },
         spawnOn: "fire",
-        spawnDelay: toMS({ givenIn: "ms", value: 900 })
+        spawnDelay: 900
     },
     recoilImpulse: {
         direction: {
             perp: 0,
             parr: 0.25
         },
-        duration: toMS({ givenIn: "ms", value: 125 })
+        duration: 125
     },
-    possibleFireModes: [
-        "semi"
-    ]
+    possibleFireModes: ["semi"],
 };

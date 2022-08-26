@@ -4,7 +4,7 @@
  */
 export default {
     name: "M134",
-    targetVersion: "0.8.1",
+    targetVersion: "0.8.2",
     summary: {
         class: "lmg",
         engagementDistance: {
@@ -34,14 +34,14 @@ export default {
         headshotMult: 1.5,
         fsa: {
             enabled: false,
-            rechargeTime: toMS({ givenIn: "s", value: 1e10 })
+            rechargeTime: 10000000000000
         },
         falloff: 0.5,
         projectiles: 1
     },
     suppressed: false,
     caliber: "7.62x51mm",
-    firingDelay: toMS({ givenIn: "ms", value: 55 }),
+    firingDelay: 55,
     deployGroup: 0,
     accuracy: {
         default: toRad({ givenIn: "degrees", value: 1 }),
@@ -56,12 +56,12 @@ export default {
         parr: 3
     },
     dimensions: {
-        width: 20 / 11,
+        width: 1.8181818181818181,
         height: 5,
         layer: 0
     },
     reload: {
-        duration: toMS({ givenIn: "s", value: 8 }),
+        duration: 8000,
         ammoReloaded: "all",
         chain: false
     },
@@ -69,7 +69,7 @@ export default {
         normal: 200,
         firepower: 250
     },
-    switchDelay: toMS({ givenIn: "ms", value: 900 }),
+    switchDelay: 900,
     handPositions: {
         leftHand: {
             perp: 0.35,
@@ -102,9 +102,7 @@ export default {
             perp: 0,
             parr: 0.1
         },
-        duration: toMS({ givenIn: "ms", value: 170 })
+        duration: 170
     },
-    possibleFireModes: [
-        "automatic"
-    ]
+    possibleFireModes: ["automatic"],
 };

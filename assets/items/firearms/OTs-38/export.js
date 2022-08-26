@@ -4,7 +4,7 @@
  */
 export default {
     name: "OTs-38",
-    targetVersion: "0.8.1",
+    targetVersion: "0.8.2",
     summary: {
         class: "semi_pistol",
         engagementDistance: {
@@ -34,14 +34,14 @@ export default {
         headshotMult: 2,
         fsa: {
             enabled: false,
-            rechargeTime: toMS({ givenIn: "s", value: 1e10 })
+            rechargeTime: 10000000000000
         },
         falloff: 0.77,
         projectiles: 1
     },
     suppressed: true,
     caliber: "7.62x41mm",
-    firingDelay: toMS({ givenIn: "ms", value: 360 }),
+    firingDelay: 360,
     deployGroup: 0,
     accuracy: {
         default: toRad({ givenIn: "degrees", value: 1.2 }),
@@ -56,12 +56,12 @@ export default {
         parr: 1.4
     },
     dimensions: {
-        width: 179 / 384,
+        width: 0.4661458333333333,
         height: 1.5,
         layer: 0
     },
     reload: {
-        duration: toMS({ givenIn: "s", value: 2 }),
+        duration: 2000,
         ammoReloaded: "all",
         chain: false
     },
@@ -69,12 +69,12 @@ export default {
         normal: 5,
         firepower: 5
     },
-    switchDelay: toMS({ givenIn: "ms", value: 300 }),
+    switchDelay: 300,
     handPositions: {
         leftHand: {
             perp: 0.1,
             parr: 0.85
-        }
+        },
     },
     projectileSpawnOffset: {
         perp: 0,
@@ -98,9 +98,7 @@ export default {
             perp: 0,
             parr: 0.08
         },
-        duration: toMS({ givenIn: "ms", value: 70 })
+        duration: 70
     },
-    possibleFireModes: [
-        "semi"
-    ]
+    possibleFireModes: ["semi"],
 };

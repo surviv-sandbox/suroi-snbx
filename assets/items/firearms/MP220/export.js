@@ -1,10 +1,11 @@
+// sndx_edtr_no_compat
 //@ts-check
 /**
  * @type {JSONGun}
  */
 export default {
     name: "MP220",
-    targetVersion: "0.8.1",
+    targetVersion: "0.8.2",
     summary: {
         class: "shotgun",
         engagementDistance: {
@@ -27,21 +28,21 @@ export default {
         range: 27,
         tracer: {
             width: 0.15,
-            height: 160 / 9
+            height: 17.77777777777778
         },
         hitboxLength: 4,
         obstacleMult: 1,
         headshotMult: 1.5,
         fsa: {
             enabled: false,
-            rechargeTime: toMS({ givenIn: "s", value: 1e10 })
+            rechargeTime: 10000000000000
         },
         falloff: 0.3,
         projectiles: 9
     },
     suppressed: false,
     caliber: "12 gauge (buckshot)",
-    firingDelay: toMS({ givenIn: "ms", value: 200 }),
+    firingDelay: 200,
     deployGroup: 0,
     accuracy: {
         default: toRad({ givenIn: "degrees", value: 10 }),
@@ -56,12 +57,12 @@ export default {
         parr: 1.55
     },
     dimensions: {
-        width: 7526513 / 12738633,
+        width: 0.5908414976709039,
         height: 2,
         layer: 0
     },
     reload: {
-        duration: toMS({ givenIn: "s", value: 2.7 }),
+        duration: 2700,
         ammoReloaded: "all",
         chain: false
     },
@@ -69,7 +70,7 @@ export default {
         normal: 2,
         firepower: 2
     },
-    switchDelay: toMS({ givenIn: "ms", value: 900 }),
+    switchDelay: 900,
     handPositions: {
         leftHand: {
             perp: 0.1,
@@ -89,7 +90,7 @@ export default {
             perp: 0,
             parr: 0.2
         },
-        velocity: (() => { // Ensures that one shell goes "left" and that the other goes "right" every time
+        velocity: (() => { // Not technically acheivable with the editor but eh
             let i = 1,
                 j = 1,
                 f = () => void (i == j ? i *= -1 : j *= -1);
@@ -108,11 +109,11 @@ export default {
             perp: 0,
             parr: 0.25
         },
-        duration: toMS({ givenIn: "ms", value: 100 })
+        duration: 100
     },
     possibleFireModes: () => gamespace.settings.balanceChanges.weapons.mp220.pullBothTriggers ? ["auto-burst-2"] : ["automatic"],
     burstProps: {
-        burstDelay: 0,
-        shotDelay: 0
+        shotDelay: 0,
+        burstDelay: 0
     }
 };

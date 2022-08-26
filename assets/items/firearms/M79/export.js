@@ -4,7 +4,7 @@
  */
 export default {
     name: "M79",
-    targetVersion: "0.8.1",
+    targetVersion: "0.8.2",
     summary: {
         class: "assault_rifle",
         engagementDistance: {
@@ -26,7 +26,7 @@ export default {
         velocity: 20,
         range: 18,
         tracer: {
-            width: 196 / 455,
+            width: 0.4307692307692308,
             height: 0.8
         },
         hitboxLength: 1,
@@ -34,7 +34,7 @@ export default {
         headshotMult: 1,
         fsa: {
             enabled: false,
-            rechargeTime: toMS({ givenIn: "s", value: 1e10 })
+            rechargeTime: 10000000000000
         },
         falloff: 1,
         projectiles: 1
@@ -56,12 +56,12 @@ export default {
         parr: 0.625
     },
     dimensions: {
-        width: 143 / 248,
+        width: 0.5766129032258065,
         height: 2.75,
         layer: 2
     },
     reload: {
-        duration: toMS({ givenIn: "s", value: 2.3 }),
+        duration: 2300,
         ammoReloaded: "all",
         chain: false
     },
@@ -69,7 +69,7 @@ export default {
         normal: 1,
         firepower: 1
     },
-    switchDelay: toMS({ givenIn: "ms", value: 900 }),
+    switchDelay: 900,
     handPositions: {
         leftHand: {
             perp: 1.35,
@@ -102,9 +102,7 @@ export default {
             perp: 0,
             parr: 0.3
         },
-        duration: toMS({ givenIn: "ms", value: 150 })
+        duration: 150
     },
-    possibleFireModes: [
-        "semi"
-    ]
+    possibleFireModes: ["semi"],
 };

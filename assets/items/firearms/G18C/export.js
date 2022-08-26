@@ -3,28 +3,28 @@
  * @type {JSONGun}
  */
 export default {
-    name: "Dual OTs-38",
+    name: "G18C",
     targetVersion: "0.8.2",
     summary: {
-        class: "semi_pistol",
+        class: "auto_pistol",
         engagementDistance: {
-            min: 5,
-            max: 80
+            min: 2,
+            max: 25
         },
         shouldNoslow: false,
         role: "secondary"
     },
-    dual: true,
+    dual: false,
     images: {
-        loot: "./loot-weapon-ots38-dual.svg",
-        held: "../OTs-38/ots38.png",
-        silhouette: "./ots38-dual-silhouette.png"
+        loot: "./loot-weapon-glock.svg",
+        held: "../shared/gun-short.png",
+        silhouette: "./glock-silhouette.png"
     },
-    tint: "#FFFFFF",
+    tint: "#1E1E1E",
     ballistics: {
-        damage: 32,
-        velocity: 115,
-        range: 135,
+        damage: 9,
+        velocity: 70,
+        range: 44,
         tracer: {
             width: 0.15,
             height: 10
@@ -36,65 +36,61 @@ export default {
             enabled: false,
             rechargeTime: 10000000000000
         },
-        falloff: 0.77,
+        falloff: 0.5,
         projectiles: 1
     },
-    suppressed: true,
-    caliber: "7.62x41mm",
-    firingDelay: 180,
+    suppressed: false,
+    caliber: "9x19mm",
+    firingDelay: "60",
     deployGroup: 0,
     accuracy: {
-        default: toRad({ givenIn: "degrees", value: 1.4 }),
-        moving: toRad({ givenIn: "degrees", value: 2.8 })
+        default: toRad({ givenIn: "degrees", value: 12 }),
+        moving: toRad({ givenIn: "degrees", value: 10 })
     },
     moveSpeedPenalties: {
         active: 0,
         firing: 0
     },
     imageOffset: {
-        perp: 0.525,
-        parr: 1.4
+        perp: 0,
+        parr: 1.3
     },
     dimensions: {
-        width: 0.4661458333333333,
+        width: 0.43359375,
         height: 1.5,
         layer: 0
     },
     reload: {
-        duration: 3800,
+        duration: 1950,
         ammoReloaded: "all",
         chain: false
     },
     magazineCapacity: {
-        normal: 10,
-        firepower: 10
+        normal: 17,
+        firepower: 31
     },
-    switchDelay: 300,
+    switchDelay: "250",
     handPositions: {
         leftHand: {
-            perp: 0.525,
+            perp: 0.1,
             parr: 0.85
         },
-        rightHand: {
-            perp: -0.525,
-            parr: 0.85
-        }
     },
     projectileSpawnOffset: {
-        perp: 0.525,
+        perp: 0,
         parr: 0
     },
     casings: {
         spawnOffset: {
             perp: 0,
-            parr: 0.2
+            parr: 0.4
         },
         velocity: {
-            perp: () => +meanDevPM_random(0, -6, true),
-            parr: () => +meanDevPM_random(-4, 2, true),
-            angular: () => +meanDevPM_random(0, toRad({ givenIn: "turns", value: 3 }), true)
+            perp: () => +meanDevPM_random(-2, 0.8, true),
+            parr: () => +meanDevPM_random(0, 0.8, true),
+            angular: () => +meanDevPM_random(toRad({ givenIn: "turns", value: 2 }), toRad({ givenIn: "turns", value: 2 }), false)
         },
-        spawnOn: "reload",
+        spawnOn: "fire",
         spawnDelay: 0
     },
     recoilImpulse: {
@@ -102,7 +98,7 @@ export default {
             perp: 0,
             parr: 0.08
         },
-        duration: 70
+        duration: "50"
     },
-    possibleFireModes: ["semi"],
+    possibleFireModes: ["automatic"],
 };

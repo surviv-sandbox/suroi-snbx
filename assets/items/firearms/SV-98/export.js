@@ -4,7 +4,7 @@
  */
 export default {
     name: "SV-98",
-    targetVersion: "0.8.1",
+    targetVersion: "0.8.2",
     summary: {
         class: "sniper_rifle",
         engagementDistance: {
@@ -27,21 +27,21 @@ export default {
         range: 520,
         tracer: {
             width: 0.32,
-            height: 200 / 9
+            height: 22.22222222222222
         },
         hitboxLength: 8,
         obstacleMult: 1.5,
         headshotMult: 1.5,
         fsa: {
             enabled: false,
-            rechargeTime: toMS({ givenIn: "s", value: 1e10 })
+            rechargeTime: 10000000000000
         },
         falloff: 0.96,
         projectiles: 1
     },
     suppressed: false,
     caliber: "7.62x54mmR",
-    firingDelay: toMS({ givenIn: "s", value: 1.5 }),
+    firingDelay: 1500,
     deployGroup: 0,
     accuracy: {
         default: toRad({ givenIn: "degrees", value: 1 }),
@@ -61,7 +61,7 @@ export default {
         layer: 0
     },
     reload: {
-        duration: toMS({ givenIn: "s", value: 2.7 }),
+        duration: 2700,
         ammoReloaded: "all",
         chain: false
     },
@@ -69,7 +69,7 @@ export default {
         normal: 10,
         firepower: 15
     },
-    switchDelay: toMS({ givenIn: "s", value: 1 }),
+    switchDelay: 1000,
     handPositions: {
         leftHand: {
             perp: 0.1,
@@ -95,16 +95,14 @@ export default {
             angular: () => +meanDevPM_random(toRad({ givenIn: "turns", value: 1.7 }), toRad({ givenIn: "turns", value: 1 }), true)
         },
         spawnOn: "fire",
-        spawnDelay: toMS({ givenIn: "ms", value: 800 })
+        spawnDelay: 800
     },
     recoilImpulse: {
         direction: {
             perp: 0,
             parr: 0.2
         },
-        duration: toMS({ givenIn: "ms", value: 150 })
+        duration: 150
     },
-    possibleFireModes: [
-        "semi"
-    ]
+    possibleFireModes: ["semi"],
 };

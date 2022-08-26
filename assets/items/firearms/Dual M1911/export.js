@@ -4,7 +4,7 @@
  */
 export default {
     name: "Dual M1911",
-    targetVersion: "0.8.1",
+    targetVersion: "0.8.2",
     summary: {
         class: "semi_pistol",
         engagementDistance: {
@@ -34,14 +34,14 @@ export default {
         headshotMult: 2,
         fsa: {
             enabled: false,
-            rechargeTime: toMS({ givenIn: "s", value: 1e10 })
+            rechargeTime: 10000000000000
         },
         falloff: 0.7,
         projectiles: 1
     },
     suppressed: false,
     caliber: ".45ACP",
-    firingDelay: toMS({ givenIn: "ms", value: 85 }),
+    firingDelay: 85,
     deployGroup: 0,
     accuracy: {
         default: toRad({ givenIn: "degrees", value: 9.5 }),
@@ -56,12 +56,12 @@ export default {
         parr: 1.35
     },
     dimensions: {
-        width: 111 / 256,
+        width: 0.43359375,
         height: 1.5,
         layer: 0
     },
     reload: {
-        duration: toMS({ givenIn: "s", value: 4.1 }),
+        duration: 4100,
         ammoReloaded: "all",
         chain: false
     },
@@ -69,7 +69,7 @@ export default {
         normal: 14,
         firepower: 24
     },
-    switchDelay: toMS({ givenIn: "ms", value: 250 }),
+    switchDelay: 250,
     handPositions: {
         leftHand: {
             perp: 0.525,
@@ -102,9 +102,7 @@ export default {
             perp: 0,
             parr: 0.09
         },
-        duration: toMS({ givenIn: "ms", value: 80 })
+        duration: 80
     },
-    possibleFireModes: [
-        "semi"
-    ]
+    possibleFireModes: ["semi"],
 };

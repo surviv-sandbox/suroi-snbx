@@ -4,7 +4,7 @@
  */
 export default {
     name: "FAMAS",
-    targetVersion: "0.8.1",
+    targetVersion: "0.8.2",
     summary: {
         class: "burst_ar",
         engagementDistance: {
@@ -34,14 +34,14 @@ export default {
         headshotMult: 2,
         fsa: {
             enabled: false,
-            rechargeTime: toMS({ givenIn: "s", value: 1e10 })
+            rechargeTime: 10000000000000
         },
         falloff: 0.8,
         projectiles: 1
     },
     suppressed: false,
     caliber: "5.56x45mm",
-    firingDelay: toMS({ givenIn: "RPM", value: 600 }),
+    firingDelay: 100,
     deployGroup: 0,
     accuracy: {
         default: toRad({ givenIn: "degrees", value: 1.1 }),
@@ -56,12 +56,12 @@ export default {
         parr: 1.95
     },
     dimensions: {
-        width: 85 / 166,
+        width: 0.5120481927710844,
         height: 2.5,
         layer: 1
     },
     reload: {
-        duration: toMS({ givenIn: "s", value: 2.3 }),
+        duration: 2300,
         ammoReloaded: "all",
         chain: false
     },
@@ -69,7 +69,7 @@ export default {
         normal: 25,
         firepower: 35
     },
-    switchDelay: toMS({ givenIn: "ms", value: 750 }),
+    switchDelay: 750,
     handPositions: {
         leftHand: {
             perp: 0.085,
@@ -102,13 +102,11 @@ export default {
             perp: 0,
             parr: 0.08
         },
-        duration: toMS({ givenIn: "ms", value: 100 })
+        duration: 100
     },
-    possibleFireModes: [
-        "auto-burst-3"
-    ],
+    possibleFireModes: ["auto-burst-3"],
     burstProps: {
-        shotDelay: toMS({ givenIn: "ms", value: 70 }),
-        burstDelay: toMS({ givenIn: "ms", value: 350 })
+        shotDelay: 70,
+        burstDelay: 350
     }
 };

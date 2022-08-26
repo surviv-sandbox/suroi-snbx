@@ -4,7 +4,7 @@
  */
 export default {
     name: "USAS-12",
-    targetVersion: "0.8.1",
+    targetVersion: "0.8.2",
     summary: {
         class: "shotgun",
         engagementDistance: {
@@ -33,21 +33,21 @@ export default {
         })()),
         tracer: {
             width: 0.15,
-            height: 160 / 9
+            height: 17.77777777777778
         },
         hitboxLength: 4,
         obstacleMult: 1,
         headshotMult: 1.5,
         fsa: {
             enabled: false,
-            rechargeTime: toMS({ givenIn: "s", value: 1e10 })
+            rechargeTime: 10000000000000
         },
         falloff: 0.3,
         projectiles: 1
     },
     suppressed: false,
     caliber: "FRAG-12",
-    firingDelay: toMS({ givenIn: "ms", value: 500 }),
+    firingDelay: 500,
     deployGroup: 0,
     accuracy: {
         default: toRad({ givenIn: "degrees", value: 7 }),
@@ -62,12 +62,12 @@ export default {
         parr: 1.7
     },
     dimensions: {
-        width: 3.15 * 40.452766 / 232,
+        width: 0.5492509176724137,
         height: 3.15,
         layer: 0
     },
     reload: {
-        duration: toMS({ givenIn: "s", value: 2.9 }),
+        duration: 2900,
         ammoReloaded: "all",
         chain: false
     },
@@ -75,7 +75,7 @@ export default {
         normal: 10,
         firepower: 20
     },
-    switchDelay: toMS({ givenIn: "ms", value: 750 }),
+    switchDelay: 750,
     handPositions: {
         leftHand: {
             perp: 0.1,
@@ -108,9 +108,7 @@ export default {
             perp: 0,
             parr: 0.25
         },
-        duration: toMS({ givenIn: "ms", value: 125 })
+        duration: 125
     },
-    possibleFireModes: [
-        "automatic"
-    ]
+    possibleFireModes: ["automatic"],
 };

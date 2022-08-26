@@ -4,7 +4,7 @@
  */
 export default {
     name: "AWM-S",
-    targetVersion: "0.8.1",
+    targetVersion: "0.8.2",
     summary: {
         class: "sniper_rifle",
         engagementDistance: {
@@ -27,21 +27,21 @@ export default {
         range: 300,
         tracer: {
             width: 0.25,
-            height: 200 / 9
+            height: 22.22222222222222
         },
         hitboxLength: 8,
         obstacleMult: 1.5,
         headshotMult: 1,
         fsa: {
             enabled: false,
-            rechargeTime: toMS({ givenIn: "s", value: 1e10 })
+            rechargeTime: 10000000000000
         },
         falloff: 0.94,
         projectiles: 1
     },
     suppressed: true,
     caliber: ".308 Subsonic",
-    firingDelay: toMS({ givenIn: "s", value: 1.5 }),
+    firingDelay: 1500,
     deployGroup: 0,
     accuracy: {
         default: toRad({ givenIn: "degrees", value: 4 }),
@@ -56,12 +56,12 @@ export default {
         parr: 2.25
     },
     dimensions: {
-        width: 44.388462 / 233.65001 * 3.55,
+        width: 0.6744234254473174,
         height: 3.55,
         layer: 0
     },
     reload: {
-        duration: toMS({ givenIn: "s", value: 3.6 }),
+        duration: 3600,
         ammoReloaded: "all",
         chain: false
     },
@@ -69,7 +69,7 @@ export default {
         normal: 5,
         firepower: 7
     },
-    switchDelay: toMS({ givenIn: "s", value: 1 }),
+    switchDelay: 1000,
     handPositions: {
         leftHand: {
             perp: 0.1,
@@ -95,16 +95,14 @@ export default {
             angular: () => +meanDevPM_random(toRad({ givenIn: "turns", value: 1.7 }), toRad({ givenIn: "turns", value: 1 }), true)
         },
         spawnOn: "fire",
-        spawnDelay: toMS({ givenIn: "s", value: 1.4 })
+        spawnDelay: 1400
     },
     recoilImpulse: {
         direction: {
             perp: 0,
             parr: 0.25
         },
-        duration: toMS({ givenIn: "ms", value: 150 })
+        duration: 150
     },
-    possibleFireModes: [
-        "semi"
-    ]
+    possibleFireModes: ["semi"],
 };

@@ -4,7 +4,7 @@
  */
 export default {
     name: "Mosin-Nagant",
-    targetVersion: "0.8.1",
+    targetVersion: "0.8.2",
     summary: {
         class: "sniper_rifle",
         engagementDistance: {
@@ -27,21 +27,21 @@ export default {
         range: 500,
         tracer: {
             width: 0.32,
-            height: 200 / 9
+            height: 22.22222222222222
         },
         hitboxLength: 8,
         obstacleMult: 1.5,
         headshotMult: 1.5,
         fsa: {
             enabled: false,
-            rechargeTime: toMS({ givenIn: "s", value: 1e10 })
+            rechargeTime: 10000000000000
         },
         falloff: 0.95,
         projectiles: 1
     },
     suppressed: false,
     caliber: "7.62x54mmR",
-    firingDelay: toMS({ givenIn: "s", value: 1.75 }),
+    firingDelay: 1750,
     deployGroup: 0,
     accuracy: {
         default: toRad({ givenIn: "degrees", value: 1 }),
@@ -61,12 +61,12 @@ export default {
         layer: 0
     },
     reload: {
-        duration: toMS({ givenIn: "ms", value: 900 }),
+        duration: 900,
         ammoReloaded: 1,
         chain: true
     },
     altReload: {
-        duration: toMS({ givenIn: "s", value: 3 }),
+        duration: 3000,
         ammoReloaded: "all",
         chain: false
     },
@@ -74,7 +74,7 @@ export default {
         normal: 5,
         firepower: 5
     },
-    switchDelay: toMS({ givenIn: "s", value: 1 }),
+    switchDelay: 1000,
     handPositions: {
         leftHand: {
             perp: 0.1,
@@ -100,16 +100,14 @@ export default {
             angular: () => +meanDevPM_random(toRad({ givenIn: "turns", value: 1.5 }), toRad({ givenIn: "turns", value: 1.5 }), false)
         },
         spawnOn: "fire",
-        spawnDelay: toMS({ givenIn: "s", value: 1 })
+        spawnDelay: 1000
     },
     recoilImpulse: {
         direction: {
             perp: 0,
             parr: 0.2
         },
-        duration: toMS({ givenIn: "ms", value: 100 })
+        duration: 100
     },
-    possibleFireModes: [
-        "semi"
-    ]
-}; 
+    possibleFireModes: ["semi"],
+};

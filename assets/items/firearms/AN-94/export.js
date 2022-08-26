@@ -4,7 +4,7 @@
  */
 export default {
     name: "AN-94",
-    targetVersion: "0.8.1",
+    targetVersion: "0.8.2",
     summary: {
         class: "burst_ar",
         engagementDistance: {
@@ -34,14 +34,14 @@ export default {
         headshotMult: 2,
         fsa: {
             enabled: false,
-            rechargeTime: toMS({ givenIn: "s", value: 1e10 })
+            rechargeTime: 10000000000000
         },
         falloff: 0.9,
         projectiles: 1
     },
     suppressed: false,
     caliber: "7.62x39mm",
-    firingDelay: toMS({ givenIn: "RPM", value: 600 }),
+    firingDelay: 100,
     deployGroup: 0,
     accuracy: {
         default: toRad({ givenIn: "degrees", value: 1.5 }),
@@ -61,7 +61,7 @@ export default {
         layer: 0
     },
     reload: {
-        duration: toMS({ givenIn: "s", value: 2.35 }),
+        duration: 2350,
         ammoReloaded: "all",
         chain: false
     },
@@ -69,7 +69,7 @@ export default {
         normal: 45,
         firepower: 60
     },
-    switchDelay: toMS({ givenIn: "ms", value: 750 }),
+    switchDelay: 750,
     handPositions: {
         leftHand: {
             perp: 0.1,
@@ -102,13 +102,11 @@ export default {
             perp: 0,
             parr: 0.1
         },
-        duration: toMS({ givenIn: "ms", value: 80 })
+        duration: 80
     },
-    possibleFireModes: [
-        "auto-burst-2"
-    ],
+    possibleFireModes: ["auto-burst-2"],
     burstProps: {
-        shotDelay: toMS({ givenIn: "RPM", value: 2400 }),
-        burstDelay: toMS({ givenIn: "RPM", value: 250 })
+        shotDelay: 25,
+        burstDelay: 240
     }
 };

@@ -4,7 +4,7 @@
  */
 export default {
     name: "M4A1-S",
-    targetVersion: "0.8.1",
+    targetVersion: "0.8.2",
     summary: {
         class: "assault_rifle",
         engagementDistance: {
@@ -34,14 +34,14 @@ export default {
         headshotMult: 2,
         fsa: {
             enabled: false,
-            rechargeTime: toMS({ givenIn: "s", value: 1e10 })
+            rechargeTime: 10000000000000
         },
         falloff: 0.82,
         projectiles: 1
     },
     suppressed: true,
     caliber: "5.56x45mm",
-    firingDelay: toMS({ givenIn: "s", value: 0.082 }),
+    firingDelay: 82,
     deployGroup: 0,
     accuracy: {
         default: toRad({ givenIn: "degrees", value: 2 }),
@@ -56,12 +56,12 @@ export default {
         parr: 1.9
     },
     dimensions: {
-        width: 385 / 488,
+        width: 0.7889344262295082,
         height: 3.5,
         layer: 0
     },
     reload: {
-        duration: toMS({ givenIn: "s", value: 3.1 }),
+        duration: 3100,
         ammoReloaded: "all",
         chain: false
     },
@@ -69,7 +69,7 @@ export default {
         normal: 30,
         firepower: 40
     },
-    switchDelay: toMS({ givenIn: "ms", value: 750 }),
+    switchDelay: 750,
     handPositions: {
         leftHand: {
             perp: 0.1,
@@ -92,7 +92,7 @@ export default {
         velocity: {
             perp: () => +meanDevPM_random(-5, 3.5, true),
             parr: () => +meanDevPM_random(-1, 0.5, true),
-            angular: () => +meanDevPM_random(toRad({ givenIn: "turns", value: 2 }), toRad({ givenIn: "turns", value: 1.4 }), true),
+            angular: () => +meanDevPM_random(toRad({ givenIn: "turns", value: 2 }), toRad({ givenIn: "turns", value: 1.4 }), true)
         },
         spawnOn: "fire",
         spawnDelay: 0
@@ -102,9 +102,7 @@ export default {
             perp: 0,
             parr: 0.1
         },
-        duration: toMS({ givenIn: "ms", value: 70 })
+        duration: 70
     },
-    possibleFireModes: [
-        "automatic"
-    ]
+    possibleFireModes: ["automatic"],
 };

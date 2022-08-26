@@ -4,7 +4,7 @@
  */
 export default {
     name: "P30L",
-    targetVersion: "0.8.1",
+    targetVersion: "0.8.2",
     summary: {
         class: "semi_pistol_move",
         engagementDistance: {
@@ -34,14 +34,14 @@ export default {
         headshotMult: 2,
         fsa: {
             enabled: false,
-            rechargeTime: toMS({ givenIn: "s", value: 1e10 })
+            rechargeTime: 10000000000000
         },
         falloff: 0.75,
         projectiles: 1
     },
     suppressed: false,
     caliber: "9x19mm",
-    firingDelay: toMS({ givenIn: "ms", value: 140 }),
+    firingDelay: 140,
     deployGroup: 0,
     accuracy: {
         default: toRad({ givenIn: "degrees", value: 2 }),
@@ -56,12 +56,12 @@ export default {
         parr: 1.45
     },
     dimensions: {
-        width: 111 / 256,
-        height: 24309 / 13568,
+        width: 0.43359375,
+        height: 1.7916420990566038,
         layer: 0
     },
     reload: {
-        duration: toMS({ givenIn: "s", value: 1.2 }),
+        duration: 1200,
         ammoReloaded: "all",
         chain: false
     },
@@ -69,12 +69,12 @@ export default {
         normal: 15,
         firepower: 30
     },
-    switchDelay: toMS({ givenIn: "ms", value: 250 }),
+    switchDelay: 250,
     handPositions: {
         leftHand: {
             perp: 0.1,
             parr: 0.85
-        }
+        },
     },
     projectileSpawnOffset: {
         perp: 0,
@@ -98,9 +98,7 @@ export default {
             perp: 0,
             parr: 0.08
         },
-        duration: toMS({ givenIn: "ms", value: 90 })
+        duration: 90
     },
-    possibleFireModes: [
-        "semi"
-    ]
+    possibleFireModes: ["semi"],
 };
