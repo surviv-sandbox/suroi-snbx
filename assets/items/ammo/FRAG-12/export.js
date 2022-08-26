@@ -3,12 +3,12 @@
  * @type {ammoData}
  */
 export default {
-    name: "40mm",
+    name: "FRAG-12",
     targetVersion: "0.8.3",
     tints: {
-        normal: "#FFFFFF",
-        saturated: "#FFFFFF",
-        chambered: "#FFFFFF"
+        normal: "#CB0000",
+        saturated: () => gamespace.settings.bonusFeatures.useInterpolatedSaturatedTracers ? "#E50000" : "#CB000",
+        chambered: "#FF0000"
     },
     alpha: {
         rate: 0.92,
@@ -22,17 +22,16 @@ export default {
     },
     projectileInfo: {
         type: "explosive",
-        explosionType: "explosion_frag",
-        img: "./40mm.png",
-        spinVel: () => gamespace.settings.balanceChanges.weapons.m79.grenadeSpin ? toRad({ givenIn: "turns", value: 2.5 }) : 0,
-        heightPeak: 5,
+        explosionType: "explosion_usas",
+        img: "../shared/tracer.png",
+        heightPeak: 0,
         explodeOnContact: true,
-        maxDist: 18
+        maxDist: 24
     },
     casing: {
-        img: "./shell-40mm.png",
+        img: "./shell-12gauge.png",
         lifetime: () => +meanDevPM_random(500, 250, false),
-        width: 490 / 33,
-        height: 20
+        width: 10.5,
+        height: 30
     }
 };

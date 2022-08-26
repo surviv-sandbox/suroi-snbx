@@ -3,12 +3,12 @@
  * @type {ammoData}
  */
 export default {
-    name: "5.56x45mm",
+    name: "9x19mm",
     targetVersion: "0.8.3",
     tints: {
-        normal: "#A9FF92",
-        saturated: () => gamespace.settings.bonusFeatures.useInterpolatedSaturatedTracers ? "#7EFF5C" : "#A9FF92",
-        chambered: "#36FF00"
+        normal: "#FEDCDC",
+        saturated: () => gamespace.settings.bonusFeatures.useInterpolatedSaturatedTracers ? "#FEBEAD" : "#FEDCDC",
+        chambered: "#FF8000"
     },
     alpha: {
         rate: 0.92,
@@ -25,9 +25,9 @@ export default {
         img: "../shared/tracer.png"
     },
     casing: {
-        img: "./shell-556mm.png",
-        lifetime: () => +meanDevPM_random(750, 250, false),
-        width: 6762 / 437,
-        height: 46
+        img: "./shell-9mm.png",
+        lifetime: () => +meanDevPM_random(500, 250, false),
+        width: 185 / 22,
+        height: 20
     }
 };
