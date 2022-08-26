@@ -1,12 +1,12 @@
-; (function (globalScope) {
+;(function (globalScope) {
   'use strict';
 
 
-  /*
-   *  decimal.js v10.3.1
+  /*!
+   *  decimal.js v10.4.0
    *  An arbitrary-precision Decimal type for JavaScript.
    *  https://github.com/MikeMcl/decimal.js
-   *  Copyright (c) 2021 Michael Mclaughlin <M8ch88l@gmail.com>
+   *  Copyright (c) 2022 Michael Mclaughlin <M8ch88l@gmail.com>
    *  MIT Licence
    */
 
@@ -14,8 +14,8 @@
   // -----------------------------------  EDITABLE DEFAULTS  ------------------------------------ //
 
 
-  // The maximum exponent magnitude.
-  // The limit on the value of `toExpNeg`, `toExpPos`, `minE` and `maxE`.
+    // The maximum exponent magnitude.
+    // The limit on the value of `toExpNeg`, `toExpPos`, `minE` and `maxE`.
   var EXP_LIMIT = 9e15,                      // 0 to 9e15
 
     // The limit on the value of `precision`, and on the value of the first argument to
@@ -80,7 +80,7 @@
 
       // The exponent value at and above which `toString` returns exponential notation.
       // JavaScript numbers: 21
-      toExpPos: 21,                         // 0 to EXP_LIMIT
+      toExpPos:  21,                         // 0 to EXP_LIMIT
 
       // The minimum exponent value, beneath which underflow to zero occurs.
       // JavaScript numbers: -324  (5e-324)
@@ -95,7 +95,7 @@
     },
 
 
-    // ----------------------------------- END OF EDITABLE DEFAULTS ------------------------------- //
+  // ----------------------------------- END OF EDITABLE DEFAULTS ------------------------------- //
 
 
     Decimal, inexact, noConflict, quadrant,
@@ -342,8 +342,8 @@
     // Initial estimate.
     s = x.s * mathpow(x.s * x, 1 / 3);
 
-    // Math.cbrt underflow/overflow?
-    // Pass x to Math.pow as integer, then adjust the exponent of the result.
+     // Math.cbrt underflow/overflow?
+     // Pass x to Math.pow as integer, then adjust the exponent of the result.
     if (!s || Math.abs(s) == 1 / 0) {
       n = digitsToString(x.d);
       e = x.e;
@@ -372,7 +372,7 @@
 
     // Halley's method.
     // TODO? Compare Newton's method.
-    for (; ;) {
+    for (;;) {
       t = r;
       t3 = t.times(t).times(t);
       t3plusx = t3.plus(x);
@@ -1350,7 +1350,7 @@
       for (i = k; i--;) d.push(0);
       d.reverse();
 
-      // Base 1e7 exponents equal.
+    // Base 1e7 exponents equal.
     } else {
 
       // Check digits to determine which is the bigger number.
@@ -1547,7 +1547,7 @@
       return y;
     }
 
-    // If signs differ...
+     // If signs differ...
     if (x.s != y.s) {
       y.s = -y.s;
       return x.minus(y);
@@ -1765,7 +1765,7 @@
     sd = (e = Ctor.precision) + 3;
 
     // Newton-Raphson iteration.
-    for (; ;) {
+    for (;;) {
       t = r;
       r = t.plus(divide(x, t, sd + 2, 1)).times(0.5);
 
@@ -1879,7 +1879,7 @@
 
     y.s *= x.s;
 
-    // If either is NaN, ±Infinity or ±0...
+     // If either is NaN, ±Infinity or ±0...
     if (!xd || !xd[0] || !yd || !yd[0]) {
 
       return new Ctor(!y.s || xd && !xd[0] && !yd || yd && !yd[0] && !xd
@@ -2088,7 +2088,7 @@
     pr = Ctor.precision;
     Ctor.precision = e = xd.length * LOG_BASE * 2;
 
-    for (; ;) {
+    for (;;)  {
       q = divide(n, d, 0, 1, 1);
       d2 = d0.plus(q.times(d1));
       if (d2.cmp(maxD) == 1) break;
@@ -2109,7 +2109,7 @@
 
     // Determine which fraction is closer to x, n0/d0 or n1/d1?
     r = divide(n1, d1, e, 1).minus(x).abs().cmp(divide(n0, d0, e, 1).minus(x).abs()) < 1
-      ? [n1, d1] : [n0, d0];
+        ? [n1, d1] : [n0, d0];
 
     Ctor.precision = pr;
     external = true;
@@ -2187,7 +2187,7 @@
       external = true;
       finalise(x);
 
-      // If y is zero, return zero with the sign of x.
+    // If y is zero, return zero with the sign of x.
     } else {
       y.s = x.s;
       x = y;
@@ -2588,7 +2588,7 @@
       } else {
         r = (rm < 4 && rd + 1 == k || rm > 3 && rd + 1 == k / 2) &&
           (d[di + 1] / k / 100 | 0) == mathpow(10, i - 2) - 1 ||
-          (rd == k / 2 || rd == 0) && (d[di + 1] / k / 100 | 0) == 0;
+            (rd == k / 2 || rd == 0) && (d[di + 1] / k / 100 | 0) == 0;
       }
     } else {
       if (i < 4) {
@@ -2598,7 +2598,7 @@
         r = (repeating || rm < 4) && rd == 9999 || !repeating && rm > 3 && rd == 4999;
       } else {
         r = ((repeating || rm < 4) && rd + 1 == k ||
-          (!repeating && rm > 3) && rd + 1 == k / 2) &&
+        (!repeating && rm > 3) && rd + 1 == k / 2) &&
           (d[di + 1] / k / 1000 | 0) == mathpow(10, i - 3) - 1;
       }
     }
@@ -2739,8 +2739,8 @@
         return new Ctor(// Return NaN if either NaN, or both Infinity or 0.
           !x.s || !y.s || (xd ? yd && xd[0] == yd[0] : !yd) ? NaN :
 
-            // Return ±0 if x is 0 or y is ±Infinity, or return ±Infinity as y is 0.
-            xd && xd[0] == 0 || !yd ? sign * 0 : sign / 0);
+          // Return ±0 if x is 0 or y is ±Infinity, or return ±Infinity as y is 0.
+          xd && xd[0] == 0 || !yd ? sign * 0 : sign / 0);
       }
 
       if (base) {
@@ -2796,7 +2796,7 @@
 
           more = k || i < xL;
 
-          // divisor >= 1e7
+        // divisor >= 1e7
         } else {
 
           // Normalise xd and yd so highest order digit of yd is >= base/2
@@ -2943,7 +2943,7 @@
    * Round `x` to `sd` significant digits using rounding mode `rm`.
    * Check for over/under-flow.
    */
-  function finalise(x, sd, rm, isTruncated) {
+   function finalise(x, sd, rm, isTruncated) {
     var digits, i, j, k, rd, roundUp, w, xd, xdi,
       Ctor = x.constructor;
 
@@ -3021,7 +3021,7 @@
 
           // Check whether the digit to the left of the rounding digit is odd.
           ((i > 0 ? j > 0 ? w / mathpow(10, digits - j) : 0 : xd[xdi - 1]) % 10) & 1 ||
-          rm == (x.s < 0 ? 8 : 7));
+            rm == (x.s < 0 ? 8 : 7));
 
       if (sd < 1 || !xd[0]) {
         xd.length = 0;
@@ -3057,7 +3057,7 @@
       }
 
       if (roundUp) {
-        for (; ;) {
+        for (;;) {
 
           // Is the digit to be rounded up in the first word of xd?
           if (xdi == 0) {
@@ -3096,7 +3096,7 @@
         x.d = null;
         x.e = NaN;
 
-        // Underflow?
+      // Underflow?
       } else if (x.e < Ctor.minE) {
 
         // Zero.
@@ -3148,7 +3148,7 @@
     var w = digits[0];
 
     // Add the number of digits of the first word of the digits array.
-    for (e *= LOG_BASE; w >= 10; w /= 10) e++;
+    for ( e *= LOG_BASE; w >= 10; w /= 10) e++;
     return e;
   }
 
@@ -3215,7 +3215,7 @@
 
     external = false;
 
-    for (; ;) {
+    for (;;) {
       if (n % 2) {
         r = r.times(x);
         if (truncate(r.d, k)) isTruncated = true;
@@ -3339,7 +3339,7 @@
     denominator = pow = sum = new Ctor(1);
     Ctor.precision = wpr;
 
-    for (; ;) {
+    for (;;) {
       pow = finalise(pow.times(x), wpr, 1);
       denominator = denominator.times(++i);
       t = sum.plus(divide(pow, denominator, wpr, 1));
@@ -3465,7 +3465,7 @@
     x2 = finalise(x.times(x), wpr, 1);
     denominator = 3;
 
-    for (; ;) {
+    for (;;) {
       numerator = finalise(numerator.times(x2), wpr, 1);
       t = sum.plus(divide(numerator, new Ctor(denominator), wpr, 1));
 
@@ -3573,7 +3573,7 @@
           x.d = null;
           x.e = NaN;
 
-          // Underflow?
+        // Underflow?
         } else if (x.e < x.constructor.minE) {
 
           // Zero.
@@ -3609,12 +3609,12 @@
       return x;
     }
 
-    if (isHex.test(str)) {
+    if (isHex.test(str))  {
       base = 16;
       str = str.toLowerCase();
-    } else if (isBinary.test(str)) {
+    } else if (isBinary.test(str))  {
       base = 2;
-    } else if (isOctal.test(str)) {
+    } else if (isOctal.test(str))  {
       base = 8;
     } else {
       throw Error(invalidArgument + str);
@@ -3720,7 +3720,7 @@
     x2 = x.times(x);
     u = new Ctor(y);
 
-    for (; ;) {
+    for (;;) {
       t = divide(u.times(x2), new Ctor(n++ * n++), pr, 1);
       u = isHyperbolic ? y.plus(t) : y.minus(t);
       y = divide(t.times(x2), new Ctor(n++ * n++), pr, 1);
@@ -3907,12 +3907,12 @@
             }
           }
 
-          str = str + (e < 0 ? 'p' : 'p+') + e;
+          str =  str + (e < 0 ? 'p' : 'p+') + e;
         } else if (e < 0) {
           for (; ++e;) str = '0' + str;
           str = '0.' + str;
         } else {
-          if (++e > len) for (e -= len; e--;) str += '0';
+          if (++e > len) for (e -= len; e-- ;) str += '0';
           else if (e < len) str = str.slice(0, e) + '.' + str.slice(e);
         }
       }
@@ -4113,22 +4113,22 @@
     if (!y.s || !x.s) {
       r = new this(NaN);
 
-      // Both ±Infinity
+    // Both ±Infinity
     } else if (!y.d && !x.d) {
       r = getPi(this, wpr, 1).times(x.s > 0 ? 0.25 : 0.75);
       r.s = y.s;
 
-      // x is ±Infinity or y is ±0
+    // x is ±Infinity or y is ±0
     } else if (!x.d || y.isZero()) {
       r = x.s < 0 ? getPi(this, pr, rm) : new this(0);
       r.s = y.s;
 
-      // y is ±Infinity or x is ±0
+    // y is ±Infinity or x is ±0
     } else if (!y.d || x.isZero()) {
       r = getPi(this, wpr, 1).times(0.5);
       r.s = y.s;
 
-      // Both non-zero and finite
+    // Both non-zero and finite
     } else if (x.s < 0) {
       this.precision = wpr;
       this.rounding = 1;
@@ -4359,7 +4359,7 @@
 
           return;
 
-          // Infinity, NaN.
+        // Infinity, NaN.
         } else if (v * 0 !== 0) {
           if (!v) x.s = NaN;
           x.e = NaN;
@@ -4670,7 +4670,7 @@
     if (!this.crypto) {
       for (; i < k;) rd[i++] = Math.random() * 1e7 | 0;
 
-      // Browsers supporting crypto.getRandomValues.
+    // Browsers supporting crypto.getRandomValues.
     } else if (crypto.getRandomValues) {
       d = crypto.getRandomValues(new Uint32Array(k));
 
@@ -4689,7 +4689,7 @@
         }
       }
 
-      // Node.js supporting crypto.randomBytes.
+    // Node.js supporting crypto.randomBytes.
     } else if (crypto.randomBytes) {
 
       // buffer
@@ -4908,7 +4908,7 @@
       return Decimal;
     });
 
-    // Node and other environments that support module.exports.
+  // Node and other environments that support module.exports.
   } else if (typeof module != 'undefined' && module.exports) {
     if (typeof Symbol == 'function' && typeof Symbol.iterator == 'symbol') {
       P[Symbol['for']('nodejs.util.inspect.custom')] = P.toString;
@@ -4917,7 +4917,7 @@
 
     module.exports = Decimal;
 
-    // Browser.
+  // Browser.
   } else {
     if (!globalScope) {
       globalScope = typeof self != 'undefined' && self && self.self == self ? self : window;

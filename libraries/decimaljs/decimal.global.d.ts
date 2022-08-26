@@ -85,12 +85,12 @@ export declare class Decimal {
   abs(): Decimal;
 
   ceil(): Decimal;
-
+  
   clampedTo(min: Decimal.Value, max: Decimal.Value): Decimal;
   clamp(min: Decimal.Value, max: Decimal.Value): Decimal;
 
-  comparedTo(n: DecimalValue): -1 | 0 | 1; // Custom typing; this function is typed as "comparedTo(n: DecimalValue): number" by default
-  cmp(n: DecimalValue): -1 | 0 | 1; // Custom typing; this function is typed as "cmp(n: DecimalValue): number" by default
+  comparedTo(n: DecimalValue): number;
+  cmp(n: DecimalValue): number;
 
   cosine(): Decimal;
   cos(): Decimal;
@@ -192,17 +192,17 @@ export declare class Decimal {
 
   round(): Decimal;
 
-  sine(): Decimal;
-  sin(): Decimal;
+  sine() : Decimal;
+  sin() : Decimal;
 
   squareRoot(): Decimal;
   sqrt(): Decimal;
 
-  tangent(): Decimal;
-  tan(): Decimal;
+  tangent() : Decimal;
+  tan() : Decimal;
 
   times(n: DecimalValue): Decimal;
-  mul(n: DecimalValue): Decimal;
+  mul(n: DecimalValue) : Decimal;
 
   toBinary(significantDigits?: number): string;
   toBinary(significantDigits: number, rounding: DecimalRounding): string;
@@ -272,7 +272,7 @@ export declare class Decimal {
   static exp(n: DecimalValue): Decimal;
   static floor(n: DecimalValue): Decimal;
   static hypot(...n: DecimalValue[]): Decimal;
-  static isDecimal(object: any): boolean;
+  static isDecimal(object: any): object is Decimal;
   static ln(n: DecimalValue): Decimal;
   static log(n: DecimalValue, base?: DecimalValue): Decimal;
   static log2(n: DecimalValue): Decimal;
