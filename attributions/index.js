@@ -52,10 +52,11 @@
 
                 (async () => {
                     /**
-                     * @type {{ version: string, frameworks: { [key: string]: `${number}.${number}.${number}` } }[]}
+                     * @type {{ links: { [key: string]: string }, versions: { version: string, frameworks: { [key: string]: `${number}.${number}.${number}` } }[] }}
                      */
                     const json = await (await fetch("frameworks.json")).json(),
-                        values = Object.values(json),
+                        links = json.links,
+                        values = Object.values(json.versions),
                         frameworks = values
                             .map(v => Object.keys(v.frameworks))
                             .flat()
@@ -73,10 +74,11 @@
                     );
 
                     table.appendChild(document.createElement("tbody")).append(...(() => {
+                        values.reverse();
                         return frameworks.map(f => {
                             const row = document.createElement("tr");
 
-                            row.append(...[{ frameworks: { [f]: f } }].concat(values.reverse()).map((v, i, a) => {
+                            row.append(...[{ frameworks: { [f]: f } }].concat(values).map((v, i, a) => {
                                 const td = document.createElement("td"),
                                     change = (() => {
                                         if (i > 1) {
@@ -99,7 +101,14 @@
                                     td.classList.add(`${{ 0: "major", 1: "minor", 2: "patch" }[change.index]}-${{ [-1]: "down", 1: "up" }[change.dir]}`);
                                 }
 
-                                td.textContent = v.frameworks[f];
+                                if (!i) {
+                                    const a = document.createElement("a");
+                                    a.href = links[v.frameworks[f]];
+                                    a.textContent = v.frameworks[f];
+                                    td.appendChild(a);
+                                } else {
+                                    td.textContent = v.frameworks[f];
+                                }
                                 return td;
                             }));
 

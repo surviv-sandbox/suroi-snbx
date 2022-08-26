@@ -1,101 +1,127 @@
-[
-    {
-        "version": "v0.1.0",
-        "frameworks": {
-            "p5": "1.4.1",
-            "matterjs": "0.18.0",
-            "poly-decomp": "0.3.0",
-            "decimaljs": "10.3.1"
-        }
+{
+    "links": {
+        "p5": "https://p5js.org",
+        "matterjs": "https://brm.io/matter-js/docs/",
+        "poly-decomp": "http://schteppe.github.io/poly-decomp.js/#path=584,506",
+        "decimaljs": "https://mikemcl.github.io/decimal.js/"
     },
-    {
-        "version": "v0.2.0",
-        "frameworks": {
-            "p5": "1.4.1",
-            "matterjs": "0.18.0",
-            "poly-decomp": "0.3.0",
-            "decimaljs": "10.3.1"
+    "versions": [
+        {
+            "version": "v0.1.0",
+            "frameworks": {
+                "p5": "1.4.1",
+                "matterjs": "0.18.0",
+                "poly-decomp": "0.3.0",
+                "decimaljs": "10.3.1"
+            }
+        },
+        {
+            "version": "v0.2.0",
+            "frameworks": {
+                "p5": "1.4.1",
+                "matterjs": "0.18.0",
+                "poly-decomp": "0.3.0",
+                "decimaljs": "10.3.1"
+            }
+        },
+        {
+            "version": "v0.3.0",
+            "frameworks": {
+                "p5": "1.4.1",
+                "matterjs": "0.18.0",
+                "poly-decomp": "0.3.0",
+                "decimaljs": "10.3.1"
+            }
+        },
+        {
+            "version": "v0.4.0",
+            "frameworks": {
+                "p5": "1.4.1",
+                "matterjs": "0.18.0",
+                "poly-decomp": "0.3.0",
+                "decimaljs": "10.3.1"
+            }
+        },
+        {
+            "version": "v0.5.0",
+            "frameworks": {
+                "p5": "1.4.1",
+                "matterjs": "0.18.0",
+                "poly-decomp": "0.3.0",
+                "decimaljs": "10.3.1"
+            }
+        },
+        {
+            "version": "v0.5.1",
+            "frameworks": {
+                "p5": "1.4.1",
+                "matterjs": "0.18.0",
+                "poly-decomp": "0.3.0",
+                "decimaljs": "10.3.1"
+            }
+        },
+        {
+            "version": "v0.6.0",
+            "frameworks": {
+                "p5": "1.4.1",
+                "matterjs": "0.18.0",
+                "poly-decomp": "0.3.0",
+                "decimaljs": "10.3.1"
+            }
+        },
+        {
+            "version": "v0.6.1",
+            "frameworks": {
+                "p5": "1.4.1",
+                "matterjs": "0.18.0",
+                "poly-decomp": "0.3.0",
+                "decimaljs": "10.3.1"
+            }
+        },
+        {
+            "version": "v0.7.0",
+            "frameworks": {
+                "p5": "1.4.1",
+                "matterjs": "0.18.0",
+                "poly-decomp": "0.3.0",
+                "decimaljs": "10.3.1"
+            }
+        },
+        {
+            "version": "v0.8.0",
+            "frameworks": {
+                "p5": "1.4.1",
+                "matterjs": "0.18.0",
+                "poly-decomp": "0.3.0",
+                "decimaljs": "10.3.1"
+            }
+        },
+        {
+            "version": "v0.8.1",
+            "frameworks": {
+                "p5": "1.4.1",
+                "matterjs": "0.18.0",
+                "poly-decomp": "0.3.0",
+                "decimaljs": "10.3.1"
+            }
+        },
+        {
+            "version": "v0.8.2",
+            "frameworks": {
+                "p5": "1.4.1",
+                "matterjs": "0.18.0",
+                "poly-decomp": "0.3.0",
+                "decimaljs": "10.3.1"
+            }
+        },
+        {
+            "version": "v0.8.3",
+            "frameworks": {
+                "p5": "1.4.2",
+                "matterjs": "0.18.0",
+                "poly-decomp": "0.3.0",
+                "decimaljs": "10.4.0"
+            }
         }
-    },
-    {
-        "version": "v0.3.0",
-        "frameworks": {
-            "p5": "1.4.1",
-            "matterjs": "0.18.0",
-            "poly-decomp": "0.3.0",
-            "decimaljs": "10.3.1"
-        }
-    },
-    {
-        "version": "v0.4.0",
-        "frameworks": {
-            "p5": "1.4.1",
-            "matterjs": "0.18.0",
-            "poly-decomp": "0.3.0",
-            "decimaljs": "10.3.1"
-        }
-    },
-    {
-        "version": "v0.5.0",
-        "frameworks": {
-            "p5": "1.4.1",
-            "matterjs": "0.18.0",
-            "poly-decomp": "0.3.0",
-            "decimaljs": "10.3.1"
-        }
-    },
-    {
-        "version": "v0.5.1",
-        "frameworks": {
-            "p5": "1.4.1",
-            "matterjs": "0.18.0",
-            "poly-decomp": "0.3.0",
-            "decimaljs": "10.3.1"
-        }
-    },
-    {
-        "version": "v0.6.0",
-        "frameworks": {
-            "p5": "1.4.1",
-            "matterjs": "0.18.0",
-            "poly-decomp": "0.3.0",
-            "decimaljs": "10.3.1"
-        }
-    },
-    {
-        "version": "v0.6.1",
-        "frameworks": {
-            "p5": "1.4.1",
-            "matterjs": "0.18.0",
-            "poly-decomp": "0.3.0",
-            "decimaljs": "10.3.1"
-        }
-    },
-    {
-        "version": "v0.7.0",
-        "frameworks": {
-            "p5": "1.4.1",
-            "matterjs": "0.18.0",
-            "poly-decomp": "0.3.0",
-            "decimaljs": "10.3.1"
-        }
-    },
-    {
-        "version": "v0.8.0",
-        "frameworks": {
-            "p5": "1.4.1",
-            "matterjs": "0.18.0",
-            "poly-decomp": "0.3.0",
-            "decimaljs": "10.3.1"
-        }
-    },
-    {
-        "version": "v0.8.1",
-        "frameworks": {
-            "p5": "1.4.1",
-            "matterjs": "0.18.0",
-            "poly-decomp": "0.3.0",
-            "decimaljs": "10.3.1"
-        }
-    }
-]
+    ]
+}

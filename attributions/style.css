@@ -30,6 +30,30 @@
     span.no {
         color: #C00;
     }
+
+    td.major-up {
+        background-color: #3b973b;
+    }
+
+    td.minor-up {
+        color: #080;
+    }
+
+    td.patch-up {
+        color: #262;
+    }
+
+    td.major-down {
+        background-color: #973b3b;
+    }
+
+    td.minor-down {
+        color: #800;
+    }
+
+    td.patch-down {
+        color: #622;
+    }
 }
 
 @media (prefers-color-scheme: dark) {
