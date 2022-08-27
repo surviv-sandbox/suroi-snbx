@@ -6,7 +6,7 @@ export default {
     name: "M79",
     targetVersion: "0.8.2",
     summary: {
-        class: "assault_rifle",
+        class: "grenade_launcher",
         engagementDistance: {
             min: 20,
             max: 30
