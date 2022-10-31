@@ -4,12 +4,12 @@
  */
 export default {
     name: "Dual G18C",
-    targetVersion: "0.8.2",
+    targetVersion: "0.9.0",
     summary: {
         class: "dual_pistol",
         engagementDistance: {
-            min: 2,
-            max: 25
+            min: 1,
+            max: 15
         },
         shouldNoslow: false,
         role: "secondary"
@@ -17,7 +17,7 @@ export default {
     dual: true,
     images: {
         loot: "./loot-weapon-glock-dual.svg",
-        held: "../shared/gun-short.png",
+        held: "../shared/gun-short.svg",
         silhouette: "./glock-dual-silhouette.png"
     },
     tint: "#1E1E1E",
@@ -61,7 +61,7 @@ export default {
         layer: 0
     },
     reload: {
-        duration: toMS({ givenIn: "s", value: 3.8 }),
+        duration: 3800,
         ammoReloaded: "all",
         chain: false
     },

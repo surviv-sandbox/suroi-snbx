@@ -8,6 +8,12 @@ html {
   display: none;
 }
 
+:disabled,
+.disabled {
+  opacity: 80%;
+  cursor: not-allowed;
+}
+
 canvas,
 p,
 button,
@@ -91,6 +97,7 @@ h1#title {
   border-bottom: calc(4vh / 9) solid #387C89;
   font-family: "roboto", "Helvetica", monospace;
   font-size: calc(35vw / 36);
+  color: white;
 }
 
 .surviv-blue-button:hover {
@@ -155,7 +162,7 @@ h1#title {
 }
 
 button#console {
-  aspect-ratio: 2;
+  width: 10%;
   height: 5%;
   background-image: url("./assets/gui/console.png");
   background-repeat: no-repeat;
@@ -163,6 +170,16 @@ button#console {
   background-position: center;
   right: 2%;
   top: 8%;
+}
+
+button#imports {
+  position: absolute;
+  color: white;
+  width: 10%;
+  height: 5%;
+  right: 2%;
+  left: unset;
+  top: 14%;
 }
 
 div#csl-marker-cont {

@@ -4,7 +4,7 @@
  */
 export default {
     name: "M9",
-    targetVersion: "0.8.2",
+    targetVersion: "0.9.0",
     summary: {
         class: "semi_pistol",
         engagementDistance: {
@@ -17,7 +17,7 @@ export default {
     dual: false,
     images: {
         loot: "./loot-weapon-m9.svg",
-        held: "../shared/gun-short.png",
+        held: "../shared/gun-short.svg",
         silhouette: "./m9-silhouette.png"
     },
     tint: "#1E1E1E",

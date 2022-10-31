@@ -4,7 +4,7 @@
  */
 export default {
     name: "Mosin-Nagant",
-    targetVersion: "0.8.2",
+    targetVersion: "0.9.0",
     summary: {
         class: "sniper_rifle",
         engagementDistance: {
@@ -17,7 +17,7 @@ export default {
     dual: false,
     images: {
         loot: "./loot-weapon-mosin.svg",
-        held: "../shared/gun-long.png",
+        held: "../shared/gun-long.svg",
         silhouette: "./mosin-silhouette.png"
     },
     tint: "#331A00",

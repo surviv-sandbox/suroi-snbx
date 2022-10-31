@@ -4,7 +4,7 @@
  */
 export default {
     name: "P30L",
-    targetVersion: "0.8.2",
+    targetVersion: "0.9.0",
     summary: {
         class: "semi_pistol_move",
         engagementDistance: {
@@ -17,7 +17,7 @@ export default {
     dual: false,
     images: {
         loot: "./loot-weapon-p30l.svg",
-        held: "./p30l.png",
+        held: "./p30l.svg",
         silhouette: "./p30l-silhouette.png"
     },
     tint: "#FFFFFF",
@@ -56,8 +56,8 @@ export default {
         parr: 1.45
     },
     dimensions: {
-        width: 0.43359375,
-        height: 1.7916420990566038,
+        width: "auto",
+        height: 1.8,
         layer: 0
     },
     reload: {

@@ -167,10 +167,10 @@ export function makeSettings() {
                 makeContainer("M79", [
                     makeToggleSetting("m79_spin", "No grenade spin", !w.m79.grenadeSpin, ["balanceChanges", "weapons", "m79", "grenadeSpin"], true),
                     makeToggleSetting("m79_move", "No movement penalty", !w.m79.moveSpeedPenalty, ["balanceChanges", "weapons", "m79", "moveSpeedPenalty"], true),
-                    makeToggleSetting("m79_casing", "Spawn casing on reload", w.m79.spawnCasingOnReload, ["balanceChanges", "weapons", "m79", "spawnCasingOnReload"], true)
+                    makeToggleSetting("m79_casing", "Spawn casing on reload", w.m79.spawnCasingOnReload, ["balanceChanges", "weapons", "m79", "spawnCasingOnReload"], false)
                 ], "balance-m79"),
                 makeContainer("MP220", [
-                    makeToggleSetting("mp_trig", "Pull both triggers on fire", w.mp220.pullBothTriggers, ["balanceChanges", "weapons", "mp220", "pullBothTriggers"], true)
+                    makeToggleSetting("mp_trig", "Pull both triggers on fire", w.mp220.pullBothTriggers, ["balanceChanges", "weapons", "mp220", "pullBothTriggers"], false)
                 ], "balance-mp220")
             ], "weapon-balance"));
         },

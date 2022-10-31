@@ -4,7 +4,7 @@
  */
 export default {
     name: "M79",
-    targetVersion: "0.8.2",
+    targetVersion: "0.9.0",
     summary: {
         class: "grenade_launcher",
         engagementDistance: {
@@ -56,7 +56,7 @@ export default {
         parr: 0.625
     },
     dimensions: {
-        width: 0.5766129032258065,
+        width: "auto",
         height: 2.75,
         layer: 2
     },

@@ -4,7 +4,7 @@
  */
 export default {
     name: "M134",
-    targetVersion: "0.8.2",
+    targetVersion: "0.9.0",
     summary: {
         class: "lmg",
         engagementDistance: {
@@ -56,7 +56,7 @@ export default {
         parr: 3
     },
     dimensions: {
-        width: 1.8181818181818181,
+        width: "auto",
         height: 5,
         layer: 0
     },

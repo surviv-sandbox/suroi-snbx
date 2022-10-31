@@ -6,10 +6,8 @@ Object.defineProperty(window, "cslData", {
     writable: false,
     value: []
 });
-(() => {
-    //@ts-expect-error
-    "isElectron" in globalThis ? void 0 : cslData.push({ time: Date.now(), content: "Non-electron environment detected." });
-})();
+//@ts-expect-error
+cslData.push({ time: Date.now(), content: "isElectron" in window ? "Electron environment detected." : "Non-electron environment detected." });
 const generateId = (function* () {
     let i = 0;
     while (true) {
@@ -266,8 +264,14 @@ function parseGunData(data) {
         })(), (() => {
             const d = g.dimensions;
             return {
-                width: (...args) => extractValue(d.width, args) * playerSize,
-                height: (...args) => extractValue(d.height, args) * playerSize,
+                width: (...args) => {
+                    const w = extractValue(d.width, args);
+                    return typeof w == "number" ? w * playerSize : w;
+                },
+                height: (...args) => {
+                    const h = extractValue(d.height, args);
+                    return typeof h == "number" ? h * playerSize : h;
+                },
                 layer: (...args) => extractValue(d.layer, args)
             };
         })(), (() => {
@@ -756,6 +760,10 @@ function yeet(e) {
         if ((ev.key == "-" || ev.key == "=") && (ev.metaKey || ev.ctrlKey)) {
             ev.preventDefault();
         }
+    });
+    window.addEventListener("beforeunload", ev => {
+        ev.preventDefault();
+        window.open("./preload.html", "_self");
     });
     Math.cmp = function (a, b) {
         if (a == b) {

@@ -4,12 +4,12 @@
  */
 export default {
     name: "AK-47",
-    targetVersion: "0.8.2",
+    targetVersion: "0.9.0",
     summary: {
         class: "assault_rifle",
         engagementDistance: {
             min: 8,
-            max: 40
+            max: 60
         },
         shouldNoslow: false,
         role: "primary"
@@ -17,7 +17,7 @@ export default {
     dual: false,
     images: {
         loot: "./loot-weapon-ak.svg",
-        held: "../shared/gun-long.png",
+        held: "../shared/gun-long.svg",
         silhouette: "./ak-silhouette.png"
     },
     tint: "#622A12",

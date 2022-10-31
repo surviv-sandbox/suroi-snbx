@@ -4,7 +4,7 @@
  */
 export default {
     name: "explosion_usas",
-    targetVersion: "0.8.1",
+    targetVersion: "0.9.0",
     damage: 42,
     obstacleMult: 4,
     radii: {

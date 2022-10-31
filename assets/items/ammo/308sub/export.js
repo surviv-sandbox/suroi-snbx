@@ -4,7 +4,7 @@
  */
 export default {
     name: ".308 Subsonic",
-    targetVersion: "0.8.3",
+    targetVersion: "0.9.0",
     tints: {
         normal: "#252B00",
         saturated: "#465000",
@@ -25,7 +25,7 @@ export default {
         img: "../shared/tracer.png"
     },
     casing: {
-        img: "./shell-308.svg",
+        img: "../shared/shell-308.svg",
         lifetime: () => +meanDevPM_random(500, 250, false),
         width: 15,
         height: 1300 / 21

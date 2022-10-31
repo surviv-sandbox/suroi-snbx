@@ -7,7 +7,7 @@ export const level = await (async () => {
             name: name,
             jsonPath: "assets/levels/level2/data.json",
             description: "Fight bots for 5 minutes.",
-            targetVersion: "0.8.1",
+            targetVersion: "0.9.0",
             world: {
                 width: 15000,
                 height: 15000,
@@ -208,6 +208,10 @@ export const level = await (async () => {
                                 if (b.player.body !== void 0) {
                                     b.update();
                                 }
+                            });
+
+                            gamespace.objects.players.forEach(p => {
+                                p.state.lastShot.every(s => gamespace.currentUpdate - s >= 3000) && (p.health = Math.min(p.maxHealth, p.health + 0.05));
                             });
 
                             if (gamespace.currentUpdate - gamespace.created >= 300000 /* 5 minutes */) {

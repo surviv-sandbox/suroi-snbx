@@ -259,27 +259,46 @@ class playerLike {
                     offParr = extractValue(item.imageOffset.parr, args),
                     dimW = extractValue(item.dimensions.width, args),
                     dimH = extractValue(item.dimensions.height, args),
-                    interp = (1 - (d / du));
+                    interp = (1 - (d / du)),
+                    img = extractValue(item.images.held.img, [ac, this]),
+                    aspectRatio = img.width / img.height,
+                    /*
+                        If dimW is "auto", then use dimH and the aspect ratio to get the width
+                        If dimH is also "auto", use the image's original width
+                        If dimW is not "auto", use it as the width
+                        
+                        same procedure for height
+                    */
+                    calcWidth = dimW == "auto"
+                        ? dimH == "auto"
+                            ? img.width
+                            : dimH * aspectRatio
+                        : dimW,
+                    calcHeight = dimH == "auto"
+                        ? dimW == "auto"
+                            ? img.height
+                            : dimW / aspectRatio
+                        : dimH;
 
                 recImpPerp ??= extractValue(item.recoilImpulse.perp, args);
                 recImpParr ??= extractValue(item.recoilImpulse.parr, args);
 
                 p5.tint(`${extractValue(item.tint, args) ?? "#FFFFFF"}${op}`);
                 p5.image(
-                    extractValue(item.images.held.img, [ac, this]),
+                    img,
                     (offPerp + (ac.recoilImpulseParity == 1 ? recImpPerp * interp : 0)),
                     (-offParr - (ac.recoilImpulseParity == 1 ? -recImpParr * interp : 0)),
-                    dimW,
-                    dimH
+                    calcWidth,
+                    calcHeight
                 );
 
                 if (item.dual) {
                     p5.image(
-                        extractValue(item.images.held.img, [ac, this]),
+                        img,
                         -(offPerp + (ac.recoilImpulseParity == -1 ? recImpPerp * interp : 0)),
                         (-offParr - (ac.recoilImpulseParity == -1 ? -recImpParr * interp : 0)),
-                        dimW,
-                        dimH
+                        calcWidth,
+                        calcHeight
                     );
                 }
                 p5.noTint();
@@ -711,7 +730,7 @@ type explosionInfo = {
 class gsp {
     static #initialized = false;
 
-    #version: string = "0.8.3";
+    #version: string = "0.9.0";
     get version() { return this.#version; }
 
     #bots: InstanceType<typeof import("./assets/scripts/std_ai").default>[];
@@ -1056,11 +1075,11 @@ class gsp {
 
 
             p5.camera(
-                (x ?? this.camera.eyeX) + s.x,
-                (y ?? this.camera.eyeY) + s.y,
+                (x ?? this.#camera.eyeX) + s.x,
+                (y ?? this.#camera.eyeY) + s.y,
                 p.view,
-                (x ?? this.camera.centerX) + s.x,
-                (y ?? this.camera.centerY) + s.y,
+                (x ?? this.#camera.centerX) + s.x,
+                (y ?? this.#camera.centerY) + s.y,
                 0
             );
         }
@@ -1173,6 +1192,7 @@ class gsp {
 
             const container = makeElement("div", "menu-container"),
                 play = makeElement("button", "play", "main-menu-button surviv-purple-button"),
+                refreshImports = makeElement("button", "imports", "main-menu-button surviv-blue-button"),
                 settings = makeElement("button", "settings", "main-menu-button surviv-purple-button"),
                 changelog = makeElement("button", "changelog", "main-menu-button surviv-grey-button"),
                 attributions = makeElement("button", "attributions", "main-menu-button surviv-grey-button"),
@@ -1183,6 +1203,7 @@ class gsp {
 
             title.innerHTML = `SURVIV<span style="color: #FFE400">.IO</span> SANDBOX`;
             play.textContent = "Play";
+            refreshImports.textContent = "Refresh imports";
             settings.textContent = "Settings";
             changelog.textContent = "Changelog";
             attributions.textContent = "Attributions";
@@ -1247,16 +1268,17 @@ class gsp {
                 }, { once: true });
             }
 
-            (first ? document.body.appendChild(container) : $("menu-container")!).append(
+            (first ? document.body.appendChild(container) : $("menu-container")!).append(...[
                 title,
                 play,
+                "isElectron" in window ? refreshImports : void 0,
                 settings,
                 changelog,
                 attributions,
                 csl,
                 ver,
                 nameField
-            );
+            ].filter(v => v!) as HTMLElement[]);
 
             document.body.style.backgroundColor = "#83AF50";
 
@@ -1346,6 +1368,20 @@ class gsp {
                 gamespace.console.log(`Entering level '${gamespace.#currentLevel.name}'`);
                 gamespace.#currentLevel.initializer();
             }
+
+            refreshImports.addEventListener("click", async e => {
+                if (!e.button) {
+                    play.disabled = settings.disabled = attributions.disabled = changelog.disabled = true;
+
+                    refreshImports.textContent = "Refreshing…";
+
+                    await (window as any).writeImports();
+
+                    refreshImports.textContent = "Refresh imports";
+
+                    play.disabled = settings.disabled = attributions.disabled = changelog.disabled = false;
+                }
+            });
         }
     }
 

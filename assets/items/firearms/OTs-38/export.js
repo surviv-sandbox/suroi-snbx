@@ -4,7 +4,7 @@
  */
 export default {
     name: "OTs-38",
-    targetVersion: "0.8.2",
+    targetVersion: "0.9.0",
     summary: {
         class: "semi_pistol",
         engagementDistance: {
@@ -17,7 +17,7 @@ export default {
     dual: false,
     images: {
         loot: "./loot-weapon-ots38.svg",
-        held: "./ots38.png",
+        held: "./ots38.svg",
         silhouette: "./ots38-silhouette.png"
     },
     tint: "#FFFFFF",
@@ -56,7 +56,7 @@ export default {
         parr: 1.4
     },
     dimensions: {
-        width: 0.4661458333333333,
+        width: "auto",
         height: 1.5,
         layer: 0
     },

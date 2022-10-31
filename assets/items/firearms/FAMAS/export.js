@@ -4,7 +4,7 @@
  */
 export default {
     name: "FAMAS",
-    targetVersion: "0.8.2",
+    targetVersion: "0.9.0",
     summary: {
         class: "burst_ar",
         engagementDistance: {
@@ -17,7 +17,7 @@ export default {
     dual: false,
     images: {
         loot: "./loot-weapon-famas.svg",
-        held: "./famas.png",
+        held: "./famas.svg",
         silhouette: "./famas-silhouette.png"
     },
     tint: "#FFFFFF",
@@ -56,7 +56,7 @@ export default {
         parr: 1.95
     },
     dimensions: {
-        width: 0.5120481927710844,
+        width: "auto",
         height: 2.5,
         layer: 1
     },

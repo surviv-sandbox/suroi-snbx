@@ -1,11 +1,10 @@
-// sndx_edtr_no_compat
 //@ts-check
 /**
  * @type {JSONGun}
  */
 export default {
     name: "AKM",
-    targetVersion: "0.8.2",
+    targetVersion: "0.9.0",
     summary: {
         class: "assault_rifle",
         engagementDistance: {
@@ -45,7 +44,7 @@ export default {
     firingDelay: 100,
     deployGroup: 0,
     accuracy: {
-        default: (() => { // Not compatible with editor
+        default: (() => {
             let s = 0;
 
             return (...args) => {
@@ -96,7 +95,7 @@ export default {
         parr: 1.65
     },
     dimensions: {
-        width: 0.42289836888331245,
+        width: "auto",
         height: 3.15,
         layer: 0
     },

@@ -4,7 +4,7 @@
  */
 export default {
     name: "G18C",
-    targetVersion: "0.8.2",
+    targetVersion: "0.9.0",
     summary: {
         class: "auto_pistol",
         engagementDistance: {
@@ -17,7 +17,7 @@ export default {
     dual: false,
     images: {
         loot: "./loot-weapon-glock.svg",
-        held: "../shared/gun-short.png",
+        held: "../shared/gun-short.svg",
         silhouette: "./glock-silhouette.png"
     },
     tint: "#1E1E1E",

@@ -4,7 +4,7 @@
  */
 export default {
     name: "FRAG-12",
-    targetVersion: "0.8.3",
+    targetVersion: "0.9.0",
     tints: {
         normal: "#CB0000",
         saturated: () => gamespace.settings.bonusFeatures.useInterpolatedSaturatedTracers ? "#E50000" : "#CB000",
@@ -29,7 +29,7 @@ export default {
         maxDist: 24
     },
     casing: {
-        img: "./shell-12gauge.png",
+        img: "../shared/shell-12gauge.svg",
         lifetime: () => +meanDevPM_random(500, 250, false),
         width: 10.5,
         height: 30

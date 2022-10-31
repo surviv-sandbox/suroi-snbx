@@ -32,11 +32,13 @@
     }
 
     td.major-up {
-        background-color: #3b973b;
+        background-color: hsl(120, 50%, 35%);
+        color: white;
     }
 
     td.minor-up {
-        color: #080;
+        background-color: hsl(120, 20%, 88%);
+        color: #0A0;
     }
 
     td.patch-up {
@@ -44,11 +46,13 @@
     }
 
     td.major-down {
-        background-color: #973b3b;
+        background-color: hsl(0, 50%, 35%);
+        color: white;
     }
 
     td.minor-down {
-        color: #800;
+        background-color: hsl(0, 20%, 88%);
+        color: #A00;
     }
 
     td.patch-down {
@@ -90,11 +94,13 @@
     }
 
     td.major-up {
-        background-color: #1e4e1e;
+        background-color: hsl(120, 100%, 50%);
+        color: black;
     }
 
     td.minor-up {
-        color: #0F0;
+        background-color: hsl(120, 20%, 12%);
+        color: #4F4;
     }
 
     td.patch-up {
@@ -102,11 +108,13 @@
     }
 
     td.major-down {
-        background-color: #4e1e1e;
+        background-color: hsl(0, 100%, 50%);
+        color: black;
     }
 
     td.minor-down {
-        color: #F00;
+        background-color: hsl(0, 20%, 12%);
+        color: #F44;
     }
 
     td.patch-down {
@@ -180,7 +188,7 @@ p#attr {
 }
 
 div#table-cont {
-    overflow: scroll;
+    overflow: auto;
 }
 
 table#frameworks {

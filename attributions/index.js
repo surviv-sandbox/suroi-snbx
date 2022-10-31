@@ -85,10 +85,10 @@
                                             /**
                                              * @type {string}
                                              */
-                                            const prev = a[i - 1].frameworks[f],
+                                            const prev = a[i - 1].frameworks[f] ?? "0.0.0",
 
                                                 b = prev.split(/\./g),
-                                                c = v.frameworks[f].split(/\./g),
+                                                c = (v.frameworks[f] ?? "0.0.0").split(/\./g),
                                                 j = b.findIndex((v, i) => v != c[i]);
 
                                             return { index: j, dir: Math.sign(c[j] - b[j]) };

@@ -4,7 +4,7 @@
  */
 export default {
     name: "5.56x45mm",
-    targetVersion: "0.8.3",
+    targetVersion: "0.9.0",
     tints: {
         normal: "#A9FF92",
         saturated: () => gamespace.settings.bonusFeatures.useInterpolatedSaturatedTracers ? "#7EFF5C" : "#A9FF92",
@@ -25,7 +25,7 @@ export default {
         img: "../shared/tracer.png"
     },
     casing: {
-        img: "./shell-556mm.png",
+        img: "../shared/shell-556mm.svg",
         lifetime: () => +meanDevPM_random(750, 250, false),
         width: 6762 / 437,
         height: 46

@@ -4,7 +4,7 @@
  */
 export default {
     name: "M4A1-S",
-    targetVersion: "0.8.2",
+    targetVersion: "0.9.0",
     summary: {
         class: "assault_rifle",
         engagementDistance: {
@@ -17,7 +17,7 @@ export default {
     dual: false,
     images: {
         loot: "./loot-weapon-m4a1.svg",
-        held: "./m4a1s.png",
+        held: "./m4a1s.svg",
         silhouette: "./m4a1-silhouette.png"
     },
     tint: "#FFFFFF",
@@ -56,7 +56,7 @@ export default {
         parr: 1.9
     },
     dimensions: {
-        width: 0.7889344262295082,
+        width: "auto",
         height: 3.5,
         layer: 0
     },

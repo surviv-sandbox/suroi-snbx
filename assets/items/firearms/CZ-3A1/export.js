@@ -4,7 +4,7 @@
  */
 export default {
     name: "CZ-3A1",
-    targetVersion: "0.8.2",
+    targetVersion: "0.9.0",
     summary: {
         class: "smg",
         engagementDistance: {
@@ -34,14 +34,14 @@ export default {
         headshotMult: 2,
         fsa: {
             enabled: false,
-            rechargeTime: "10000000000000"
+            rechargeTime: 10000000000000
         },
         falloff: 0.77,
         projectiles: 1
     },
     suppressed: true,
     caliber: "9x19mm",
-    firingDelay: toMS({ givenIn: "s", value: 0.055 }),
+    firingDelay: 55,
     deployGroup: 0,
     accuracy: {
         default: toRad({ givenIn: "degrees", value: 4 }),
@@ -53,10 +53,10 @@ export default {
     },
     imageOffset: {
         perp: 0,
-        parr: 2.2
+        parr: 1.8
     },
     dimensions: {
-        width: 0.6923076923,
+        width: "auto",
         height: 3,
         layer: 0
     },

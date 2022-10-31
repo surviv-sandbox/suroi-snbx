@@ -4,7 +4,7 @@
  */
 export default {
     name: "L86A2",
-    targetVersion: "0.8.2",
+    targetVersion: "0.9.0",
     summary: {
         class: "dmr",
         engagementDistance: {
@@ -17,7 +17,7 @@ export default {
     dual: false,
     images: {
         loot: "./loot-weapon-l86.svg",
-        held: "../shared/gun-long.png",
+        held: "../shared/gun-long.svg",
         silhouette: "./l86-silhouette.png"
     },
     tint: "#DCC8A7",

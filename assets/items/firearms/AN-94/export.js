@@ -4,7 +4,7 @@
  */
 export default {
     name: "AN-94",
-    targetVersion: "0.8.2",
+    targetVersion: "0.9.0",
     summary: {
         class: "burst_ar",
         engagementDistance: {
@@ -17,7 +17,7 @@ export default {
     dual: false,
     images: {
         loot: "./loot-weapon-an94.svg",
-        held: "../shared/gun-long.png",
+        held: "../shared/gun-long.svg",
         silhouette: "./an94-silhouette.png"
     },
     tint: "#2D2D2D",

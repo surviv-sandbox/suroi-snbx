@@ -4,7 +4,7 @@
  */
 export default {
     name: "USAS-12",
-    targetVersion: "0.8.2",
+    targetVersion: "0.9.0",
     summary: {
         class: "shotgun",
         engagementDistance: {
@@ -62,7 +62,7 @@ export default {
         parr: 1.7
     },
     dimensions: {
-        width: 0.5492509176724137,
+        width: "auto",
         height: 3.15,
         layer: 0
     },

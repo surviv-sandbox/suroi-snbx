@@ -5,7 +5,7 @@
  */
 export default {
     name: "MP220",
-    targetVersion: "0.8.2",
+    targetVersion: "0.9.0",
     summary: {
         class: "shotgun",
         engagementDistance: {

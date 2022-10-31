@@ -4,7 +4,7 @@
  */
 export default {
     name: "AWM-S",
-    targetVersion: "0.8.2",
+    targetVersion: "0.9.0",
     summary: {
         class: "sniper_rifle",
         engagementDistance: {
@@ -56,7 +56,7 @@ export default {
         parr: 2.25
     },
     dimensions: {
-        width: 0.6744234254473174,
+        width: "auto",
         height: 3.55,
         layer: 0
     },

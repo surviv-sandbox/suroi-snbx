@@ -1,3 +1,15 @@
+// Give code that runs before the console's initialization somewhere to dump data it wants logged to the console, then destroy the temporary wrapper
+// The way that I've implemented this is to be as ephemeral as possible, but that means upsetting Typescript and using "@ts-expect-error"
+Object.defineProperty(window, "cslData", {
+    configurable: true,
+    enumerable: false,
+    writable: false,
+    value: []
+});
+
+//@ts-expect-error
+(cslData as cslData[]).push({ time: Date.now(), content: "isElectron" in window ? "Electron environment detected." : "Non-electron environment detected." });
+
 type TOrArrayT<T> = T | T[];
 type TOrFT<T, U extends any[]> = T | ((...args: U) => T);
 
@@ -108,20 +120,6 @@ interface Math {
     acsc: (x: number) => number;
     acot: (x: number) => number;
 }
-
-// Give code that runs before the console's initialization somewhere to dump data it wants logged to the console, then destroy the temporary wrapper
-// The way that I've implemented this is to be as ephemeral as possible, but that means upsetting Typescript and using "@ts-expect-error"
-Object.defineProperty(window, "cslData", {
-    configurable: true,
-    enumerable: false,
-    writable: false,
-    value: []
-});
-
-(() => {
-    //@ts-expect-error
-    "isElectron" in globalThis ? void 0 : cslData.push({ time: Date.now(), content: "Non-electron environment detected." });
-})();
 
 const generateId = (function* () {
     let i = 0;
@@ -438,8 +436,8 @@ type JSONGun = {
         parr: TOrFT<number, [gun, playerLike]>;
     },
     dimensions: {
-        width: TOrFT<number, [gun, playerLike]>,
-        height: TOrFT<number, [gun, playerLike]>,
+        width: TOrFT<number | "auto", [gun, playerLike]>,
+        height: TOrFT<number | "auto", [gun, playerLike]>,
         layer: TOrFT<0 | 1 | 2, [gun, playerLike]>;
     },
     reload: {
@@ -589,8 +587,14 @@ function parseGunData(data: [JSONGun, string][]) {
                 const d = g.dimensions;
 
                 return {
-                    width: (...args) => extractValue(d.width, args) * playerSize,
-                    height: (...args) => extractValue(d.height, args) * playerSize,
+                    width: (...args) => {
+                        const w = extractValue(d.width, args);
+                        return typeof w == "number" ? w * playerSize : w;
+                    },
+                    height: (...args) => {
+                        const h = extractValue(d.height, args);
+                        return typeof h == "number" ? h * playerSize : h;
+                    },
                     layer: (...args) => extractValue(d.layer, args)
                 };
             })(),
@@ -1300,6 +1304,11 @@ function yeet(e: any): never {
         if ((ev.key == "-" || ev.key == "=") && (ev.metaKey || ev.ctrlKey)) {
             ev.preventDefault();
         }
+    });
+
+    window.addEventListener("beforeunload", ev => {
+        ev.preventDefault();
+        window.open("./preload.html", "_self");
     });
 
     Math.cmp = function (a, b) {

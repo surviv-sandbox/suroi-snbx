@@ -13,6 +13,58 @@
     <button id="back">Back</button>
     <title>Changelog</title>
     <div id="main-cont">
+        <h2>v0.9.0</h2>
+        <h3>October 28<sup>th</sup> 2022</h3>
+
+        <ul>
+            <li> Stack changes
+                <ul>
+                    <li>Electron (NA -> 21.2.0)
+                </ul>
+            </li>
+            <li> Started transitioning the game towards a stand-alone app. This version is to complement the surviv
+                sandbox editor.<ul>
+                    <li>Note that the editor is a proof-of-concept rather than a finished product.</li>
+                </ul>
+            </li>
+            <li> Changed some .png's for .svg's
+            <li> Adjusted some engagement distances for bots
+            <li> Fixed M79's <code>spawnCasingOnReload</code> not working
+            <li> Fixed MP220's <code>pullBothTriggers</code> not working
+            <li> Added an option to refresh the game's imports manually
+            <li> Added the following weapons:
+                <ul>
+                    <li>DEagle 50</li>
+                    <li>Dual DEagle 50</li>
+                    <li>SPAS-12</li>
+                    <li>M1 Garand</li>
+                    <li>Groza</li>
+                    <li>Groza-S</li>
+                    <li>MAC-10</li>
+                    <li>Mk 20 SSR</li>
+                </ul>
+            </li>
+            <li> Attributions page
+                <ul>
+                    <li>Changed some colors
+                    <li>Corrected some entries
+                </ul>
+            </li>
+            <li> Deathmatch
+                <ul>
+                    <li>After not firing any weapon for 3 seconds, you'll start to regenerate health
+                </ul>
+            </li>
+            <li> API changes
+                <ul>
+                    <li><code>gunPrototype.dimensions.width</code> and <code>gunPrototype.dimensions.height</code> now
+                        accepts the string <code>auto</code> in order to use the source image's aspect ratio to
+                        calculate height or width. If both width and height are set to auto, the image's original
+                        dimesions will be used.
+                </ul>
+            </li>
+        </ul>
+
         <h2>v0.8.3</h2>
         <h3>August 26<sup>th</sup> 2022</h3>
 

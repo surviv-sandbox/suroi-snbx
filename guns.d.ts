@@ -51,8 +51,8 @@ declare class gunPrototype {
         parr: TOrFT<number, [gun, playerLike]>;
     };
     dimensions: {
-        width: TOrFT<number, [gun, playerLike]>;
-        height: TOrFT<number, [gun, playerLike]>;
+        width: TOrFT<number | "auto", [gun, playerLike]>;
+        height: TOrFT<number | "auto", [gun, playerLike]>;
         layer: TOrFT<0 | 1 | 2, [gun, playerLike]>;
     };
     switchDelay: TOrFT<number, [gun, playerLike]>;

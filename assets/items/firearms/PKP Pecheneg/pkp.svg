@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<svg width="149" height="400" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <title>pkp.svg</title>
+ <defs>
+  <clipPath id="b">
+   <path d="m93.63,36.81l4,4l0,26l-4,4l-16,0l-4,-4l0,-26l4,-4l16,0z" fill="#515151" id="svg_1" stroke-miterlimit="10" stroke-opacity="0.49" stroke-width="11.47"/>
+  </clipPath>
+  <clipPath id="a">
+   <path d="m75.63,82.81l-4,4l0,59.82l4,4.18l0,20l20,0l0,-20l4,-4l0,-32l4,0l0.12,-24l-4.12,0l0,-4l-4,-4l-20,0z" fill="#273723" id="svg_2" stroke-miterlimit="10" stroke-opacity="0.49" stroke-width="10"/>
+  </clipPath>
+  <symbol height="205.17" id="svg_22" width="34" xmlns="http://www.w3.org/2000/svg">
+   <defs>
+    <clipPath id="svg_9">
+     <path d="m22,71.17l4,4l0,26l-4,4l-16,0l-4,-4l0,-26l4,-4l16,0z" fill="#515151" id="svg_21" stroke-miterlimit="10" stroke-opacity="0.49" stroke-width="11.47"/>
+    </clipPath>
+    <clipPath id="svg_19">
+     <path d="m4,117.17l-4,4l0,59.82l4,4.18l0,20l20,0l0,-20l4,-4l0,-32l4,0l0.12,-24l-4.12,0l0,-4l-4,-4l-20,0z" fill="#273723" id="svg_20" stroke-miterlimit="10" stroke-opacity="0.49" stroke-width="10"/>
+    </clipPath>
+   </defs>
+   <g id="svg_13">
+    <title>Layer 1</title>
+    <g id="svg_3">
+     <path clip-path="url(#svg_19)" d="m4,117.17l-4,4l0,59.82l4,4.18l0,20l20,0l0,-20l4,-4l0,-32l4,0l0.12,-24l-4.12,0l0,-4l-4,-4l-20,0z" fill="#273723" id="svg_15" stroke="#000" stroke-miterlimit="10" stroke-width="16"/>
+     <path d="m22,157.17l0,-4l12,0l0,4l-12,0zm-18,-40l0,-66l4,-4l12,0l4,4l0,66l-20,0z" id="svg_12"/>
+     <path d="m8,117.17l0,-70l12,0l0,70l-12,0z" fill="#1e2a1b" id="svg_11"/>
+     <path d="m8,197.17l0,-32l12,0l0,32l-12,0z" fill="#242424" id="svg_10"/>
+     <path clip-path="url(#svg_9)" d="m22,69.17l4,4l0,26l-4,4l-16,0l-4,-4l0,-26l4,-4l16,0z" fill="#515151" id="svg_8" stroke="#000" stroke-miterlimit="10" stroke-width="16"/>
+     <path d="m6,80.18l16,0m-16,6l16,0m-16,6l16,0" fill="none" id="svg_7" stroke="#000" stroke-width="3"/>
+     <path d="m8,53.17l0,-53.17l12,0l0,53.17l-12,0z" id="svg_6"/>
+     <path d="m8,5l12,0l4,2l0,12l-20,0l0,-12l4,-2z" fill="#0d100d" id="svg_5"/>
+     <path d="m20,133.17l4,0l0,8l-4,0l0,-8z" fill="#43603d" id="svg_4"/>
+    </g>
+   </g>
+  </symbol>
+  <symbol height="44" id="svg_25" width="76" xmlns="http://www.w3.org/2000/svg">
+   <defs>
+    <clipPath id="svg_24">
+     <rect fill="#555" height="44" id="svg_14" rx="6" ry="6" stroke-linecap="square" stroke-width="1.81" width="76"/>
+    </clipPath>
+   </defs>
+   <rect clip-path="url(#svg_24)" fill="#4a5a27" height="44" id="svg_16" rx="6" ry="6" stroke="#000" stroke-linecap="square" stroke-width="16" width="76"/>
+   <path d="m8,28l60,0l0,8l-60,0l0,-8z" fill="#799340" id="svg_17"/>
+  </symbol>
+ </defs>
+ <g class="layer">
+  <title>Layer 1</title>
+  <g id="svg_27">
+   <use id="svg_26" transform="matrix(1.95515 0 0 1.95515 -9.24496 163.749)" x="4.78" xlink:href="#svg_25" y="16.29"/>
+   <use id="svg_23" transform="matrix(1.9496 0 0 1.9496 220 83)" x="-89.34" xlink:href="#svg_22" y="-42.47"/>
+  </g>
+ </g>
+</svg>

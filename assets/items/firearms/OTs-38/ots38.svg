@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" id="svg854" x="0px" y="0px" viewBox="11.246 0 33.535 100" style="enable-background:new 0 0 56 100;" xmlns="http://www.w3.org/2000/svg">
+  <style type="text/css">
+	
+		.st0{clip-path:url(#SVGID_00000084527246447229624070000006651466862290491538_);fill:#767676;stroke:#000000;stroke-width:12;stroke-linecap:round;}
+	
+		.st1{clip-path:url(#SVGID_00000081612453163633594600000005258968907003291806_);fill:#515151;stroke:#000000;stroke-width:6;stroke-miterlimit:10;}
+	
+		.st2{clip-path:url(#SVGID_00000080915358567786930160000015719651093018488964_);fill:#989898;stroke:#000000;stroke-width:10.963;stroke-miterlimit:6.8519;}
+	.st3{fill:#2E2E2E;}
+	.st4{fill:#2D2D2D;stroke:#000000;stroke-width:2.7407;stroke-miterlimit:10;}
+	.st5{fill:#2D2D2D;stroke:#000000;stroke-width:4;stroke-miterlimit:10;}
+</style>
+  <g>
+    <defs>
+      <rect id="SVGID_1_" x="19" y="74" width="18" height="26"/>
+    </defs>
+    <clipPath id="SVGID_00000039109932719629671980000006468124236422939554_">
+      <rect x="19" y="74" width="18" height="26" transform="matrix(1, 0, 0, 1, 0, 0)" style="overflow: visible;"/>
+    </clipPath>
+    <path id="path849" style="clip-path:url(#SVGID_00000039109932719629671980000006468124236422939554_);fill:#767676;stroke:#000000;stroke-width:12;stroke-linecap:round;" d=" M19,100V74h18v26H19z"/>
+  </g>
+  <g>
+    <defs>
+      <polygon id="SVGID_00000036249604013411833460000014840249986851663271_" points="14,53.4 11.3,56.2 11.3,67.1 14,69.9 42,69.9 &#10;&#9;&#9;&#9;44.7,67.1 44.7,56.2 42,53.4 42,40 37.6,37 18.4,37 14,40 &#9;&#9;"/>
+    </defs>
+    <clipPath id="SVGID_00000161629939071740851650000013822323781615796402_">
+      <polygon points="14,53.4 11.3,56.2 11.3,67.1 14,69.9 42,69.9 &#10;&#9;&#9;&#9;44.7,67.1 44.7,56.2 42,53.4 42,40 37.6,37 18.4,37 14,40 &#9;&#9;" transform="matrix(1, 0, 0, 1, 0, 0)" style="overflow: visible;"/>
+    </clipPath>
+    <path id="path992" style="clip-path:url(#SVGID_00000161629939071740851650000013822323781615796402_);fill:#515151;stroke:#000000;stroke-width:6;stroke-miterlimit:10;" d=" M14,53.4l-2.7,2.7v11l2.7,2.7h28l2.7-2.7v-11L42,53.4V40l-4.4-3H18.4L14,40V53.4z"/>
+  </g>
+  <g>
+    <defs>
+      <polygon id="SVGID_00000048502938613930685290000010332248661844887201_" points="18.4,6 18.4,78.6 19.8,80 36.2,80 37.6,78.6 &#10;&#9;&#9;&#9;37.6,6 &#9;&#9;"/>
+    </defs>
+    <clipPath id="SVGID_00000039816994050154202500000011419706223899960706_">
+      <polygon points="18.4,6 18.4,78.6 19.8,80 36.2,80 37.6,78.6 &#10;&#9;&#9;&#9;37.6,6 &#9;&#9;" transform="matrix(1, 0, 0, 1, 0, 0)" style="overflow: visible;"/>
+    </clipPath>
+    <path id="path937" style="clip-path:url(#SVGID_00000039816994050154202500000011419706223899960706_);fill:#989898;stroke:#000000;stroke-width:10.963;stroke-miterlimit:6.8519;" d=" M18.4,6v72.6l1.4,1.4h16.4l1.4-1.4V6H18.4z"/>
+  </g>
+  <path id="path915" class="st3" d="M25.6,47.1V15.6h4.7v31.5H25.6z"/>
+  <path id="path884" d="M24,0h8c0,0,5.5,0,5.6,6.1H18.4 C18.6,0,24,0,24,0z"/>
+  <rect id="rect895" x="24.1" y="67.4" class="st4" width="7.9" height="8.5"/>
+  <rect id="rect1037" x="22.8" y="4" class="st5" width="10.5" height="11.7"/>
+</svg>

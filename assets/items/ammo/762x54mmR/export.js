@@ -4,7 +4,7 @@
  */
 export default {
     name: "7.62x54mmR",
-    targetVersion: "0.8.3",
+    targetVersion: "0.9.0",
     tints: {
         normal: "#C5D6FE",
         saturated: "#ABC4FF",
@@ -25,7 +25,7 @@ export default {
         img: "../shared/tracer.png"
     },
     casing: {
-        img: "./shell-762mm.png",
+        img: "../shared/shell-762mm.svg",
         lifetime: () => +meanDevPM_random(750, 250, false),
         width: 2240 / 169,
         height: 40

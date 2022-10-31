@@ -4,7 +4,7 @@
  */
 export default {
     name: "explosion_frag",
-    targetVersion: "0.8.1",
+    targetVersion: "0.9.0",
     damage: 125,
     obstacleMult: 1.1,
     radii: {
@@ -31,7 +31,7 @@ export default {
         count: 12,
         damage: 20,
         color: "#333",
-        img: "../../items/ammo/shared/tracer.png",
+        img: "../shared/tracer.png",
         velocity: 20,
         range: () => +meanDevPM_random(8, 12, false),
         falloff: 1,

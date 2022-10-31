@@ -189,13 +189,29 @@ class playerLike {
                 p5.ellipse(0, 0, 2 * radius, 2 * radius, 70);
             }
             function drawItem() {
-                const offPerp = extractValue(item.imageOffset.perp, args), offParr = extractValue(item.imageOffset.parr, args), dimW = extractValue(item.dimensions.width, args), dimH = extractValue(item.dimensions.height, args), interp = (1 - (d / du));
+                const offPerp = extractValue(item.imageOffset.perp, args), offParr = extractValue(item.imageOffset.parr, args), dimW = extractValue(item.dimensions.width, args), dimH = extractValue(item.dimensions.height, args), interp = (1 - (d / du)), img = extractValue(item.images.held.img, [ac, this]), aspectRatio = img.width / img.height, 
+                /*
+                    If dimW is "auto", then use dimH and the aspect ratio to get the width
+                    If dimH is also "auto", use the image's original width
+                    If dimW is not "auto", use it as the width
+                    
+                    same procedure for height
+                */
+                calcWidth = dimW == "auto"
+                    ? dimH == "auto"
+                        ? img.width
+                        : dimH * aspectRatio
+                    : dimW, calcHeight = dimH == "auto"
+                    ? dimW == "auto"
+                        ? img.height
+                        : dimW / aspectRatio
+                    : dimH;
                 recImpPerp ??= extractValue(item.recoilImpulse.perp, args);
                 recImpParr ??= extractValue(item.recoilImpulse.parr, args);
                 p5.tint(`${extractValue(item.tint, args) ?? "#FFFFFF"}${op}`);
-                p5.image(extractValue(item.images.held.img, [ac, this]), (offPerp + (ac.recoilImpulseParity == 1 ? recImpPerp * interp : 0)), (-offParr - (ac.recoilImpulseParity == 1 ? -recImpParr * interp : 0)), dimW, dimH);
+                p5.image(img, (offPerp + (ac.recoilImpulseParity == 1 ? recImpPerp * interp : 0)), (-offParr - (ac.recoilImpulseParity == 1 ? -recImpParr * interp : 0)), calcWidth, calcHeight);
                 if (item.dual) {
-                    p5.image(extractValue(item.images.held.img, [ac, this]), -(offPerp + (ac.recoilImpulseParity == -1 ? recImpPerp * interp : 0)), (-offParr - (ac.recoilImpulseParity == -1 ? -recImpParr * interp : 0)), dimW, dimH);
+                    p5.image(img, -(offPerp + (ac.recoilImpulseParity == -1 ? recImpPerp * interp : 0)), (-offParr - (ac.recoilImpulseParity == -1 ? -recImpParr * interp : 0)), calcWidth, calcHeight);
                 }
                 p5.noTint();
             }
@@ -464,7 +480,7 @@ class customEvent {
 // If a method's name starts with an underscore, it means that you should only call it if you 1000% know what you're doing and if the wind outside is blowing at 42.9º W (aka almost never)
 class gsp {
     static #initialized = false;
-    #version = "0.8.3";
+    #version = "0.9.0";
     get version() { return this.#version; }
     #bots;
     get bots() { return this.#bots; }
@@ -695,7 +711,7 @@ class gsp {
                 const x = 2 * Math.random() - 1;
                 return { x, y: (2 * Math.round(Math.random()) - 1) * Math.sqrt(1 - x ** 2) };
             })(), s = { x: uv.x * p.shakeInt, y: uv.y * p.shakeInt };
-            p5.camera((x ?? this.camera.eyeX) + s.x, (y ?? this.camera.eyeY) + s.y, p.view, (x ?? this.camera.centerX) + s.x, (y ?? this.camera.centerY) + s.y, 0);
+            p5.camera((x ?? this.#camera.eyeX) + s.x, (y ?? this.#camera.eyeY) + s.y, p.view, (x ?? this.#camera.centerX) + s.x, (y ?? this.#camera.centerY) + s.y, 0);
         }
         p5.noStroke();
         p5.rectMode(p5.CORNER);
@@ -778,9 +794,10 @@ class gsp {
     makeMenu(first) {
         if (memoryManager.getItem("sawPopup", "boolean") || window.confirm("This build of surviv.io sandbox is an alpha build, and may therefore be unstable. No garantees about this build's quality or fitness for any given purpose are given.")) {
             memoryManager.has("sawPopup") || memoryManager.setItem("sawPopup", true);
-            const container = makeElement("div", "menu-container"), play = makeElement("button", "play", "main-menu-button surviv-purple-button"), settings = makeElement("button", "settings", "main-menu-button surviv-purple-button"), changelog = makeElement("button", "changelog", "main-menu-button surviv-grey-button"), attributions = makeElement("button", "attributions", "main-menu-button surviv-grey-button"), csl = makeElement("button", "console", "surviv-grey-button"), ver = makeElement("p", "version"), title = makeElement("h1", "title"), nameField = makeElement("div", "name-field", "main-menu-button surviv-outline-button");
+            const container = makeElement("div", "menu-container"), play = makeElement("button", "play", "main-menu-button surviv-purple-button"), refreshImports = makeElement("button", "imports", "main-menu-button surviv-blue-button"), settings = makeElement("button", "settings", "main-menu-button surviv-purple-button"), changelog = makeElement("button", "changelog", "main-menu-button surviv-grey-button"), attributions = makeElement("button", "attributions", "main-menu-button surviv-grey-button"), csl = makeElement("button", "console", "surviv-grey-button"), ver = makeElement("p", "version"), title = makeElement("h1", "title"), nameField = makeElement("div", "name-field", "main-menu-button surviv-outline-button");
             title.innerHTML = `SURVIV<span style="color: #FFE400">.IO</span> SANDBOX`;
             play.textContent = "Play";
+            refreshImports.textContent = "Refresh imports";
             settings.textContent = "Settings";
             changelog.textContent = "Changelog";
             attributions.textContent = "Attributions";
@@ -833,7 +850,17 @@ class gsp {
                     play.style.opacity = "";
                 }, { once: true });
             }
-            (first ? document.body.appendChild(container) : $("menu-container")).append(title, play, settings, changelog, attributions, csl, ver, nameField);
+            (first ? document.body.appendChild(container) : $("menu-container")).append(...[
+                title,
+                play,
+                "isElectron" in window ? refreshImports : void 0,
+                settings,
+                changelog,
+                attributions,
+                csl,
+                ver,
+                nameField
+            ].filter(v => v));
             document.body.style.backgroundColor = "#83AF50";
             csl.addEventListener("click", ev => (!ev.button) && gamespace.console[gamespace.console.opened ? "close" : "open"]());
             nameField.addEventListener("keydown", e => e.key == "Enter" && nameField.blur());
@@ -893,6 +920,15 @@ class gsp {
                 gamespace.console.log(`Entering level '${gamespace.#currentLevel.name}'`);
                 gamespace.#currentLevel.initializer();
             }
+            refreshImports.addEventListener("click", async (e) => {
+                if (!e.button) {
+                    play.disabled = settings.disabled = attributions.disabled = changelog.disabled = true;
+                    refreshImports.textContent = "Refreshing…";
+                    await window.writeImports();
+                    refreshImports.textContent = "Refresh imports";
+                    play.disabled = settings.disabled = attributions.disabled = changelog.disabled = false;
+                }
+            });
         }
     }
     _removePlayer() {

@@ -4,7 +4,7 @@
  */
 export default {
     name: ".45ACP",
-    targetVersion: "0.8.3",
+    targetVersion: "0.9.0",
     tints: {
         normal: "#ECBEFF",
         saturated: "#E7ACFF",
@@ -25,7 +25,7 @@ export default {
         img: "../shared/tracer.png"
     },
     casing: {
-        img: "../9x19mm/shell-9mm.png",
+        img: "../shared/shell-9mm.svg",
         lifetime: () => +meanDevPM_random(500, 250, false),
         width: 185 / 22,
         height: 20

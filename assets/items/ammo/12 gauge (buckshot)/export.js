@@ -4,7 +4,7 @@
  */
 export default {
     name: "12 gauge (buckshot)",
-    targetVersion: "0.8.3",
+    targetVersion: "0.9.0",
     tints: {
         normal: "#FEDCDC",
         saturated: () => gamespace.settings.bonusFeatures.useInterpolatedSaturatedTracers ? "#FEC0C1" : "#FEDCDC",
@@ -25,7 +25,7 @@ export default {
         img: "../shared/tracer.png"
     },
     casing: {
-        img: "./shell-12gauge.png",
+        img: "../shared/shell-12gauge.svg",
         lifetime: () => +meanDevPM_random(500, 250, false),
         width: 10.5,
         height: 30

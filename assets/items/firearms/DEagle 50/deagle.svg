@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" id="svg854" x="0px" y="0px" viewBox="8.32 0 39.404 124" style="enable-background:new 0 0 56 124;" xmlns="http://www.w3.org/2000/svg">
+  <style type="text/css">
+	.st0{clip-path:url(#SVGID_00000055675245895046795230000017696217422763462562_);}
+	
+		.st1{clip-path:url(#SVGID_00000159445208608437489260000009973495479416960922_);fill:#A07600;stroke:#000000;stroke-width:10.7983;stroke-linecap:round;}
+	.st2{fill:#313131;stroke:#000000;stroke-width:3;stroke-miterlimit:10;}
+	
+		.st3{clip-path:url(#SVGID_00000143619182084953598100000011772312832701953938_);fill:#644A00;stroke:#000000;stroke-width:10;stroke-miterlimit:10;}
+	.st4{fill:#FAB800;}
+	
+		.st5{clip-path:url(#SVGID_00000141413146356847828930000005045509942229780645_);fill:#FAB800;stroke:#000000;stroke-width:12;stroke-miterlimit:10;}
+	.st6{fill:#313131;stroke:#000000;stroke-width:3.9049;stroke-miterlimit:10;}
+	.st7{fill-opacity:0.3636;}
+	.st8{fill-opacity:0.5808;}
+	.st9{fill:none;stroke:#000000;stroke-width:4;}
+	.st10{fill-opacity:0.7843;}
+</style>
+  <g>
+    <defs>
+      <rect id="SVGID_1_" x="16" y="76" width="24" height="48"/>
+    </defs>
+    <defs>
+      <rect id="SVGID_00000072980909684592386690000015732709887913480355_" x="16" y="76" width="24" height="48"/>
+    </defs>
+    <clipPath id="SVGID_00000048491397492553346550000012611394301372912054_">
+      <rect x="16" y="76" width="24" height="48" transform="matrix(1, 0, 0, 1, 0, 0)" style="overflow: visible;"/>
+    </clipPath>
+    <clipPath id="SVGID_00000047047530658071558060000003299792627559567036_" style="clip-path:url(#SVGID_00000048491397492553346550000012611394301372912054_);">
+      <rect x="16" y="76" width="24" height="48" transform="matrix(1, 0, 0, 1, 0, 0)" style="overflow: visible;"/>
+    </clipPath>
+    <path id="path4816" style="clip-path:url(#SVGID_00000047047530658071558060000003299792627559567036_);fill:#A07600;stroke:#000000;stroke-width:10.7983;stroke-linecap:round;" d=" M16,124V76h24v48H16z"/>
+  </g>
+  <path id="path4701" class="st2" d="M11.1,65.2l6.9-2v11.4h-6.9V65.2z"/>
+  <g id="g4705" transform="translate(0.6320489)">
+    <path id="rect958" class="st2" d="M45.5,80l-6.9,2v-8.5h6.9V80z"/>
+    <path id="path4693" class="st2" d="M9.3,80l6.9,2v-8.5H9.3V80z"/>
+  </g>
+  <g>
+    <defs>
+      <path id="SVGID_00000120551876517441537660000011053692349605664415_" d="M16,4v58h24V4c0-2-2-4-4-4H20C18,0,16,2,16,4z"/>
+    </defs>
+    <clipPath id="SVGID_00000054228946686803987530000006795237509585503646_">
+      <path d="M16,4v58h24V4c0-2-2-4-4-4H20C18,0,16,2,16,4z" transform="matrix(1, 0, 0, 1, 0, 0)" style="overflow: visible;"/>
+    </clipPath>
+    <path id="path4686" style="clip-path:url(#SVGID_00000054228946686803987530000006795237509585503646_);fill:#644A00;stroke:#000000;stroke-width:10;stroke-miterlimit:10;" d=" M16,4v58h24v-8.9V4c0-2-2-4-4-4H20C18,0,16,2,16,4z"/>
+  </g>
+  <path id="path915" class="st4" d="M21,58V16h14v42H21z"/>
+  <g>
+    <defs>
+      <path id="SVGID_00000143606124594347336860000007918011769590648236_" d="M13.6,58.5v28.8l1.5,1.4h25.7l1.5-1.4V58.5 C36,54,20,54,13.6,58.5z"/>
+    </defs>
+    <clipPath id="SVGID_00000122708866095555131250000006917681135133980858_">
+      <path d="M13.6,58.5v28.8l1.5,1.4h25.7l1.5-1.4V58.5 C36,54,20,54,13.6,58.5z" transform="matrix(1, 0, 0, 1, 0, 0)" style="overflow: visible;"/>
+    </clipPath>
+    <path id="path4679" style="clip-path:url(#SVGID_00000122708866095555131250000006917681135133980858_);fill:#FAB800;stroke:#000000;stroke-width:12;stroke-miterlimit:10;" d=" M13.6,58.5v28.8l1.5,1.4h25.7l1.5-1.4V58.5C36,54,20,54,13.6,58.5z"/>
+  </g>
+  <path id="rect895" class="st6" d="M38,85H18v-8.4h20V85z"/>
+  <path id="path4572" class="st7" d="M16,74.5v-2c0-6,24-6,24,0v2H16z"/>
+  <path id="path4574" d="M38,74.9v1.6c0,4.8-20,4.8-20,0v-1.6H38z"/>
+  <path id="path4600" class="st8" d="M23,16v2h10v-2 C32,10,24,10,23,16z M23,21.2V36h10V21.2H23z M23,39.2v2c1,6,9,6,10,0v-2H23z"/>
+  <path id="path4611" class="st9" d="M18,50c4-2,16-2,20,0"/>
+  <path id="path4625" d="M34,8.2v3.6H22V8.2H34z"/>
+  <path id="path4627" d="M30,6.6v7.5h-4V6.6l1.1-1.2h1.7L30,6.6z"/>
+  <path id="path4806" class="st10" d="M22,38.2V37l1-1h10l1,1v1.2 l-1,1H23L22,38.2z"/>
+  <path id="path4809" class="st10" d="M22,20.2V19l1-1h10l1,1v1.2 l-1,1H23L22,20.2z"/>
+</svg>
