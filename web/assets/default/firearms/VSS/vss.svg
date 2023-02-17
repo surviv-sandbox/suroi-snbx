@@ -1,0 +1,28 @@
+<svg width="48" height="222"
+    xmlns="http://www.w3.org/2000/svg" version="1.1">
+    <metadata id="metadata916">image/svg+xml</metadata>
+    <defs id="defs908">
+        <clipPath id="clipPath942" clipPathUnits="userSpaceOnUse">
+            <path stroke-opacity="0.49" stroke-miterlimit="10" stroke-width="10.00079" fill="#2e2e2e" id="path944" d="m36,98l4,8l0,40l-4,8l-24,0l-4,-8l0,-40l4,-8l24,0z"/>
+        </clipPath>
+        <clipPath id="clipPath960" clipPathUnits="userSpaceOnUse">
+            <path stroke-opacity="0.49" stroke-miterlimit="10" stroke-width="12.1293" fill="#5f1308" d="m36,146l0,76l-24,0l0,-76l24,0z" id="path962" />
+        </clipPath>
+    </defs>
+    <g>
+        <title>Layer 1</title>
+        <path stroke="#000000" stroke-miterlimit="10" stroke-width="12" fill="#5f1308" clip-path="url(#clipPath960)" id="path958" d="m36,146l0,76l-24,0l0,-76l24,0z"/>
+        <rect stroke-miterlimit="10" stroke-width="4" stroke="#000000" fill="#323232" transform="rotate(90)" id="rect1037-6" width="7.02215" height="8.45277" x="108.97785" y="-44"/>
+        <path stroke="#000000" stroke-miterlimit="10" stroke-width="12" fill="#1a1a1a" clip-path="url(#clipPath942)" d="m36,98l4,8l0,40l-4,8l-24,0l-4,-8l0,-40l4,-8l24,0z" id="path940" />
+        <rect stroke-miterlimit="4" stroke-width="8" stroke="#000000" fill="#232323" id="rect888" width="14.48518" height="72.36866" x="16.75741" y="3.81567" rx="1.44852" ry="3.11098"/>
+        <path stroke-opacity="0.69697" stroke-miterlimit="4" stroke-width="4" stroke="#000000" fill="none" d="m8,122.33334l32,0" id="path953" />
+        <rect stroke-miterlimit="10" stroke-width="4" stroke="#000000" fill="#484848" y="60" x="20.48892" height="14.45276" width="7.02215" id="rect998"/>
+        <circle fill="#7e7e7e" id="ellipse2" cy="-214.41402" cx="143.16599" r="0"/>
+        <path stroke-miterlimit="4" stroke-width="7" stroke="#000000" fill="#4d3f3f" id="rect889" d="m14.1295,76.79538l19.74101,0l2.25898,27.20462l-24.25899,0l2.259,-27.20462z"/>
+        <path stroke-opacity="0.69697" stroke-miterlimit="4" stroke-width="4" stroke="#000000" fill="none" id="path925" d="m8,130.66666l32,0"/>
+        <path stroke-opacity="0.69697" stroke-miterlimit="4" stroke-width="4" stroke="#000000" fill="none" d="m8,139l32,0" id="path927" />
+        <rect stroke-miterlimit="10" stroke-width="4" stroke="#000000" fill="#782216" y="-164.45276" x="-30.51107" height="8.45277" width="13.02215" id="rect932" transform="scale(-1)"/>
+        <path stroke-opacity="0.69697" stroke-miterlimit="4" stroke-width="4" stroke="#000000" fill="none" id="path946" d="m8,114l32,0"/>
+        <rect stroke-miterlimit="10" stroke-width="4" stroke="#000000" fill="#484848" id="rect954" width="8.07417" height="6.82735" x="19.96291" y="5.17265"/>
+    </g>
+</svg>

@@ -1,0 +1,210 @@
+@media (prefers-color-scheme: light) {
+    body {
+        background-color: #e0e0e0;
+        color: black;
+    }
+
+    a {
+        color: hsl(240, 100%, 47%);
+    }
+
+    a:hover {
+        color: hsl(0, 100%, 41%);
+    }
+
+    a:visited {
+        color: hsl(271, 68%, 32%);
+    }
+
+    table,
+    tr,
+    td,
+    thead {
+        border: 1px solid #444;
+    }
+
+    span.yes {
+        color: #0C0;
+    }
+
+    span.no {
+        color: #C00;
+    }
+
+    td.major-up {
+        background-color: hsl(120, 50%, 35%);
+        color: white;
+    }
+
+    td.minor-up {
+        background-color: hsl(120, 20%, 88%);
+        color: #0A0;
+    }
+
+    td.patch-up {
+        color: #262;
+    }
+
+    td.major-down {
+        background-color: hsl(0, 50%, 35%);
+        color: white;
+    }
+
+    td.minor-down {
+        background-color: hsl(0, 20%, 88%);
+        color: #A00;
+    }
+
+    td.patch-down {
+        color: #622;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #1e1e1e;
+        color: white;
+    }
+
+    a {
+        color: rgb(117, 165, 255);
+    }
+
+    a:hover {
+        color: hsl(356, 100%, 73%);
+    }
+
+    a:visited {
+        color: hsl(309, 100%, 73%);
+    }
+
+    table,
+    tr,
+    td,
+    thead {
+        border: 1px solid #888;
+    }
+
+    span.yes {
+        color: #8F8;
+    }
+
+    span.no {
+        color: #F88;
+    }
+
+    td.major-up {
+        background-color: hsl(120, 100%, 50%);
+        color: black;
+    }
+
+    td.minor-up {
+        background-color: hsl(120, 20%, 12%);
+        color: #4F4;
+    }
+
+    td.patch-up {
+        color: #AFA;
+    }
+
+    td.major-down {
+        background-color: hsl(0, 100%, 50%);
+        color: black;
+    }
+
+    td.minor-down {
+        background-color: hsl(0, 20%, 12%);
+        color: #F44;
+    }
+
+    td.patch-down {
+        color: #FAA;
+    }
+}
+
+body {
+    font-family: "jura", "Menlo", monospace;
+}
+
+table#assets {
+    position: relative;
+    top: 63px;
+    width: 100%;
+}
+
+th {
+    font-weight: bolder;
+}
+
+h1 {
+    text-align: center;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    font-size: 32px;
+}
+
+span.category {
+    font-family: "roboto", "Helvetica", monospace;
+    font-size: 20px;
+}
+
+button#back {
+    position: absolute;
+    background-color: #50AFAB;
+    color: white;
+    border: none;
+    border-bottom-style: solid;
+    border-bottom-color: #387C79;
+    border-bottom-width: 4px;
+    border-radius: 5px;
+    font-family: "roboto", "Helvetica", monospace;
+    text-shadow: 0 1px 2px rgb(0 0 0 / 25%);
+    font-size: 14px;
+    width: 5%;
+    height: 5%;
+    left: 0.5%;
+    top: 2%;
+    z-index: 1;
+    padding: 0;
+}
+
+button#back:hover {
+    background-color: #408C88;
+    transition-duration: 200ms;
+    cursor: pointer;
+}
+
+button#back:active {
+    background-color: #387A77;
+    transition-duration: 100ms;
+}
+
+p#attr {
+    font-size: 16px;
+    position: relative;
+    top: 63px;
+}
+
+div#table-cont {
+    overflow: auto;
+}
+
+table#frameworks {
+    width: max-content;
+}
+
+td.td-center {
+    text-align: center;
+}
+
+@font-face {
+    font-family: roboto;
+    src: url("../assets/default/fonts/RobotoCondensed-Regular.ttf");
+}
+
+@font-face {
+    font-family: jura;
+    src: url("../assets/default/fonts/Jura-Bold.ttf");
+}

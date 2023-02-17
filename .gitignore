@@ -1,1 +1,16 @@
-**/.DS_Store
+*
+!/**/
+!*.js
+!*.ts
+!*.d.ts
+!*.json
+!*.png
+!*.svg
+!*.html
+!*.css
+!*.txt
+!*.md
+!*.json
+!*.cpp
+node_modules
+package-lock.json

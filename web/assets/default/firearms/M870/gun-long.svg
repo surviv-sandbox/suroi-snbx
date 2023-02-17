@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="32"
+   height="188"
+   version="1.1"
+   id="svg854"
+   sodipodi:docname="gun-long-01.svg"
+   inkscape:version="0.92.2 (5c3e80d, 2017-08-06)">
+  <metadata
+     id="metadata858">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     id="namedview856"
+     showgrid="false"
+     fit-margin-top="1"
+     fit-margin-left="1"
+     fit-margin-bottom="1"
+     fit-margin-right="1"
+     inkscape:zoom="4.0708662"
+     inkscape:cx="22.539824"
+     inkscape:cy="53.73218"
+     inkscape:window-x="1912"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg854" />
+  <defs
+     id="defs850">
+    <clipPath
+       id="a">
+      <rect
+         ry="3.836"
+         rx="2.4690001"
+         y="272.65799"
+         x="0.52899998"
+         height="24.341999"
+         width="3.704"
+         stroke-miterlimit="10"
+         id="rect847"
+         style="fill:#515151;stroke-width:1.32299995;stroke-miterlimit:10;stroke-opacity:0.49000005" />
+    </clipPath>
+  </defs>
+  <rect
+     width="3.704"
+     height="24.341999"
+     x="0.52899998"
+     y="272.65799"
+     rx="2.4690001"
+     ry="3.836"
+     clip-path="url(#a)"
+     stroke-miterlimit="10"
+     transform="matrix(7.5593953,0,0,7.5589519,-1.9989201,-2059.0086)"
+     id="rect852"
+     style="fill:#fdfdfd;stroke:#4b4b4b;stroke-width:2.1170001;stroke-miterlimit:10" />
+</svg>

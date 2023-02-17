@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "target": "ESNext",
+        "declaration": true,
+        "declarationDir": "./web/types",
+        "sourceMap": true,
+        "moduleResolution": "node",
+        "strict": true,
+        "alwaysStrict": true,
+        "module": "ESNext"
+    },
+    "buildOptions": {
+        "verbose": true
+    }
+}

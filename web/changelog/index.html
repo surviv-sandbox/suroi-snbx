@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>surviv.io sandbox changelog</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="style.css">
+
+    <script src="index.js" defer></script>
+</head>
+
+<body>
+    <button id="back">Back</button>
+    <title>Changelog</title>
+    <aside id="sidebar"></aside>
+    <main id="main-cont">
+        <div class="update nightly">
+            <div class="header">
+                <h2>v0.10.0 beta 1</h2>
+                <h3>February 14<sup>th</sup> 2023</h3>
+            </div>
+            <div class="content">
+                <ul>
+                    <li>Stack changes
+                        <ul>
+                            <li>Electron (21.2.0 -> 22.2.1)
+                        </ul>
+                    </li>
+                    <li>New features:
+                        <ul>
+                            <li>Inventory UI (finally)</li>
+                            <li>Melee weapons</li>
+                            <li>The majority of surviv's arsenal</li>
+                        </ul>
+                    </li>
+                    <li>Bug fixes:
+                        <ul>
+                            <li>Casings no longer shrink (mimics original behavior)</li>
+                            <li>Swapping your weapons' positions in your inventory halts neither reloading nor firing
+                            </li>
+                            <li>Fixed a bug that allowed reloading after firing, but before the weapon's firing delay
+                                had
+                                passed</li>
+                            <li>Fixed a bug that allowed firing instantly by swapping weapon slots</li>
+                        </ul>
+                    </li>
+                    <li>The game has been rewritten from the ground up, in order to ready it for the beta stage
+                        <ul>
+                            <li>However, many features—such as the console, AI, levels and settings—have yet to be
+                                re-added</li>
+                        </ul>
+                    </li>
+                    <li>Fixed a handful of typos in the changelog</li>
+                    <li>Particles and better explosions</li>
+                    <li>Players now bleed on hit</li>
+                    <li>Made the changelog prettier</li>
+                    <li>
+                        <u>Roadmap:</u>
+                        <ul>
+                            <li>Finish adding in the rest of the melee weapons</li>
+                            <li>Ensure that the hand rigging and animations are as accurate as possible</li>
+                            <li>Vests & helmets</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="update">
+            <div class="header">
+                <h2>v0.9.0</h2>
+                <h3>October 28<sup>th</sup> 2022</h3>
+            </div>
+            <div class="content">
+                <ul>
+                    <li>Stack changes
+                        <ul>
+                            <li>Electron (NA -> 21.2.0)
+                        </ul>
+                    </li>
+                    <li>Started transitioning the game towards a stand-alone app. This version is to complement the
+                        surviv
+                        sandbox editor.<ul>
+                            <li>Note that the editor is a proof-of-concept rather than a finished product.</li>
+                        </ul>
+                    </li>
+                    <li>Changed some .png's for .svg's
+                    <li>Adjusted some engagement distances for bots
+                    <li>Fixed M79's <code>spawnCasingOnReload</code> not working
+                    <li>Fixed MP220's <code>pullBothTriggers</code> not working
+                    <li>Added an option to refresh the game's imports manually
+                    <li>Added the following weapons:
+                        <ul>
+                            <li>DEagle 50</li>
+                            <li>Dual DEagle 50</li>
+                            <li>SPAS-12</li>
+                            <li>M1 Garand</li>
+                            <li>Groza</li>
+                            <li>Groza-S</li>
+                            <li>MAC-10</li>
+                            <li>Mk 20 SSR</li>
+                        </ul>
+                    </li>
+                    <li>Attributions page
+                        <ul>
+                            <li>Changed some colors
+                            <li>Corrected some entries
+                        </ul>
+                    </li>
+                    <li>Deathmatch
+                        <ul>
+                            <li>After not firing any weapon for 3 seconds, you'll start to regenerate health
+                        </ul>
+                    </li>
+                    <li>API changes
+                        <ul>
+                            <li><code>gunPrototype.dimensions.width</code> and
+                                <code>gunPrototype.dimensions.height</code>
+                                now
+                                accepts the string <code>auto</code> in order to use the source image's aspect ratio to
+                                calculate height or width. If both width and height are set to auto, the image's
+                                original
+                                dimensions will be used.
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="update">
+            <div class="header">
+                <h2>v0.8.3</h2>
+                <h3>August 26<sup>th</sup> 2022</h3>
+            </div>
+            <div class="content">
+                <ul>
+                    <li>Stack changes
+                        <ul>
+                            <li>p5.js (1.4.1 -> 1.4.2)
+                            <li>decimal.js (10.3.1 -> 10.4.0)
+                        </ul>
+                    </li>
+                    <li>NEW: Added the CZ-3A1 and G18C for your spraying enjoyment
+                    <li>Fixed the <code>Buckshot spawn variance</code> setting not working
+                    <li>Deathmatch
+                        <ul>
+                            <li>Added specific scores for <code>smg</code> kills, <code>auto_pistol</code> kills and
+                                <code>dual_auto_pistol</code> kills.
+                            <li>Nerfed the kill score for <code>grenade_launcher</code>s (7 -> 5)
+                        </ul>
+                    </li>
+                    <li>Attributions page
+                        <ul>
+                            <li>Fixed a bug with the script responsible for generating the version table
+                            <li>Added light theme coloring for the version table
+                            <li>Click on a framework's name in the table to navigate to that framework's site
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="update">
+            <div class="header">
+                <h2>v0.8.2</h2>
+                <h3>August 13<sup>th</sup> 2022</h3>
+            </div>
+            <div class="content">
+                <ul>
+                    <li>Fixed casings not spawning
+                </ul>
+            </div>
+        </div>
+        <div class="update">
+            <div class="header">
+                <h2>v0.8.1</h2>
+                <h3>August 7<sup>th</sup> 2022</h3>
+            </div>
+            <div class="content">
+                <ul>
+                    <li>The console will warn you about outdated levels
+                    <li>Toned down some colors in the settings menu
+                    <li>Made some of the uglier scrollbars disappear (scrollbars only appear in directions that can be
+                        scrolled in, although the real solution is just to disable constantly-visible scrollbars because
+                        they're quite ugly)
+                    <li>Bug fixes
+                        <ul>
+                            <li>Fixed a variety of settings not being displayed / registered correctly in the settings
+                                menu
+                            <li>The game no longer believes the graphics quality to be set to "Ultra Low" by default
+                            <li>The popup prompting the user to check the console if the game's assets don't load no
+                                longer
+                                appears if the console is already open
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="update">
+            <div class="header">
+                <h2>v0.8.0</h2>
+                <h3>July 9<sup>th</sup> 2022</h3>
+            </div>
+            <div class="content">
+                <ul>
+                    <li>NEW: The AWM-S and USAS-12 have been added. <span style="font-size: 4px">Something else made it
+                            in
+                            too?</span>
+                    <li>Added a read-only console for debugging purposes
+                        <ul>
+                            <li>If the game fails to load its assets for whatever reason, it should be reported there
+                        </ul>
+                    </li>
+                    <li>Added screen shake from explosions
+                    <li>Changed the title from "SURVIV.IO sandbox" to "surviv.io sandbox"
+                    <li>Retired the technical changes section because too many things change between builds, as this is
+                        an
+                        alpha version.
+                    <li>Bug fixes
+                        <ul>
+                            <li>Fixed the M870 and MP220 not correctly spawning pellets</li>
+                            <li>Fixed FSA not working</li>
+                        </ul>
+                    </li>
+                    <li>Settings
+                        <ul>
+                            <li>Diversified quickswitch to also allow to enable quickswitch between weapons with
+                                identical
+                                non-zero <code>deployGroups</code> (like two M870s)</li>
+                            <li>Added a setting to toggle buckshot's spawn variance</li>
+                        </ul>
+                    </li>
+                    <li>Bot 1v1
+                        <ul>
+                            <li>Fixed checkbox size</li>
+                            <li>Made the HP fields a little less finnicky</li>
+                        </ul>
+                    </li>
+                    <li>
+                        Miscellaneous game-related stuff
+                        <ul>
+                            <li>Improved some hitboxes</li>
+                            <li>Corrected the Dual OTs-38's firing rate</li>
+                            <li>Changed various <code>engagementDistance</code>s</li>
+                            <li>The game should no longer (rarely) fail to load its levels</li>
+                            <li>Made the "Loading…" text a little prettier</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="update">
+            <div class="header">
+                <h2>v0.7.0</h2>
+                <h3>June 28<sup>th</sup> 2022</h3>
+            </div>
+            <div class="content">
+                <ul>
+                    <li>
+                        <del>NEW: <a href="" style="cursor: not-allowed;">Guides are here</a>! Some basic how-to's for
+                            adding in
+                            guns, ammos and explosions to the game
+                            <ul>
+                                <li>That being said, since the game changes often, anything made using them might not
+                                    be compatible for long
+                            </ul>
+                        </del>
+                    </li>
+                    <li>NEW: An actual settings menu for your enjoyment
+                    <li>NEW: Added the MP220—for your shotgun-quickswitching enjoyment—M1911 and Dual M1911
+                    <li>
+                        Bug fixes
+                        <ul>
+                            <li>Fixed menus occasionally persisting when entering a level
+                            <li>Fixed a bug where exiting a level would stop any performance monitoring
+                            <li>Fixed a bug where partial reloads would still replenish a weapon's ammo if the weapon
+                                was
+                                switched off of
+                            <li>Fixed a bug where firing during a partial reload would fire two shots
+                            <li>Fixed a bug where attempting to fire a burst weapon while it was reloading would cause
+                                the
+                                weapon to fire after the weapon was done reloading, regardless of if the mouse button
+                                was
+                                still held down
+                            <li>Fixed explosions not deal max damage within their <code>radii.damage.min</code>
+                            <li>Fixed a bug where switching to a weapon without quickswitch would use the old weapon's
+                                switch delay.
+                            <li>Fixed a bug where the game would sometimes be limited to a portion of the screen
+                            <li>Fixed a bug where a keybind would be triggered even if a modifier key was held (ex:
+                                <kbd>Ctrl</kbd> + <kbd>2</kbd> would switch to the user's secondary weapon)
+                            <li>Fixed explosions ignoring a player's invulnerability
+                            <li>Fixed casings not spawning at the correct position
+                            <li>Fixed casings' perpendicular spawn offsets being ignored if the casing was spawned on
+                                reload
+                            <li>When firing the last round in a weapon, the reload will now start after the weapon's
+                                firing
+                                delay, as opposed to immediately
+                            <li>Fixed being able to start a reload earlier than what a weapon's switch delay would allow
+                                by
+                                pressing the reload key
+                        </ul>
+                    </li>
+                    <li>
+                        Settings
+                        <ul>
+                            <li>Added settings to
+                                <ul>
+                                    <li>Toggle quickswitch, noslow and headshots</li>
+                                    <li>Toggle the M79's movement penalty, grenade spin and casing spawn</li>
+                                    <li>Toggle pulling both of the MP220's triggers on fire</li>
+                                    <li>Show an FPS and a TPS counter</li>
+                                    <li>Disable the HUD</li>
+                                    <li>Control the graphics quality</li>
+                                    <li>Limit the amount of decals that can exist at once</li>
+                                </ul>
+                        </ul>
+                    </li>
+                    <li>
+                        Bot 1v1
+                        <ul>
+                            <li>Adjusted the position of some buttons
+                            <li>Fixed a bug where first-time users would have no scope preference chosen in "Bot 1v1"
+                            <li>The health preference fields now only validate their input when it is committed (by
+                                unfocusing the field) as opposed to whenever the user types something in the field.
+                        </ul>
+                    </li>
+                    <li>
+                        Miscellaneous game-related stuff
+                        <ul>
+                            <li>The game is now better at memorizing values between different game versions
+                            <li>Adjusted some <code>guns.json</code> values.
+                            <li>In the alternate killfeed, suicides now only show the concerned player's name once
+                                instead
+                                of twice.
+                            <li>Damage numbers now round to the nearest hundredth
+                            <li>Most bullets can no longer hurt the player who shot them
+                            <li>Casings now shrink in size as they despawn (as they do ingame), as opposed to fading
+                                away
+                            <li>Bots will use the P30L from further away
+                            <li>Binded <code>other_gun</code> and <code>switch_guns</code> to <kbd>e</kbd> and
+                                <kbd>t</kbd>
+                                respectively
+                        </ul>
+                    </li>
+                    <li>
+                        Extra stuff:
+                        <ul>
+                            <li>Added light themes for this page and the attributions page
+                            <li>Added some <code>&lt;code&gt;</code> tags around to make things nicer
+                            <li>Changed the code used to generate links so that the links would always lead to the same
+                                section
+                            <li>Retired <code>changelog.md</code>; the changelog now lives in <code>index.html</code>
+                            <li>Changelog entries now have a section dedicated to more in-depth technical changes
+                            <li>Disabled zooming
+                            <li>Fixed a bug with the attributions page
+                            <li>The framework version table now shows entries representing an updated framework with
+                                color
+                                (ex: 1.3.4 -> 1.3.5 would have the latter colored in some way)
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="update">
+            <div class="header">
+                <h2>v0.6.1</h2>
+                <h3>June 21<sup>st</sup> 2022</h3>
+            </div>
+            <div class="content">
+                <ul>
+                    <li>Fixed a typo inside <code>util.ts</code>. (variataion => variation)
+                </ul>
+            </div>
+        </div>
+        <div class="update">
+            <div class="header">
+                <h2>v0.6.0</h2>
+                <h3>June 15<sup>th</sup> 2022</h3>
+            </div>
+            <div class="content">
+                <ul>
+                    <li>Adjusted tracer opacity for suppressed weapons
+                    <li>Adjusted casing spawns
+                    <li>Changed some animation values (recoil impulse lengths and magnitudes)
+                    <li>Retroactively renamed all versions to comply with the <a href="https://semver.org">SemVer</a>
+                        (Semantic Versioning) specification
+                    <li>Made the changelog prettier
+                    <li>Fixed some bad links on the attributions page
+                    <li>Fixed a bug with shooting at an invalid time
+                </ul>
+            </div>
+        </div>
+        <div class="update">
+            <div class="header">
+                <h2>v0.5.1</h2>
+                <h3>June 7<sup>th</sup> 2022</h3>
+            </div>
+            <div class="content">
+                <ul>
+                    <li>Fixed a typo in the changelog
+                    <li>Holding attack either while the weapon is reloading or while the weapon isn't ready to fire will
+                        allow the weapon to fire when it is ready to do so again
+                    <li>For ammo types that lack distinct saturated tracer colors (9mm, 12 gauge and 5.56mm), a new
+                        option
+                        allows the game to create new values based on ammo types that have distinct saturated tracers.
+                    <li>Fixed a bug where presets wouldn't apply correctly when re-entering the 'Bot 1v1' level
+                    <li>Fixed a bug where exiting 'Bot 1v1' would prevent re-entering the level with fatal crashes
+                    <li>Fixed a bug where levels' event listeners weren't being cleaned up properly
+                </ul>
+            </div>
+        </div>
+        <div class="update">
+            <div class="header">
+                <h2>v0.5.0</h2>
+                <h3>June 6<sup>th</sup> 2022</h3>
+            </div>
+            <div class="content">
+                <ul>
+                    <li>Restructuring, housekeeping
+                    <li>Fixed <code>prev_item</code> not working correctly
+                    <li>Fixed and re-added distance-based rendering
+                    <li>Added pause menu, functionality to gracefully exit a level
+                    <li>Binded <code>cancel</code> to x
+                    <li>Minor styling updates
+                </ul>
+            </div>
+        </div>
+        <div class="update">
+            <div class="header">
+                <h2>v0.4.0</h2>
+                <h3>June 1<sup>st</sup> 2022</h3>
+            </div>
+            <div class="content">
+                <ul>
+                    <li>Added weapons:
+                        <ul>
+                            <li>SV-98
+                            <li>L86A2
+                            <li>AN-94
+                            <li>P30L
+                            <li>Dual P30L
+                            <li>FAMAS
+                            <li>OTs-38
+                            <li>Dual OTs-38
+                            <li>M134
+                            <li>M79
+                        </ul>
+                    <li>Added "automatic" burst fire; hold the attack button to fire off burst weapons in an automatic
+                        fashion
+                    <li>Hand outlines are no longer pitch black
+                    <li>Headshot kills are indicated with a red glow in the alternate killfeed
+                </ul>
+            </div>
+        </div>
+        <div class="update">
+            <div class="header">
+                <h2>v0.3.0</h2>
+                <h3>May 29<sup>th</sup> 2022</h3>
+            </div>
+            <div class="content">
+                <ul>
+                    <li>Total bot AI overhaul
+                    <li>Added better system to interact with localStorage
+                    <li>Added option to hide UI (bound to p)
+                    <li>More settings are modifiable
+                    <li>Added second level
+                    <li>Added level select screen
+                    <li>Temporarily disabled distance-based rendering optimization
+                    <li>Added support for mouse wheel key binds
+                </ul>
+            </div>
+        </div>
+        <div class="update">
+            <div class="header">
+                <h2>v0.2.0</h2>
+                <h3>May 25<sup>th</sup> 2022</h3>
+            </div>
+            <div class="content">
+                <ul>
+                    <li>Made the boot-up message less dramatic
+                    <li>Firing your weapon slows you down
+                    <li>Added a second weapon slot
+                        <ul>
+                            <li>Added quickswitch and noslow mechanics, based off of <a
+                                    href="https://github.com/surviv-underclock/docs">this paper on the subject</a>
+                        </ul>
+                    <li>Made hand outlines slightly thicker
+                    <li>Fixed a bug that prevented firing while reloading single-shot realoding weapons like the M870
+                    <li>Minor weapon adjustments (mostly cosmetic)
+                    <li>Binded <code>slot0</code>, <code>slot1</code>, <code>last_item</code>, <code>next_item</code>
+                        and
+                        <code>prev_item</code> to <kbd>1</kbd>, <kbd>2</kbd>, <kbd>Q</kbd>, <kbd>MWheelUp</kbd> and
+                        <kbd>MWheelDown</kbd> respectively
+                    <li>Added an attributions page
+                    <li>Game remembers health presets
+                    <li>Option to disable AI added
+                </ul>
+            </div>
+        </div>
+        <div class="update">
+            <div class="header">
+                <h2>v0.1.0</h2>
+                <h3>May 24<sup>th</sup> 2022</h3>
+            </div>
+            <div class="content">
+                <ul>
+                    <li>Changelog created</li>
+                </ul>
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>

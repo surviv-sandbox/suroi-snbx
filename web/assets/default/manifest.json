@@ -1,0 +1,9 @@
+{
+    "name": "surviv sandbox standard namespace",
+    "_internal": "srvsdbx",
+    "description": "A port of every item in the base game",
+    "author": "eiπ",
+    "targetVersion": "0.10.0",
+    "version": "1.0.0",
+    "dependencies": []
+}

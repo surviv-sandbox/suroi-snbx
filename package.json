@@ -1,0 +1,12 @@
+{
+  "name": "surviv_sandbox",
+  "version": "0.10.0 beta 1",
+  "author": "eiπ",
+  "description": "A tool conceptors can use to create their concepts in a surviv-like environment",
+  "license": "MIT",
+  "main": "setup.js",
+  "private": true,
+  "dependencies": {
+    "electron": "^23.1.0"
+  }
+}

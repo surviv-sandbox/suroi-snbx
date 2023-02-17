@@ -1,0 +1,304 @@
+/* GENERAL STYLES */
+
+html {
+    zoom: 100%;
+}
+
+.hidden {
+    display: none;
+}
+
+:disabled,
+.disabled {
+    opacity: 80%;
+    cursor: not-allowed;
+}
+
+button:hover {
+    cursor: pointer;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+}
+
+canvas {
+    display: block;
+    top: 0;
+    left: 0;
+}
+
+p.debug {
+    margin: 0;
+    color: #C7C770;
+    text-shadow: calc(-5vw / 72) calc(-1vh / 9) 0 #000, calc(5vw / 72) calc(-1vh / 9) 0 #000, calc(-5vw / 72) calc(1vh / 9) 0 #000, calc(5vw / 72) calc(1vh / 9) 0 #000;
+    font: 14px monospace;
+}
+
+/* UI STYLES */
+
+.ui {
+    user-select: none;
+}
+
+div#ui-container {
+    user-select: none;
+    pointer-events: none;
+    z-index: 1000;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+}
+
+div.ammo:not([id="ui-ammo-cont"]) {
+    position: absolute;
+    bottom: 8.9%;
+    background-color: #0006;
+    border-radius: calc(25vw / 72);
+    color: white;
+    text-align: center;
+    font-weight: bold;
+    font-synthesis: style;
+    font-family: "roboto bold", sans-serif;
+    text-shadow: calc(5vw / 36) calc(2vh / 9) 0 #000;
+    pointer-events: none;
+}
+
+div#ui-ammo-counter-main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    left: 50%;
+    transform: translate(-50%, 0);
+    width: 6.95%;
+    height: 5.55%;
+    line-height: 100%;
+    font-size: calc(55vw / 18);
+}
+
+div#ui-ammo-counter-res {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    left: 53.9%;
+    width: 4.53%;
+    height: 3.6%;
+    line-height: 100%;
+    font-size: calc(120vw / 72);
+}
+
+div.hp {
+    border-radius: calc(25vw / 72);
+}
+
+div#ui-hp-cont {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    background-color: #0006;
+    left: 50%;
+    bottom: 1.5%;
+    width: 28.6%;
+    height: 4.9%;
+    transform: translate(-50%, 0);
+}
+
+img#ui-hp-bg {
+    display: none;
+    width: 100%;
+    height: 100%;
+}
+
+div#ui-hp-inner-cont {
+    position: absolute;
+    left: 1.45%;
+    width: 97.1%;
+    height: 72%;
+}
+
+div#ui-hp-bar {
+    position: absolute;
+    background-color: #B3B3B3;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+}
+
+div#ui-hp-bar-lag {
+    position: absolute;
+    background-color: #929292;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    transition: width 1.0s ease-out;
+    z-index: 1;
+}
+
+div#ui-ammo-counter-res {
+    left: 53.9%;
+    width: 4.53%;
+    height: 3.6%;
+    font-size: calc(120vw / 72);
+}
+
+div#ui-reload-text {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    color: white;
+    left: 50%;
+    transform: translate(-50%, 0);
+    line-height: 100%;
+    top: 37%;
+    width: 10.65%;
+    height: 4%;
+    font-size: calc(7vw / 4);
+    border-radius: calc(25vw / 72);
+    background-color: #0006;
+    font-family: roboto, Arial, sans-serif;
+    pointer-events: none;
+}
+
+canvas#ui-reload-spin {
+    position: absolute;
+    aspect-ratio: 1;
+    left: 50%;
+    transform: translate(-50%, 0);
+    height: 8.5%;
+    top: 25%;
+}
+
+div#ui-inv-main-cont {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    color: white;
+    font-family: "roboto bold", Arial, sans-serif;
+    right: 10px;
+    bottom: 5px;
+    width: calc(177vh / 9);
+}
+
+div.inv-main-slot {
+    position: relative;
+    display: flex;
+    pointer-events: all;
+    opacity: 0.6;
+    border: calc(2vh / 9) solid transparent;
+    padding: calc(2vh / 9);
+    background-color: #0000;
+    margin-bottom: 5px;
+    width: calc(500% / 6);
+    height: calc(58vh / 9);
+    border-radius: calc(25vw / 72);
+    cursor: pointer;
+}
+
+div.inv-main-slot * {
+    z-index: 1;
+}
+
+div.inv-main-slot:hover {
+    transition: outline 100ms ease-out;
+    border-color: #0F0;
+    cursor: pointer;
+}
+
+div.inv-main-slot.active {
+    opacity: 1;
+    background-color: rgba(0, 0, 0, 0.4);
+    animation: 0.25s linear 0s 1 normal none running select-inv-slot;
+}
+
+div.inv-main-slot-name {
+    position: absolute;
+    margin-top: 38px;
+    right: 9px;
+    font-size: calc(80vw / 72);
+    bottom: 3px;
+    font-weight: bold;
+}
+
+div.inv-main-slot-number {
+    position: absolute;
+    top: 2px;
+    right: 9px;
+    font-size: calc(110vw / 72);
+    font-weight: bold;
+}
+
+img.inv-main-slot-img {
+    position: relative;
+    pointer-events: none;
+    aspect-ratio: 1;
+    left: 5px;
+    height: calc(60vh / 9);
+}
+
+img.inv-main-slot-bg {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    pointer-events: none;
+    border-radius: calc(25vw / 72);
+    z-index: 0;
+}
+
+/* FONTS */
+
+@font-face {
+    font-family: roboto;
+    src: url("./assets/default/fonts/RobotoCondensed-Regular.ttf");
+}
+
+@font-face {
+    font-family: "roboto bold";
+    src: url("./assets/default/fonts/RobotoCondensed-Bold.ttf");
+}
+
+@font-face {
+    font-family: jura;
+    src: url("./assets/default/fonts/Jura-Bold.ttf");
+}
+
+/* ANIMATIONS */
+
+@keyframes HP-critical {
+    0% {
+        background-color: rgba(0, 0, 0, 0.8);
+    }
+
+    50% {
+        background-color: rgba(255, 0, 0, 0.8);
+    }
+
+    100% {
+        background-color: rgba(0, 0, 0, 0.8);
+    }
+}
+
+@keyframes select-inv-slot {
+    0% {
+        width: calc(500% / 6);
+    }
+
+    50% {
+        width: 100%;
+    }
+
+    100% {
+        width: calc(500% / 6);
+    }
+}

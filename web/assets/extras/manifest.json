@@ -1,0 +1,13 @@
+{
+    "name": "extras",
+    "description": "Extra items not present in the base game, added for fun",
+    "author": "eiπ",
+    "targetVersion": "0.10.0",
+    "version": "1.0.0",
+    "dependencies": [
+        {
+            "name": "srvsdbx",
+            "version": "1.0.0"
+        }
+    ]
+}
