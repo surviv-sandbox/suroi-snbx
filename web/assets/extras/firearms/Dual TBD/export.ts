@@ -3,7 +3,7 @@ export default {
     targetVersion: "0.10.0",
     images: {
         loot: "./loot-weapon-dual-tbd.png",
-        world: "./tbd.png"
+        world: "./TBD.png"
     },
     dual: true,
     tint: "#FFFFFF",

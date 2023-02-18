@@ -12,5 +12,8 @@
 !*.md
 !*.json
 !*.cpp
+!*.woff2
+!*.ttf
+!*.png
 node_modules
 package-lock.json
