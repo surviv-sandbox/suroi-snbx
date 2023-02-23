@@ -6,6 +6,9 @@
   "license": "MIT",
   "main": "setup.js",
   "private": true,
+  "scripts": {
+    "build": "tsc"
+  },
   "dependencies": {
     "electron": "^23.1.0"
   },
