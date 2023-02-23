@@ -13,7 +13,7 @@ interface SimpleParticle extends SimpleImport {
      */
     readonly lifetime: MayBeFunctionWrapped<number>,
     /**
-     readonly * Pragmatically, a scale factor for this particle's physics: a value of 1 is normal 0.5 is half speed, etc
+     * Pragmatically, a scale factor for this particle's physics: a value of 1 is normal 0.5 is half speed, etc
      */
     readonly drag: MayBeFunctionWrapped<number>,
     /**
@@ -44,7 +44,12 @@ interface SimpleParticle extends SimpleImport {
         /**
          * The scale this image ends at
          */
-        readonly end: MayBeFunctionWrapped<number>;
+        readonly end: MayBeFunctionWrapped<number>,
+        /**
+         * Optionally, a function that will be used to interpolate between
+         * the two bounds
+         */
+        readonly interp?: srvsdbx_Animation.EasingFunction;
     } | MayBeFunctionWrapped<number, [Particle]>,
     /**
      * Information about the opacity of this particle's image.
@@ -57,7 +62,12 @@ interface SimpleParticle extends SimpleImport {
         /**
          * The opacity this image ends at
          */
-        readonly end: MayBeFunctionWrapped<number>;
+        readonly end: MayBeFunctionWrapped<number>,
+        /**
+         * Optionally, a function that will be used to interpolate between
+         * the two bounds
+         */
+        readonly interp?: srvsdbx_Animation.EasingFunction;
     } | MayBeFunctionWrapped<number, [Particle]>,
     /**
      * The color to tint this image. While it can have an alpha channel, it's better to use the `alpha` property to do this
@@ -165,8 +175,8 @@ class ParticlePrototype extends ImportedObject {
      * @param obj The `SimpleParticle` object to parse
      * @returns A new `ParticlePrototype`
      */
-    static async from(obj: SimpleParticle): Promise<srvsdbx_ErrorHandling.Result<ParticlePrototype, unknown[]>> {
-        const errors: unknown[] = [],
+    static async from(obj: SimpleParticle): Promise<srvsdbx_ErrorHandling.Result<ParticlePrototype, SandboxError[]>> {
+        const errors: SandboxError[] = [],
             images = await srvsdbx_AssetManagement.loadImageArray(obj.images, errors, `${obj.includePath}/`);
 
         if (!errors.length) {
@@ -174,6 +184,7 @@ class ParticlePrototype extends ImportedObject {
                 res: new ParticlePrototype(
                     obj.name,
                     obj.displayName,
+                    obj.objectType,
                     obj.includePath,
                     obj.namespace,
                     obj.targetVersion,
@@ -199,6 +210,7 @@ class ParticlePrototype extends ImportedObject {
     constructor(
         name: typeof ImportedObject.prototype.name,
         displayName: typeof ImportedObject.prototype.displayName,
+        objectType: typeof ImportedObject.prototype.objectType,
         includePath: typeof ImportedObject.prototype.includePath,
         namespace: typeof ImportedObject.prototype.namespace,
         targetVersion: typeof ImportedObject.prototype.targetVersion,
@@ -212,7 +224,7 @@ class ParticlePrototype extends ImportedObject {
         tint: typeof ParticlePrototype.prototype.tint,
         subLayer: typeof ParticlePrototype.prototype.subLayer,
     ) {
-        super(name, displayName, targetVersion, namespace, includePath);
+        super(name, displayName, objectType, targetVersion, namespace, includePath);
 
         const size = gamespace.PLAYER_SIZE;
 
@@ -238,7 +250,9 @@ class ParticlePrototype extends ImportedObject {
 /**
  * Represents a specific particle in the game world
  */
-class Particle extends Generic implements Destroyable {
+class Particle
+    extends Generic
+    implements Destroyable {
     /**
      * The timestamp this particle was created at
      */
@@ -251,11 +265,11 @@ class Particle extends Generic implements Destroyable {
     /**
      * The prototype this particle is based
      */
-    #proto: ParticlePrototype;
+    #prototype: ParticlePrototype;
     /**
      * The prototype this particle is based
      */
-    get proto() { return this.#proto; }
+    get proto() { return this.#prototype; }
 
     /**
      * The lifetime determined for this specific particle
@@ -282,11 +296,16 @@ class Particle extends Generic implements Destroyable {
         /**
          * The scale this image starts at
          */
-        start: number,
+        readonly start: number,
         /**
          * The scale this image ends at
          */
-        end: number;
+        readonly end: number,
+        /**
+         * Optionally, a function that will be used to interpolate between
+         * the two bounds
+         */
+        readonly interp: srvsdbx_Animation.EasingFunction;
     } | MayBeFunctionWrapped<number, [Particle]>;
     /**
      * Information about the scaling of this specific particle's image
@@ -300,11 +319,16 @@ class Particle extends Generic implements Destroyable {
         /**
          * The opacity this image starts at
          */
-        start: number,
+        readonly start: number,
         /**
          * The opacity this image ends at
          */
-        end: number;
+        readonly end: number,
+        /**
+         * Optionally, a function that will be used to interpolate between
+         * the two bounds
+         */
+        readonly interp: srvsdbx_Animation.EasingFunction;
     } | MayBeFunctionWrapped<number, [Particle]>;
     /**
      * Information about the opacity of this specific particle's image
@@ -471,7 +495,7 @@ class Particle extends Generic implements Destroyable {
 
         this.collidable = false;
 
-        this.#proto = proto;
+        this.#prototype = proto;
         this.#lifetime = lifetime;
         this.#baseSize = {
             width: dimWidth,
@@ -480,12 +504,14 @@ class Particle extends Generic implements Destroyable {
 
         this.#scale = typeof proto.scale == "object" ? {
             start: extractValue(proto.scale.start),
-            end: extractValue(proto.scale.end)
+            end: extractValue(proto.scale.end),
+            interp: proto.scale.interp ?? srvsdbx_Animation.easingFunctions.linterp
         } : proto.scale;
 
         this.#alpha = typeof proto.alpha == "object" ? {
             start: extractValue(proto.alpha.start),
-            end: extractValue(proto.alpha.end)
+            end: extractValue(proto.alpha.end),
+            interp: proto.alpha.interp ?? srvsdbx_Animation.easingFunctions.linterp
         } : proto.alpha;
 
         this.#tint = extractValue(proto.tint);
@@ -512,14 +538,16 @@ class Particle extends Generic implements Destroyable {
 
         if (age >= this.#lifetime) return this.destroy();
 
-        Matter.Body.setPosition(this.body, {
-            x: bd.position.x + vel.x * deltaTime * this.#drag,
-            y: bd.position.y + vel.y * deltaTime * this.#drag
-        });
+        if (!this.parent) {
+            Matter.Body.setPosition(this.body, {
+                x: bd.position.x + vel.x * deltaTime * this.#drag,
+                y: bd.position.y + vel.y * deltaTime * this.#drag
+            });
 
-        this.angle = srvsdbx_Math.normalizeAngle(this.#initialAngle + age * this.#rotDrag * this.compileAngularVelocities() / 1000, "radians");
+            this.angle = srvsdbx_Math.normalizeAngle(this.#initialAngle + age * this.#rotDrag * this.compileAngularVelocities() / 1000, "radians");
 
-        this.layer += vel.z * deltaTime;
+            this.layer += vel.z * deltaTime;
+        }
     }
 
     /**
@@ -529,7 +557,7 @@ class Particle extends Generic implements Destroyable {
         gamespace.objects.particles.delete(this.id);
         super.destroy();
 
-        this.#proto = void 0 as any;
+        this.#prototype = void 0 as any;
     }
 
     /**
@@ -538,7 +566,7 @@ class Particle extends Generic implements Destroyable {
     getCalculatedScale() {
         return this.#forcedScale ?? (
             typeof this.#scale == "object" ?
-                srvsdbx_Animation.easingFunctions.linterp(
+                this.#scale.interp(
                     this.#scale.start,
                     this.#scale.end,
                     (gamespace.currentUpdate - this.#created) / this.#lifetime
@@ -569,7 +597,7 @@ class Particle extends Generic implements Destroyable {
         return 255 * (this.#forcedAlpha ??
             (
                 typeof this.#alpha == "object" ?
-                    srvsdbx_Animation.easingFunctions.linterp(
+                    this.#alpha.interp(
                         this.#alpha.start,
                         this.#alpha.end,
                         (gamespace.currentUpdate - this.#created) / this.#lifetime
@@ -669,12 +697,12 @@ class DecalPrototype extends ImportedObject {
      * @param obj The `SimpleDecal` object to parse
      * @returns A new `DecalPrototype`
      */
-    static async from(obj: SimpleDecal): Promise<srvsdbx_ErrorHandling.Result<DecalPrototype, unknown[]>> {
-        const errors: unknown[] = [],
+    static async from(obj: SimpleDecal): Promise<srvsdbx_ErrorHandling.Result<DecalPrototype, SandboxError[]>> {
+        const errors: SandboxError[] = [],
             image = srvsdbx_ErrorHandling.handleResult(
                 await srvsdbx_AssetManagement.loadingFunctions.loadImageAsync(`${obj.includePath}/${obj.image}`),
                 srvsdbx_ErrorHandling.identity,
-                errors.push
+                e => errors.push(e)
             );
 
         if (!errors.length) {
@@ -682,6 +710,7 @@ class DecalPrototype extends ImportedObject {
                 res: new DecalPrototype(
                     obj.name,
                     obj.displayName,
+                    obj.objectType,
                     obj.targetVersion,
                     obj.namespace,
                     obj.includePath,
@@ -701,6 +730,7 @@ class DecalPrototype extends ImportedObject {
     constructor(
         name: typeof ImportedObject.prototype.name,
         displayName: typeof ImportedObject.prototype.displayName,
+        objectType: typeof ImportedObject.prototype.objectType,
         targetVersion: typeof ImportedObject.prototype.targetVersion,
         namespace: typeof ImportedObject.prototype.namespace,
         includePath: typeof ImportedObject.prototype.includePath,
@@ -708,7 +738,7 @@ class DecalPrototype extends ImportedObject {
         size: typeof DecalPrototype.prototype.size,
         tint: typeof DecalPrototype.prototype.tint,
     ) {
-        super(name, displayName, targetVersion, namespace, includePath);
+        super(name, displayName, objectType, targetVersion, namespace, includePath);
 
         const pSize = gamespace.PLAYER_SIZE;
 

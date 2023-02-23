@@ -159,7 +159,7 @@ const UIManager = new (createSingleton(class UIManager {
                 ]
             );
 
-            let count: srvsdbx_ErrorHandling.Maybe<number> = srvsdbx_ErrorHandling.Nothing;
+            let count: srvsdbx_ErrorHandling.Maybe<number>;
 
             return {
                 name: "ammo",
@@ -170,7 +170,7 @@ const UIManager = new (createSingleton(class UIManager {
                     const activeItem = gamespace.player?.activeItem,
                         ammo: srvsdbx_ErrorHandling.Maybe<number> = (activeItem as Gun)?.ammo ?? srvsdbx_ErrorHandling.Nothing;
 
-                    if (ammo == count) return;
+                    if (ammo === count) return;
 
                     count = ammo;
                     if (activeItem instanceof Gun) {
@@ -255,11 +255,11 @@ const UIManager = new (createSingleton(class UIManager {
 
                         if (percent == 100) {
                             ui.mainBar.style.backgroundColor = "";
-                        } else if (percent <= 24) {
+                        } else if (percent <= 25) {
                             ui.mainBar.style.backgroundColor = "#F00";
                             ui.mainBar.style.animation = "HP-critical 0.5s ease-out alternate infinite";
                         } else if (percent <= 75) {
-                            ui.mainBar.style.backgroundColor = `rgb(255, ${255 * (percent - 24) / 51}, ${255 * (percent - 24) / 51})`;
+                            ui.mainBar.style.backgroundColor = `rgb(255, ${255 * (percent - 25) / 50}, ${255 * (percent - 25) / 50})`;
                         } else {
                             ui.mainBar.style.backgroundColor = "#FFF";
                         }
@@ -313,7 +313,7 @@ const UIManager = new (createSingleton(class UIManager {
                         "canvas",
                         {
                             id: "ui-reload-spin",
-                            className: "ui hp",
+                            className: "ui reload",
                             width: 850,
                             height: 850,
                         }
@@ -322,7 +322,7 @@ const UIManager = new (createSingleton(class UIManager {
                         "div",
                         {
                             id: "ui-reload-text",
-                            className: "ui hp",
+                            className: "ui reload",
                             textContent: "Reloading"
                         }
                     )
@@ -499,7 +499,8 @@ const UIManager = new (createSingleton(class UIManager {
                                 slot.background.src = "";
                             }
 
-                            if (prototype instanceof GunPrototype
+                            if (
+                                prototype instanceof GunPrototype
                                 && item instanceof Gun
                                 && prototype.fireMode.includes("charge")
                                 && (item.isCharging || item.charged)

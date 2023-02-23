@@ -50,7 +50,7 @@ declare class PlayerLike extends Generic<{
     /**
      * The item currently in use by the PlayerLike
      */
-    get activeItem(): (InventoryItem<InventoryItemPrototype> & EquipableItem<ItemAnimation>) | undefined;
+    get activeItem(): (InventoryItem<InventoryItemPrototype> & EquipableItem<ItemAnimation, "idle" | "using">) | undefined;
     get state(): {
         /**
          * Whether or not this player is currently attempting to attack
@@ -101,10 +101,6 @@ declare class PlayerLike extends Generic<{
      */
     get health(): number;
     get timers(): {
-        /**
-         * A reload that will start in the future (switching to an empty weapon, emptying a weapon's ammo)
-         */
-        anticipatedReload: number | false;
         /**
          * The timer responsible for firing the user's current weapon
          */
@@ -169,12 +165,26 @@ declare class PlayerLike extends Generic<{
         readonly damage: ReducibleMap<string, number, number>;
         /**
           * A `Map` whose values will modify incoming damage by multiplying it and whose keys are their respectives sources
-        */
+         */
         readonly protection: ReducibleMap<string, number, number>;
         /**
          * A `Map` whose values are speed multipliers and whose keys are their respectives sources
-        */
-        readonly speed: ReducibleMap<string, number, number>;
+         *
+         * Note that additive modifiers have precedence over multiplicative ones; the formula
+         * for the final speed is therefore `(s + a) * m`, where `s` is the base speed, `m` is
+         * the product of all the multiplicative speed modifiers and `a` is the sum of all the
+         * additive modifiers
+         */
+        readonly speedMult: ReducibleMap<string, number, number>;
+        /**
+         * A `Map` whose values are speed additions and whose keys are their respectives sources
+         *
+         * Note that additive modifiers have precedence over multiplicative ones; the formula
+         * for the final speed is therefore `(s + a) * m`, where `s` is the base speed, `m` is
+         * the product of all the multiplicative speed modifiers and `a` is the sum of all the
+         * additive modifiers
+         */
+        readonly speedAdd: ReducibleMap<string, number, number>;
         /**
          * A `Map` whose values will modify reload time and fire rate by multiplying it and whose keys are their respectives sources
          */
@@ -198,6 +208,16 @@ declare class PlayerLike extends Generic<{
      */
     constructor(position: srvsdbx_Geometry.Point2D);
     /**
+     * Determines if this player can currently use their active item
+     *
+     * A player can use their active item if:
+     * - There is an active item
+     * - It is equippable
+     * - The elapsed time since its last use is greater than the item's use delay
+     * @returns Whether or not the item can be used
+     */
+    canAttack(): boolean;
+    /**
      * Inverses the weapon slots, putting the first weapon in the second and vice versa
      */
     swapWeapons(): void;
@@ -219,7 +239,6 @@ declare class PlayerLike extends Generic<{
      * @returns This player's speed, in surviv units per second
      */
     determineMoveSpeed(): number;
-    static get superCringeEmpiricallyDerivedPixelToUnitRatio(): number;
     /**
      * Makes the player face the user's mouse cursor, setting its aim point to that of the mouse cursor's (after adjustment)
      */
@@ -257,7 +276,7 @@ declare const Player: {
         /**
          * A `Map` whose values are shake intensities and whose keys are the intensities' corresponding sources
          */
-        readonly "__#16@#shakeIntensities": ReducibleMap<string, number, number>;
+        readonly "__#17@#shakeIntensities": ReducibleMap<string, number, number>;
         /**
          * Returns the largest shake intensity out of the ones registered. For repeated use, assign this value to a variable to avoid repeatedly running the getter
          */
@@ -279,7 +298,7 @@ declare const Player: {
          * @param origin The point from which the shake originates
          * @param strength The strength of the shake
          */
-        "__#16@#determineShakeIntensity"(origin: {
+        "__#17@#determineShakeIntensity"(origin: {
             x: number;
             y: number;
         }, strength: number): number;
@@ -290,7 +309,7 @@ declare const Player: {
         /**
          * This player's inventory object
          */
-        readonly "__#15@#inventory": Inventory;
+        readonly "__#16@#inventory": Inventory;
         /**
          * This player's inventory object
          */
@@ -298,7 +317,7 @@ declare const Player: {
         /**
          * The index of the last active item
          */
-        "__#15@#previousActiveIndex": number;
+        "__#16@#previousActiveIndex": number;
         /**
          * The index of the last active item
          */
@@ -306,7 +325,7 @@ declare const Player: {
         /**
          * The index of the active item
          */
-        "__#15@#activeItemIndex": number;
+        "__#16@#activeItemIndex": number;
         /**
          * Returns the index of the active item
          */
@@ -314,11 +333,11 @@ declare const Player: {
         /**
          * The item currently in use by the PlayerLike
          */
-        readonly activeItem: (InventoryItem<InventoryItemPrototype> & EquipableItem<ItemAnimation>) | undefined;
+        readonly activeItem: (InventoryItem<InventoryItemPrototype> & EquipableItem<ItemAnimation, "idle" | "using">) | undefined;
         /**
          * Holds information about the current state of this player
          */
-        readonly "__#15@#state": {
+        readonly "__#16@#state": {
             /**
              * Whether or not this player is currently attempting to attack
              */
@@ -385,7 +404,7 @@ declare const Player: {
         /**
          * The maximum amount of health this player may have
          */
-        "__#15@#maxHealth": number;
+        "__#16@#maxHealth": number;
         /**
          * The maximum amount of health this player may have
          *
@@ -397,7 +416,7 @@ declare const Player: {
         /**
          * The player's current health
          */
-        "__#15@#health": number;
+        "__#16@#health": number;
         /**
          * The player's current health
          *
@@ -411,11 +430,7 @@ declare const Player: {
          *
          * **When assigning these timers, take care to clear any timer that might be stored there!**
          */
-        readonly "__#15@#timers": {
-            /**
-             * A reload that will start in the future (switching to an empty weapon, emptying a weapon's ammo)
-             */
-            anticipatedReload: false | number;
+        readonly "__#16@#timers": {
             /**
              * The timer responsible for firing the user's current weapon
              */
@@ -426,10 +441,6 @@ declare const Player: {
             reload: false | number;
         };
         readonly timers: {
-            /**
-             * A reload that will start in the future (switching to an empty weapon, emptying a weapon's ammo)
-             */
-            anticipatedReload: false | number;
             /**
              * The timer responsible for firing the user's current weapon
              */
@@ -442,7 +453,7 @@ declare const Player: {
         /**
          * Information about this player's hand positions
          */
-        readonly "__#15@#hands": {
+        readonly "__#16@#hands": {
             /**
              * Information about the player's left hand
              */
@@ -501,7 +512,7 @@ declare const Player: {
         /**
          * Information about the speed players travel at
          */
-        readonly "__#15@#speed": {
+        readonly "__#16@#speed": {
             default: number;
         };
         /**
@@ -513,7 +524,7 @@ declare const Player: {
         /**
          * The point in the game world this player is aiming at
          */
-        "__#15@#aimPoint": srvsdbx_Geometry.Point2D;
+        "__#16@#aimPoint": srvsdbx_Geometry.Point2D;
         /**
          * The point in the game world this player is aiming at
          */
@@ -523,7 +534,7 @@ declare const Player: {
          *
          * Passed directly as the z position of p5's camera
          */
-        "__#15@#view": number;
+        "__#16@#view": number;
         /**
          * A rough measure of this player's "scope" level
          *
@@ -534,19 +545,33 @@ declare const Player: {
          * A collections of `Map`s whose role is to modify the intensity of actions
          * performed by this player, such as dealing damage, speed, etc
          */
-        "__#15@#modifiers": {
+        "__#16@#modifiers": {
             /**
              * A `Map` whose values will modify outgoing damage by multiplying it and whose keys are their respectives sources
             */
             readonly damage: ReducibleMap<string, number, number>;
             /**
               * A `Map` whose values will modify incoming damage by multiplying it and whose keys are their respectives sources
-            */
+             */
             readonly protection: ReducibleMap<string, number, number>;
             /**
              * A `Map` whose values are speed multipliers and whose keys are their respectives sources
-            */
-            readonly speed: ReducibleMap<string, number, number>;
+             *
+             * Note that additive modifiers have precedence over multiplicative ones; the formula
+             * for the final speed is therefore `(s + a) * m`, where `s` is the base speed, `m` is
+             * the product of all the multiplicative speed modifiers and `a` is the sum of all the
+             * additive modifiers
+             */
+            readonly speedMult: ReducibleMap<string, number, number>;
+            /**
+             * A `Map` whose values are speed additions and whose keys are their respectives sources
+             *
+             * Note that additive modifiers have precedence over multiplicative ones; the formula
+             * for the final speed is therefore `(s + a) * m`, where `s` is the base speed, `m` is
+             * the product of all the multiplicative speed modifiers and `a` is the sum of all the
+             * additive modifiers
+             */
+            readonly speedAdd: ReducibleMap<string, number, number>;
             /**
              * A `Map` whose values will modify reload time and fire rate by multiplying it and whose keys are their respectives sources
              */
@@ -563,12 +588,26 @@ declare const Player: {
             readonly damage: ReducibleMap<string, number, number>;
             /**
               * A `Map` whose values will modify incoming damage by multiplying it and whose keys are their respectives sources
-            */
+             */
             readonly protection: ReducibleMap<string, number, number>;
             /**
              * A `Map` whose values are speed multipliers and whose keys are their respectives sources
-            */
-            readonly speed: ReducibleMap<string, number, number>;
+             *
+             * Note that additive modifiers have precedence over multiplicative ones; the formula
+             * for the final speed is therefore `(s + a) * m`, where `s` is the base speed, `m` is
+             * the product of all the multiplicative speed modifiers and `a` is the sum of all the
+             * additive modifiers
+             */
+            readonly speedMult: ReducibleMap<string, number, number>;
+            /**
+             * A `Map` whose values are speed additions and whose keys are their respectives sources
+             *
+             * Note that additive modifiers have precedence over multiplicative ones; the formula
+             * for the final speed is therefore `(s + a) * m`, where `s` is the base speed, `m` is
+             * the product of all the multiplicative speed modifiers and `a` is the sum of all the
+             * additive modifiers
+             */
+            readonly speedAdd: ReducibleMap<string, number, number>;
             /**
              * A `Map` whose values will modify reload time and fire rate by multiplying it and whose keys are their respectives sources
              */
@@ -580,7 +619,7 @@ declare const Player: {
          * **Implementation note:** Calling this object's `.clear` method will call each status effect's
          * `.destroy` method before clearing the set
          */
-        readonly "__#15@#statusEffects": Set<StatusEffect<{}>>;
+        readonly "__#16@#statusEffects": Set<StatusEffect<{}>>;
         /**
          * A `Set` of status effects currently affecting this player
          */
@@ -588,7 +627,7 @@ declare const Player: {
         /**
          * The radius of this player
          */
-        "__#15@#radius": number;
+        "__#16@#radius": number;
         /**
          * The radius of this player
          *
@@ -596,6 +635,16 @@ declare const Player: {
          * - `set`: Sets this player's radius if it is not `NaN`
          */
         radius: number;
+        /**
+         * Determines if this player can currently use their active item
+         *
+         * A player can use their active item if:
+         * - There is an active item
+         * - It is equippable
+         * - The elapsed time since its last use is greater than the item's use delay
+         * @returns Whether or not the item can be used
+         */
+        canAttack(): boolean;
         /**
          * Inverses the weapon slots, putting the first weapon in the second and vice versa
          */
@@ -729,34 +778,31 @@ declare const Player: {
         }>;
         "__#3@#destroyed": boolean;
         readonly destroyed: boolean;
-        readonly "__#3@#id": number;
-        readonly id: number; /**
-         * A reload that will start in the future (switching to an empty weapon, emptying a weapon's ammo)
+        readonly "__#3@#id": bigint;
+        readonly id: bigint; /**
+         * The timer responsible for firing the user's current weapon
          */
         "__#3@#parent": srvsdbx_ErrorHandling.Maybe<Generic<BaseGenericEvents>>;
         readonly parent: srvsdbx_ErrorHandling.Maybe<Generic<BaseGenericEvents>>;
         "__#3@#followOffset": {
             x: number;
-            y: number; /**
-             * How far along the axis parallel to the player's view line this hand is
-             */
+            y: number;
             z: number;
             parr: number;
             perp: number;
         };
         readonly followOffset: {
             x: number;
-            y: number; /**
-             * How far along the axis parallel to the player's view line this hand is
-             */
+            y: number;
             z: number;
             parr: number;
             perp: number;
         };
-        readonly "__#3@#followers": Map<number, Generic<BaseGenericEvents>>;
-        readonly followers: Map<number, Generic<BaseGenericEvents>>;
+        readonly "__#3@#followers": Map<bigint, Generic<BaseGenericEvents>>;
+        readonly followers: Map<bigint, Generic<BaseGenericEvents>>;
         update(): void;
         setPosition(position: srvsdbx_Geometry.Point2D): void;
+        "__#3@#updateFollowers"(): void;
         draw(p5: import("p5")): void;
         compileAngularVelocities(): number;
         follow(obj: Generic<BaseGenericEvents>, offset?: {
@@ -768,7 +814,6 @@ declare const Player: {
         } | undefined): void;
         unfollow(): void;
     };
-    readonly superCringeEmpiricallyDerivedPixelToUnitRatio: number;
     drawPolygon(this: Generic<BaseGenericEvents>, p5: import("p5")): void;
     drawCircle(this: Generic<BaseGenericEvents>, p5: import("p5")): void;
 };
@@ -785,7 +830,7 @@ declare class Inventory implements Destroyable {
     /**
      * A map whose keys are the slot names and whose values are the items stocked there
      */
-    get items(): Map<string, InventoryItem<InventoryItemPrototype> | (InventoryItem<InventoryItemPrototype> & EquipableItem<ItemAnimation>)>;
+    get items(): Map<string, InventoryItem<InventoryItemPrototype> | (InventoryItem<InventoryItemPrototype> & EquipableItem<ItemAnimation, "idle" | "using">)>;
     /**
      * Whether or not an object has been destroyed
      */
@@ -799,19 +844,33 @@ declare class Inventory implements Destroyable {
      * Fetches an item in a given slot corresponding to some category
      * @param slot The slot number
      * @param category The category this item belongs to. (ex: `Main` for firearms, `Medical` for consumables, `Ammo` for ammunition)
+     * @template T The category type. `Main` returns `EquipableItem`s, while others just return `InventoryItem`s
+     * @template U The type of animations this item has, if applicable
      * @returns The item at the specified location, if it exists
      */
-    getItem<T extends "Main" | string, U extends ItemAnimation = ItemAnimation>(slot: number, category: T): T extends "Main" ? (InventoryItem & EquipableItem<U>) | undefined : InventoryItem | undefined;
+    getItem<T extends "Main" | string, U extends ItemAnimation = ItemAnimation>(slot: number, category: T): InventoryItem & (T extends "Main" ? (EquipableItem<U>) : {}) | undefined;
+    /**
+     * Checks to see if an item exists in a slot
+     * @param slot The slot number
+     * @param category The category this item belongs to. (ex: `Main` for firearms, `Medical` for consumables, `Ammo` for ammunition)
+     * @returns Whether or not there exists an item there
+     */
+    hasItem(slot: number, category: string): boolean;
     /**
      * Sets an item in a given slot corresponding to some category
      * @param slot The slot number
      * @param category The category this item belongs to. (ex: `Main` for firearms, `Medical` for consumables, `Ammo` for ammunition)
      * @param item The item to store at that slot
      * @param reset Whether or not to reset the item that was just passed in
+     * @template T The category type. `Main` returns `EquipableItem`s, while others just return `InventoryItem`s
+     * @template U The type of animations this item has, if applicable
      */
-    setItem<T extends "Main" | string, U extends ItemAnimation = ItemAnimation>(slot: number, category: T, item: T extends "Main" ? (InventoryItem & EquipableItem<U>) : InventoryItem, reset?: boolean): void;
+    setItem<T extends "Main" | string, U extends ItemAnimation = ItemAnimation>(slot: number, category: T, item: InventoryItem & (T extends "Main" ? (EquipableItem<U, string>) : {}), reset?: boolean): void;
     /**
      * Clears object attributes from this instance
+     *
+     * **Warning: Any and all items that are in this inventory when this method is called
+     * will also be destroyed. If this is undesirable, drop them into the game world beforehand**
      */
     destroy(): void;
 }
@@ -833,19 +892,19 @@ interface SimpleInventoryItem extends SimpleImport {
         readonly world?: string;
     };
     /**
-     * By how much this weapon slows down its user, all in surviv units / second
+     * By how much this item slows down its user, all in surviv units / second
      */
     readonly moveSpeedPenalties: {
         /**
-         * The movement penalty incurred when this weapon is in a player's inventory
+         * The movement penalty incurred when this item is in a player's inventory
          */
         readonly passive: number;
         /**
-         * The movement penalty incurred when this weapon is active
+         * The movement penalty incurred when this item is active
          */
         readonly active: number;
         /**
-         * The movement penalty incurred when this weapon is firing
+         * The movement penalty incurred when this item is firing
          */
         readonly using: number;
     };
@@ -879,7 +938,18 @@ declare class InventoryItemPrototype extends ImportedObject {
          */
         readonly passive: number;
     };
-    constructor(name: typeof ImportedObject.prototype.name, displayName: typeof ImportedObject.prototype.displayName, targetVersion: typeof ImportedObject.prototype.targetVersion, namespace: typeof ImportedObject.prototype.namespace, includePath: typeof ImportedObject.prototype.includePath, images: typeof InventoryItemPrototype.prototype.images, moveSpeedPenalties: typeof InventoryItemPrototype.prototype.moveSpeedPenalties);
+    /**
+     * `* It's a constructor. It constructs.`
+     * @param name The name of the item
+     * @param displayName Optionally specify a prettier name for this object
+     * @param objectType The type of object this is
+     * @param targetVersion The version of the sandbox this object targets
+     * @param namespace The namespace this object belongs to
+     * @param includePath The path this object was imported this
+     * @param images Images associated with this item
+     * @param moveSpeedPenalties Movement penalties associated with this item
+     */
+    constructor(name: typeof ImportedObject.prototype.name, displayName: typeof ImportedObject.prototype.displayName, objectType: typeof ImportedObject.prototype.objectType, targetVersion: typeof ImportedObject.prototype.targetVersion, namespace: typeof ImportedObject.prototype.namespace, includePath: typeof ImportedObject.prototype.includePath, images: typeof InventoryItemPrototype.prototype.images, moveSpeedPenalties: typeof InventoryItemPrototype.prototype.moveSpeedPenalties);
 }
 /**
  * A simplified representation of an item that can be equipped by the user
@@ -889,7 +959,58 @@ interface SimpleEquipableItem extends SimpleInventoryItem {
      * The minimum amount of time that the user must wait before two uses of an item
      */
     readonly useDelay: number;
+    /**
+     * Specify default positions for the user's hands when holding this weapon when no animations are playing
+     */
+    readonly handPositions?: HandPositions;
 }
+/**
+ * Represents the positions of a player's hands
+ */
+type HandPositions = {
+    /**
+     * Information about the left hand
+     */
+    readonly leftHand?: {
+        /**
+         * The hand's offset in surviv units along the axis parallel to the player's aim line
+         */
+        readonly parr: number;
+        /**
+         * The hand's offset in surviv units along the axis perpendicular to the player's aim line
+         */
+        readonly perp: number;
+        /**
+         * What layer to render this hand on
+         * The right hand will be rendered above the left one if they are on the same layer
+         *
+         * - `0`: The default, renders the hand below the item
+         * - `1`: Renders the hand above the item
+         */
+        readonly layer?: 0 | 1;
+    };
+    /**
+     * Information about the right hand
+     */
+    readonly rightHand?: {
+        /**
+         * The hand's offset in surviv units along the axis parallel to the player's aim line
+         */
+        readonly parr: number;
+        /**
+         * The hand's offset in surviv units along the axis perpendicular to the player's aim line
+         */
+        readonly perp: number;
+        /**
+         * What layer to render this hand on
+         * The right hand will be rendered above the left one if they are on the same layer
+         *
+         * - `0`: The default, renders the hand below the item
+         * - `1`: Renders the hand above the item
+         */
+        readonly layer?: 0 | 1;
+    };
+};
 /**
  * Represents the data for animating an object
  */
@@ -936,12 +1057,14 @@ type ItemAnimation = {
 };
 /**
  * Represents an item that can be equipped by the user, such as guns, melees and grenades
+ * @template T The type of animation this item has
+ * @template K The names of the animations this item has
  */
-interface EquipableItem<T extends ItemAnimation = ItemAnimation> {
+interface EquipableItem<T extends ItemAnimation = ItemAnimation, K extends string = "idle" | "using"> {
     /**
      * An object to manage this item's animations
      */
-    readonly animationManager: srvsdbx_Animation.AnimationManager<T, "idle" | "using">;
+    readonly animationManager: srvsdbx_Animation.AnimationManager<T, K>;
     /**
      * A timestamp indicating the last time this item was used
      */
@@ -958,6 +1081,10 @@ interface EquipableItem<T extends ItemAnimation = ItemAnimation> {
      * Calculates this item's dimensions and offsets, taking into account any animations currently active
      */
     getItemReference(): ItemAnimation["item"];
+    /**
+     * Calculates this item's hand rigging, taking into account any animations currently active
+     */
+    getHandReference(): ItemAnimation["hands"];
     /**
      * Serves to stop any animation related to this item that are currently playing
      */

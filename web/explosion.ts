@@ -194,12 +194,12 @@ class ExplosionPrototype extends ImportedObject {
      * @param obj The `SimpleParticle` object to parse
      * @returns A new `ParticlePrototype`
      */
-    static async from(obj: SimpleExplosion): Promise<srvsdbx_ErrorHandling.Result<ExplosionPrototype, unknown[]>> {
-        const errors: unknown[] = [],
+    static async from(obj: SimpleExplosion): Promise<srvsdbx_ErrorHandling.Result<ExplosionPrototype, SandboxError[]>> {
+        const errors: SandboxError[] = [],
             shrapnelImage = obj.shrapnel ? srvsdbx_ErrorHandling.handleResult(
                 await srvsdbx_AssetManagement.loadingFunctions.loadImageAsync(`${obj.includePath}/${obj.shrapnel?.tracer?.image}`),
                 srvsdbx_ErrorHandling.identity,
-                errors.push
+                e => errors.push(e)
             ) : void 0;
 
         if (!errors.length) {
@@ -209,6 +209,7 @@ class ExplosionPrototype extends ImportedObject {
                 res: new ExplosionPrototype(
                     obj.name,
                     obj.displayName,
+                    obj.objectType,
                     obj.includePath,
                     obj.namespace,
                     obj.targetVersion,
@@ -246,6 +247,7 @@ class ExplosionPrototype extends ImportedObject {
     constructor(
         name: typeof ImportedObject.prototype.name,
         displayName: typeof ImportedObject.prototype.displayName,
+        objectType: typeof ImportedObject.prototype.objectType,
         includePath: typeof ImportedObject.prototype.includePath,
         namespace: typeof ImportedObject.prototype.namespace,
         targetVersion: typeof ImportedObject.prototype.targetVersion,
@@ -259,7 +261,7 @@ class ExplosionPrototype extends ImportedObject {
         shrapnel: typeof ExplosionPrototype.prototype.shrapnel,
         scatter: typeof ExplosionPrototype.prototype.scatter
     ) {
-        super(name, displayName, includePath, namespace, targetVersion);
+        super(name, displayName, objectType, targetVersion, namespace, includePath);
 
         const size = gamespace.PLAYER_SIZE;
 

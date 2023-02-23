@@ -15,6 +15,10 @@ interface SimpleGun extends SimpleEquipableItem {
         */
         readonly world: string;
     };
+    readonly handPositions: {
+        readonly leftHand: HandPositions["leftHand"] & {};
+        readonly rightHand?: HandPositions["rightHand"] & {};
+    };
     /**
      * Whether this weapon is dual-wielded or not
      */
@@ -156,6 +160,19 @@ interface SimpleGun extends SimpleEquipableItem {
         readonly projectiles: number;
     };
     /**
+     * Data about status effects applied to players within a certain radius whenever this weapon is fired
+     */
+    readonly effectsOnFire?: {
+        /**
+         * The radius of the area-of-effect
+         */
+        readonly radius: number;
+        /**
+         * The status effects to apply to targets within the AoE radius
+         */
+        readonly effects: PrototypeReference<"statusEffects">[];
+    }[];
+    /**
      * Whether or not this weapon is suppressed. Suppressed weapon have less opaque tracers and make less noise
      */
     readonly suppressed: boolean;
@@ -275,53 +292,6 @@ interface SimpleGun extends SimpleEquipableItem {
          * Under this perk, magazine sizes are set to the number indicated by this field
          */
         readonly firepower: number;
-    };
-    /**
-     * Information about where the player's hands should go while holding this weapon
-     */
-    readonly handPositions: {
-        /**
-         * Information about the left hand
-         */
-        readonly leftHand: {
-            /**
-             * How far along the axis parallel to the player's field of view the hand should be
-             */
-            readonly parr: number;
-            /**
-             * How far along the axis perpendicular to the player's field of view the hand should be
-             */
-            readonly perp: number;
-            /**
-             * Optionally, the layer this hand should reside on when this weapon is active.
-             * If not defined, the hands are rendered according to the `dimensions.layer` property.
-             *
-             readonly * - 0: Draw the hand under the gun
-             readonly * - 1: Draw the hand over the gun
-             */
-            readonly layer?: 0 | 1;
-        };
-        /**
-         * Information about the right hand
-        */
-        readonly rightHand?: {
-            /**
-             * How far along the axis parallel to the player's field of view the hand should be
-            */
-            readonly parr: number;
-            /**
-             * How far along the axis perpendicular to the player's field of view the hand should be
-            */
-            readonly perp: number;
-            /**
-             * Optionally, the layer this hand should reside on when this weapon is active.
-             * If not defined, the hands are rendered according to the `dimensions.layer` property.
-             *
-             readonly * — 0: Draw the hand under the gun
-             readonly * — 1: Draw the hand over the gun
-             */
-            readonly layer?: 0 | 1;
-        };
     };
     /**
      * Information about the offset projectiles will be spawned at, relative to their normal position
@@ -877,53 +847,34 @@ declare class GunPrototype extends InventoryItemPrototype {
         readonly firepower: number;
     };
     /**
-     *  How long, after switching to this item, its user must wait before using it
+     * Data about status effects applied to players within a certain radius whenever this weapon is fired
+     */
+    get effectsOnFire(): {
+        /**
+         * The radius of the area-of-effect
+         */
+        readonly radius: number;
+        /**
+         * The status effects to apply to targets within the AoE radius
+         */
+        readonly effects: string[];
+    }[] | undefined;
+    /**
+     * How long, after switching to this item, its user must wait before using it
      */
     get switchDelay(): number;
     /**
      * Information about the position of the shooter's hands
      */
     get handPositions(): {
-        /**
-         * Information about the left hand
-         */
         readonly leftHand: {
-            /**
-             * How far along the axis parallel to the player's field of view the hand should be
-             */
             readonly parr: number;
-            /**
-             * How far along the axis perpendicular to the player's field of view the hand should be
-             */
             readonly perp: number;
-            /**
-             * Optionally, the layer this hand should reside on when this weapon is active.
-             * If not defined, the hands are rendered according to the `dimensions.layer` property.
-             *
-             readonly * - 0: Draw the hand under the gun
-             readonly * - 1: Draw the hand over the gun
-             */
             readonly layer?: 0 | 1 | undefined;
         };
-        /**
-         * Information about the right hand
-        */
         readonly rightHand?: {
-            /**
-             * How far along the axis parallel to the player's field of view the hand should be
-            */
             readonly parr: number;
-            /**
-             * How far along the axis perpendicular to the player's field of view the hand should be
-            */
             readonly perp: number;
-            /**
-             * Optionally, the layer this hand should reside on when this weapon is active.
-             * If not defined, the hands are rendered according to the `dimensions.layer` property.
-             *
-             readonly * — 0: Draw the hand under the gun
-             readonly * — 1: Draw the hand over the gun
-             */
             readonly layer?: 0 | 1 | undefined;
         } | undefined;
     };
@@ -1340,7 +1291,7 @@ declare class GunPrototype extends InventoryItemPrototype {
      * @param obj The `SimpleGun` object to parse
      * @returns A new `GunPrototype`
      */
-    static from(obj: SimpleGun): Promise<srvsdbx_ErrorHandling.Result<GunPrototype, unknown[]>>;
+    static from(obj: SimpleGun): Promise<srvsdbx_ErrorHandling.Result<GunPrototype, SandboxError[]>>;
     /**
      * Creates an `Animation` object representing the animation of this weapon recoiling backwards
      * @param handPositions The default hand positions for this weapon
@@ -1361,7 +1312,7 @@ declare class GunPrototype extends InventoryItemPrototype {
     /**
      * `* It's a constructor. It constructs.`
      */
-    constructor(name: typeof ImportedObject.prototype.name, displayName: typeof ImportedObject.prototype.displayName, includePath: typeof ImportedObject.prototype.includePath, namespace: typeof ImportedObject.prototype.namespace, targetVersion: typeof ImportedObject.prototype.targetVersion, images: typeof GunPrototype.prototype.images, dual: typeof GunPrototype.prototype.dual, tint: typeof GunPrototype.prototype.tint, ballistics: typeof GunPrototype.prototype.ballistics, suppressed: typeof GunPrototype.prototype.suppressed, caliber: typeof GunPrototype.prototype.caliber, useDelay: typeof GunPrototype.prototype.useDelay, deployGroup: typeof GunPrototype.prototype.deployGroup, accuracy: typeof GunPrototype.prototype.accuracy, moveSpeedPenalties: typeof GunPrototype.prototype.moveSpeedPenalties, imageOffset: typeof GunPrototype.prototype.imageOffset, dimensions: typeof GunPrototype.prototype.dimensions, reload: typeof GunPrototype.prototype.reload, altReload: typeof GunPrototype.prototype.altReload, magazineCapacity: typeof GunPrototype.prototype.magazineCapacity, switchDelay: typeof GunPrototype.prototype.switchDelay, handPositions: typeof GunPrototype.prototype.handPositions, projectileSpawnOffset: typeof GunPrototype.prototype.projectileSpawnOffset, casings: typeof GunPrototype.prototype.casings, recoilImpulse: typeof GunPrototype.prototype.recoilImpulse, fireMode: typeof GunPrototype.prototype.fireMode, burstProps: typeof GunPrototype.prototype.burstProps, chargeProps: typeof GunPrototype.prototype.chargeProps, addons: typeof GunPrototype.prototype.addons);
+    constructor(name: typeof ImportedObject.prototype.name, displayName: typeof ImportedObject.prototype.displayName, objectType: typeof ImportedObject.prototype.objectType, includePath: typeof ImportedObject.prototype.includePath, namespace: typeof ImportedObject.prototype.namespace, targetVersion: typeof ImportedObject.prototype.targetVersion, images: typeof GunPrototype.prototype.images, dual: typeof GunPrototype.prototype.dual, tint: typeof GunPrototype.prototype.tint, ballistics: typeof GunPrototype.prototype.ballistics, effectsOnFire: typeof GunPrototype.prototype.effectsOnFire, suppressed: typeof GunPrototype.prototype.suppressed, caliber: typeof GunPrototype.prototype.caliber, useDelay: typeof GunPrototype.prototype.useDelay, deployGroup: typeof GunPrototype.prototype.deployGroup, accuracy: typeof GunPrototype.prototype.accuracy, moveSpeedPenalties: typeof GunPrototype.prototype.moveSpeedPenalties, imageOffset: typeof GunPrototype.prototype.imageOffset, dimensions: typeof GunPrototype.prototype.dimensions, reload: typeof GunPrototype.prototype.reload, altReload: typeof GunPrototype.prototype.altReload, magazineCapacity: typeof GunPrototype.prototype.magazineCapacity, switchDelay: typeof GunPrototype.prototype.switchDelay, handPositions: typeof GunPrototype.prototype.handPositions, projectileSpawnOffset: typeof GunPrototype.prototype.projectileSpawnOffset, casings: typeof GunPrototype.prototype.casings, recoilImpulse: typeof GunPrototype.prototype.recoilImpulse, fireMode: typeof GunPrototype.prototype.fireMode, burstProps: typeof GunPrototype.prototype.burstProps, chargeProps: typeof GunPrototype.prototype.chargeProps, addons: typeof GunPrototype.prototype.addons);
 }
 /**
  * Represents a physical firearm in the game world
@@ -1435,13 +1386,19 @@ declare class Gun extends InventoryItem<GunPrototype> implements EquipableItem<R
      */
     get cancelledAnimation(): boolean;
     /**
+     * Tells this weapon to attempt a reload after `delay` milliseconds.
+     * @param delay The amount of milliseconds to wait before attempting to reload
+     * @returns A function that, when called, will cancel the reload
+     */
+    scheduleReload(delay: number): () => void;
+    /**
      * `* It's a constructor. It constructs.`
      * @param owner The `PlayerLike` that owns this weapon
      * @param prototype The `GunPrototype` this object is based on
      */
     constructor(owner: PlayerLike, prototype: GunPrototype);
     /**
-     * Returns this item's current dimensions, taking animations into account
+     * Returns this item's current dimensions and offsets, taking animations into account
      *
      * **This method will stop expired animations.**
      * More specifically, if an idle animation is running, but the using animation should be used,
@@ -1463,6 +1420,14 @@ declare class Gun extends InventoryItem<GunPrototype> implements EquipableItem<R
             perp: number;
         };
     }) | undefined;
+    /**
+     * Returns this item's current hand rigging, taking animations into account
+     *
+     * **This method will stop expired animations.**
+     * More specifically, if an idle animation is running, but the using animation should be used,
+     * the idle animation will be terminated
+     */
+    getHandReference(): HandPositions | undefined;
     /**
      * Serves to stop any animation related to this weapon that are currently playeing
      */
@@ -1521,109 +1486,111 @@ interface SimpleAmmo extends SimpleImport {
     /**
      * Information about the various colors of this ammo's tracers
      */
-    tints: {
+    readonly tints: {
         /**
          * The regular color tracers should adopt
          */
-        normal: string;
+        readonly normal: string;
         /**
-         * A color unused in regular surviv, but that is used to indicate headshots
+         * A color unused in regular surviv
          */
-        saturated: string;
+        readonly saturated: string;
         /**
          * The color to used when the user is under the effects of a perk such as Hollow Points
          */
-        chambered: string;
+        readonly chambered: string;
     };
     /**
      * Information about how opaque this tracer is
      */
-    alpha: {
+    readonly alpha: {
         /**
          * The rate at which the tracer's opacity changes, measured in %/ms
          */
-        rate: number;
+        readonly rate: number;
         /**
          * The minimum opacity of a tracer
          */
-        min: number;
+        readonly min: number;
         /**
          * The maximum opacity of a tracer
          */
-        max: number;
+        readonly max: number;
     };
     /**
      * Either the dimensions of a box or the radius of a circle.
      *
      * The area outlined by this shape defines where projectiles of this ammo type may spawn
      */
-    spawnVar?: {
+    readonly spawnVar?: {
         /**
          * The rectangle's width
          */
-        width: number;
+        readonly width: number;
         /**
          * The rectangle's height
          */
-        height: number;
+        readonly height: number;
     } | {
         /**
          * The circle's radius
          */
-        radius: number;
+        readonly radius: number;
     };
     /**
      * Dictates an offset, relative to the projectile's hitbox, that this tracer will be drawn at
      */
-    imageOffset: {
+    readonly imageOffset: {
         /**
          * The offset along the axis parallel to the projectile's trajectory
          */
-        parr: number;
+        readonly parr: number;
         /**
          * The offset along the axis perpendicular to the projectile's trajectory
          */
-        perp: number;
+        readonly perp: number;
     };
     /**
      * Information pertaining more to the projectile itself
      */
-    projectileInfo: ({
+    readonly projectileInfo: ({
         /**
          * The projectile's type
          */
-        type: "explosive";
+        readonly type: "explosive";
         /**
          * The *internal name* of the explosion object associated with this projectile
          */
-        explosionType: PrototypeReference<"explosions">;
+        readonly explosionType: PrototypeReference<"explosions">;
         /**
          * Whether or not the explosion should be spawned when colliding with an object or not
          */
-        explodeOnContact: boolean;
+        readonly explodeOnContact: boolean;
         /**
          * Dictates the magnitude of the scaling effect applied to this projectile's world image in order to simulate height change
          */
-        heightPeak?: number;
+        readonly heightPeak?: number;
     } | {
         /**
          * The projectile's type
          */
-        type: "bullet";
+        readonly type: "bullet";
     }) & {
         /**
          * An array containing paths for the images corresponding to this projectile
+         *
+         * If this ammo type has no images, specify the string `"none"`
          */
-        images: string[];
+        readonly images: string[] | "none";
         /**
          * How fast, in rad/s, this projectile should spin
          */
-        spinVel?: MayBeFunctionWrapped<number>;
+        readonly spinVel?: MayBeFunctionWrapped<number>;
     };
     /**
      * The internal name of the particle corresponding to the casing guns firing this ammo type eject
      */
-    casing?: string;
+    readonly casing?: string;
 }
 /**
  * Represents an ammo type
@@ -1635,7 +1602,7 @@ declare class Ammo extends ImportedObject {
      * @param obj The `SimpleAmmo` object to parse
      * @returns Either a new `Ammo` object, or an array containing the errors that prevented its creation
      */
-    static from(ammo: SimpleAmmo): Promise<srvsdbx_ErrorHandling.Result<Ammo, unknown[]>>;
+    static from(ammo: SimpleAmmo): Promise<srvsdbx_ErrorHandling.Result<Ammo, SandboxError[]>>;
     /**
      * Information about the various colors of this ammo's tracers
      */
@@ -1643,15 +1610,15 @@ declare class Ammo extends ImportedObject {
         /**
          * The regular color tracers should adopt
          */
-        normal: string;
+        readonly normal: string;
         /**
-         * A color unused in regular surviv, but that is used to indicate headshots
+         * A color unused in regular surviv
          */
-        saturated: string;
+        readonly saturated: string;
         /**
          * The color to used when the user is under the effects of a perk such as Hollow Points
          */
-        chambered: string;
+        readonly chambered: string;
     };
     /**
      * Information about how opaque this tracer is
@@ -1660,15 +1627,15 @@ declare class Ammo extends ImportedObject {
         /**
          * The rate at which the tracer's opacity changes, measured in %/ms
          */
-        rate: number;
+        readonly rate: number;
         /**
          * The minimum opacity of a tracer
          */
-        min: number;
+        readonly min: number;
         /**
          * The maximum opacity of a tracer
          */
-        max: number;
+        readonly max: number;
     };
     /**
      * Either the dimensions of a box or the radius of a circle.
@@ -1679,16 +1646,16 @@ declare class Ammo extends ImportedObject {
         /**
          * The rectangle's width
          */
-        width: number;
+        readonly width: number;
         /**
          * The rectangle's height
          */
-        height: number;
+        readonly height: number;
     } | {
         /**
          * The circle's radius
          */
-        radius: number;
+        readonly radius: number;
     } | undefined;
     /**
      * Dictates an offset, relative to the projectile's hitbox, that this tracer will be drawn at
@@ -1697,47 +1664,49 @@ declare class Ammo extends ImportedObject {
         /**
          * The offset along the axis parallel to the projectile's trajectory
          */
-        parr: number;
+        readonly parr: number;
         /**
          * The offset along the axis perpendicular to the projectile's trajectory
          */
-        perp: number;
+        readonly perp: number;
     };
     /**
      * Information pertaining more to the projectile itself
      */
-    get projectileInfo(): srvsdbx_AssetManagement.ConvertPathsToImages<({
+    get projectileInfo(): ({
         /**
          * The projectile's type
          */
-        type: "explosive";
+        readonly type: "explosive";
         /**
          * The *internal name* of the explosion object associated with this projectile
          */
-        explosionType: string;
+        readonly explosionType: string;
         /**
          * Whether or not the explosion should be spawned when colliding with an object or not
          */
-        explodeOnContact: boolean;
+        readonly explodeOnContact: boolean;
         /**
          * Dictates the magnitude of the scaling effect applied to this projectile's world image in order to simulate height change
          */
-        heightPeak?: number | undefined;
+        readonly heightPeak?: number | undefined;
     } | {
         /**
          * The projectile's type
          */
-        type: "bullet";
+        readonly type: "bullet";
     }) & {
         /**
          * An array containing paths for the images corresponding to this projectile
+         *
+         * If this ammo type has no images, specify the string `"none"`
          */
-        images: string[];
+        readonly images: "none" | srvsdbx_AssetManagement.ImageSrcPair[];
         /**
          * How fast, in rad/s, this projectile should spin
          */
-        spinVel?: MayBeFunctionWrapped<number, []> | undefined;
-    }>;
+        readonly spinVel?: MayBeFunctionWrapped<number, []> | undefined;
+    };
     /**
      * The internal name of the particle corresponding to the casing guns firing this ammo type eject
      */
@@ -1745,5 +1714,5 @@ declare class Ammo extends ImportedObject {
     /**
      * `* It's a constructor. It constructs.`
      */
-    constructor(name: typeof ImportedObject.prototype.name, displayName: typeof ImportedObject.prototype.displayName, includePath: typeof ImportedObject.prototype.includePath, namespace: typeof ImportedObject.prototype.namespace, targetVersion: typeof ImportedObject.prototype.targetVersion, tints: typeof Ammo.prototype.tints, alpha: typeof Ammo.prototype.alpha, spawnVar: typeof Ammo.prototype.spawnVar, imageOffset: typeof Ammo.prototype.imageOffset, projectileInfo: typeof Ammo.prototype.projectileInfo, casing: typeof Ammo.prototype.casing);
+    constructor(name: typeof ImportedObject.prototype.name, displayName: typeof ImportedObject.prototype.displayName, objectType: typeof ImportedObject.prototype.objectType, includePath: typeof ImportedObject.prototype.includePath, namespace: typeof ImportedObject.prototype.namespace, targetVersion: typeof ImportedObject.prototype.targetVersion, tints: typeof Ammo.prototype.tints, alpha: typeof Ammo.prototype.alpha, spawnVar: typeof Ammo.prototype.spawnVar, imageOffset: typeof Ammo.prototype.imageOffset, projectileInfo: typeof Ammo.prototype.projectileInfo, casing: typeof Ammo.prototype.casing);
 }

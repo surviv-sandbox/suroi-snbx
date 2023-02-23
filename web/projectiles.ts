@@ -208,7 +208,7 @@ abstract class Projectile implements Destroyable {
      * To avoid this, after rebounding off of a surface, the projectile cannot rebound off of it again for one update frame.
      * Projectiles should have traveled far enough to safely clear the surface by then.
      */
-    #reflectionRecord = new Map<number, number>();
+    #reflectionRecord = new Map<ObjectId, number>();
 
     /**
      * `* It's a constructor. It constructs.`
@@ -406,7 +406,7 @@ abstract class Projectile implements Destroyable {
             lifetime = distance / speed
                      = (range - traveled) / (oldRange / oldLifetime)
                      = (range - traveled) * oldLifetime / oldRange
-            
+
             since oldLifetime is just lifetime at this point, we can simplify this more
 
             lifetime = lifetime * ((range - traveled) / oldRange)
@@ -439,7 +439,9 @@ abstract class Projectile implements Destroyable {
 /**
  * Represents a bullet fired by a firearm
  */
-class Bullet extends Projectile implements Destroyable {
+class Bullet
+    extends Projectile
+    implements Destroyable {
     /**
      * The maximum amount of times a bullet can be reflected
      * before being destroyed
@@ -600,12 +602,25 @@ class Bullet extends Projectile implements Destroyable {
                             }
                         }
 
+                        let lethal = false;
+                        function listen() { lethal = true; }
+
+                        target.events.once("death", listen);
+                        /*
+                            We want to know if this projectile killed its target, but checking
+                            if the hp is less than 0 won't work, because if they're respawned,
+                            the check will fail. Instead, we append a listener and store its
+                            result in a variable
+                        */
+
                         if (this.#isExplosive && props.explodeOnContact)
                             this.#explode(
                                 srvsdbx_Geometry.Vector2D.fromPoint2D(this.position).toPoint2D(),
                                 effectsOnHit
                             );
                         else target.applyDamage(this.#damage, emitter.owner);
+
+                        target.events.removeListener("death", listen);
 
                         if (notInSet) {
                             this.#damage *= persistance.hitMultiplier;
@@ -647,11 +662,24 @@ class Bullet extends Projectile implements Destroyable {
                             this.update = this.destroy;
                         }
 
-                        new Particle(
-                            gamespace.prototypes.particles.get("srvsdbx::blood_splat")!,
-                            srvsdbx_Geometry.Vector2D.clone(this.position),
-                            srvsdbx_Math.randomAngle()
-                        );
+                        if (!lethal) { // blood doesn't spawn on death
+                            const particleSpawn = srvsdbx_Geometry.Vector2D.clone(this.position),
+                                offsetFromTarget = srvsdbx_Geometry.Vector2D.minus(particleSpawn, target.position);
+
+                            const p = new Particle(
+                                gamespace.prototypes.particles.get("srvsdbx::blood_splat")!,
+                                particleSpawn,
+                                srvsdbx_Math.randomAngle()
+                            );
+
+                            p.follow(target, {
+                                x: offsetFromTarget.x,
+                                y: offsetFromTarget.y,
+                                z: 0, parr: 0, perp: 0
+                            });
+
+                            target.events.once("death", () => p.destroyed || p.destroy());
+                        }
                     }
                 }
             });
@@ -674,8 +702,14 @@ class Bullet extends Projectile implements Destroyable {
         const prototype = emitter.prototype,
             ammoInfo = gamespace.prototypes.ammoTypes.get(prototype.caliber)!,
             images = ammoInfo.projectileInfo.images,
-            image = pickRandomInArray(images),
-            dimensions = srvsdbx_AssetManagement.determineImageDimensions(image.asset, prototype.ballistics.tracer);
+
+            image: srvsdbx_ErrorHandling.Maybe<srvsdbx_AssetManagement.ImageSrcPair> = images == "none"
+                ? srvsdbx_ErrorHandling.Nothing
+                : pickRandomInArray(images),
+
+            dimensions = image == srvsdbx_ErrorHandling.Nothing
+                ? srvsdbx_ErrorHandling.Nothing
+                : srvsdbx_AssetManagement.determineImageDimensions(image.asset, prototype.ballistics.tracer);
 
         return function(this: Bullet, p5: import("p5")) {
             if (this.destroyed) return;
@@ -748,33 +782,34 @@ class Bullet extends Projectile implements Destroyable {
 
             p5.tint(color);
 
-            const width = dimensions.width,
-                finalLength = prototype.ballistics.tracer.forceMaximumLength
-                    ? dimensions.height
-                    : Math.min(dimensions.height, srvsdbx_Geometry.Vector2D.distBetweenPts(this.position, this.start)),
-                parrOffset = props.spinVel ? 0 : finalLength / 2;
+            if (image && dimensions) {
+                const width = dimensions.width,
+                    finalLength = prototype.ballistics.tracer.forceMaximumLength
+                        ? dimensions.height
+                        : Math.min(dimensions.height, srvsdbx_Geometry.Vector2D.distBetweenPts(this.position, this.start)),
+                    parrOffset = props.spinVel ? 0 : finalLength / 2;
 
-            p5.rectMode(p5.CORNER);
+                p5.rectMode(p5.CORNER);
 
-            finalLength && p5.image(
-                image.asset,
-                0,
-                parrOffset,
-                width,
-                finalLength
-            );
-
-
-            gamespace.drawHitboxIfEnabled(
-                p5,
-                "DEFAULT",
-                () => p5.rect(
-                    -width / 2,
-                    parrOffset - finalLength / 2,
+                finalLength && p5.image(
+                    image.asset,
+                    0,
+                    parrOffset,
                     width,
                     finalLength
-                )
-            );
+                );
+
+                gamespace.drawHitboxIfEnabled(
+                    p5,
+                    "DEFAULT",
+                    () => p5.rect(
+                        -width / 2,
+                        parrOffset - finalLength / 2,
+                        width,
+                        finalLength
+                    )
+                );
+            }
 
             p5.rotate(this.trajectory - this.angle);
             gamespace.drawDebug(

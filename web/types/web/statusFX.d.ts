@@ -58,7 +58,7 @@ declare class StatusEffectPrototype<S extends {
      */
     static from<S extends {
         [key: string]: unknown;
-    }>(obj: SimpleStatusEffect<S>): Promise<srvsdbx_ErrorHandling.Result<StatusEffectPrototype<S>, unknown[]>>;
+    }>(obj: SimpleStatusEffect<S>): Promise<srvsdbx_ErrorHandling.Result<StatusEffectPrototype<S>, SandboxError[]>>;
     /**
      * A function that will be called once when a `StatusEffect` is created in order to initialize all its custom fields
      */
@@ -88,7 +88,7 @@ declare class StatusEffectPrototype<S extends {
     /**
      * `* It's a constructor. It constructs.`
      */
-    constructor(name: typeof ImportedObject.prototype.name, displayName: typeof ImportedObject.prototype.displayName, targetVersion: typeof ImportedObject.prototype.targetVersion, namespace: typeof ImportedObject.prototype.namespace, includePath: typeof ImportedObject.prototype.includePath, init: typeof StatusEffectPrototype.prototype.init, renew: typeof StatusEffectPrototype.prototype.renew, update: typeof StatusEffectPrototype.prototype.update, tearDown: typeof StatusEffectPrototype.prototype.tearDown, decay: typeof StatusEffectPrototype.prototype.decay, healthBarDecoration: typeof StatusEffectPrototype.prototype.healthBarDecoration);
+    constructor(name: typeof ImportedObject.prototype.name, displayName: typeof ImportedObject.prototype.displayName, objectType: typeof ImportedObject.prototype.objectType, targetVersion: typeof ImportedObject.prototype.targetVersion, namespace: typeof ImportedObject.prototype.namespace, includePath: typeof ImportedObject.prototype.includePath, init: typeof StatusEffectPrototype.prototype.init, renew: typeof StatusEffectPrototype.prototype.renew, update: typeof StatusEffectPrototype.prototype.update, tearDown: typeof StatusEffectPrototype.prototype.tearDown, decay: typeof StatusEffectPrototype.prototype.decay, healthBarDecoration: typeof StatusEffectPrototype.prototype.healthBarDecoration);
 }
 /**
  * Represents a specific instance of a status effect

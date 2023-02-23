@@ -1,85 +1,191 @@
 /**
  * A container to regroup functions that parse objects from their exported forms to their ingame ones
+ *
+ * **These functions should never be called by the suer and are for internal use only**
  */
-const parseFunctions = (() => {
-    /**
-     * Generates a function to parse exported objects into their respective instances
-     * @param cls The class to be instantiated to create the object
-     * @param collection The member of `gamespace.prototypes` this object type belongs to
-     */
-    function generateParseFunction<T, U extends MapValue<K>, K extends Gamespace["prototypes"][keyof Gamespace["prototypes"]]>(
-        cls: (new (...args: any[]) => U) & { from: (obj: T) => Promise<srvsdbx_ErrorHandling.Result<U, unknown[]>>; },
-        collection: K
-    ) {
-        return async (data: T[]): Promise<srvsdbx_ErrorHandling.Result<undefined, unknown[][]>> => {
-            const errors: unknown[][] = [];
+const parseFunctions = {
+    async parseAmmoData(data: SimpleAmmo[]) {
+        const errors: unknown[][] = [];
 
-            for (const entry of data) {
-                const obj = srvsdbx_ErrorHandling.handleResult(await cls.from(entry), srvsdbx_ErrorHandling.identity, errors.push);
+        for (const entry of data) {
+            let error: SandboxError[] = [];
+            const obj = srvsdbx_ErrorHandling.handleResult(await Ammo.from(entry), srvsdbx_ErrorHandling.identity, e => (error = e, errors.push(e)));
 
-                if (obj instanceof cls) {
-                    (collection as Map<string, U>).set((obj as U).internalName, (obj as U));
-                }
+            if (obj instanceof Ammo) {
+                gamespace.prototypes.ammoTypes.set(obj.internalName, obj);
+                gamespace.events.dispatchEvent("fragmentLoaded", { res: obj });
+            } else {
+                gamespace.events.dispatchEvent("fragmentLoaded", {
+                    err: {
+                        internalName: `${entry.namespace}::${entry.name}`,
+                        includePath: entry.includePath,
+                        namespace: entry.namespace,
+                        objectType: entry.objectType,
+                        err: error
+                    }
+                });
             }
+        }
 
-            return errors.length ? { err: errors } : srvsdbx_ErrorHandling.emptyResult();
-        };
+        return errors.length ? { err: errors } : srvsdbx_ErrorHandling.emptyResult();
+    },
+    async parseDecalData(data: SimpleDecal[]) {
+        const errors: unknown[][] = [];
+
+        for (const entry of data) {
+            let error: SandboxError[] = [];
+            const obj = srvsdbx_ErrorHandling.handleResult(await DecalPrototype.from(entry), srvsdbx_ErrorHandling.identity, e => (error = e, errors.push(e)));
+
+            if (obj instanceof DecalPrototype) {
+                gamespace.prototypes.decals.set(obj.internalName, obj);
+                gamespace.events.dispatchEvent("fragmentLoaded", { res: obj });
+            } else {
+                gamespace.events.dispatchEvent("fragmentLoaded", {
+                    err: {
+                        internalName: `${entry.namespace}::${entry.name}`,
+                        includePath: entry.includePath,
+                        namespace: entry.namespace,
+                        objectType: entry.objectType,
+                        err: error
+                    }
+                });
+            }
+        }
+
+        return errors.length ? { err: errors } : srvsdbx_ErrorHandling.emptyResult();
+    },
+    async parseExplosionData(data: SimpleExplosion[]) {
+        const errors: unknown[][] = [];
+
+        for (const entry of data) {
+            let error: SandboxError[] = [];
+            const obj = srvsdbx_ErrorHandling.handleResult(await ExplosionPrototype.from(entry), srvsdbx_ErrorHandling.identity, e => (error = e, errors.push(e)));
+
+            if (obj instanceof ExplosionPrototype) {
+                gamespace.prototypes.explosions.set(obj.internalName, obj);
+                gamespace.events.dispatchEvent("fragmentLoaded", { res: obj });
+            } else {
+                gamespace.events.dispatchEvent("fragmentLoaded", {
+                    err: {
+                        internalName: `${entry.namespace}::${entry.name}`,
+                        includePath: entry.includePath,
+                        namespace: entry.namespace,
+                        objectType: entry.objectType,
+                        err: error
+                    }
+                });
+            }
+        }
+
+        return errors.length ? { err: errors } : srvsdbx_ErrorHandling.emptyResult();
+    },
+    async parseGunData(data: SimpleGun[]) {
+        const errors: unknown[][] = [];
+
+        for (const entry of data) {
+            let error: SandboxError[] = [];
+            const obj = srvsdbx_ErrorHandling.handleResult(await GunPrototype.from(entry), srvsdbx_ErrorHandling.identity, e => (error = e, errors.push(e)));
+
+            if (obj instanceof GunPrototype) {
+                gamespace.prototypes.firearms.set(obj.internalName, obj);
+                gamespace.events.dispatchEvent("fragmentLoaded", { res: obj });
+            } else {
+                gamespace.events.dispatchEvent("fragmentLoaded", {
+                    err: {
+                        internalName: `${entry.namespace}::${entry.name}`,
+                        includePath: entry.includePath,
+                        namespace: entry.namespace,
+                        objectType: entry.objectType,
+                        err: error
+                    }
+                });
+            }
+        }
+
+        return errors.length ? { err: errors } : srvsdbx_ErrorHandling.emptyResult();
+    },
+    async parseParticleData(data: SimpleParticle[]) {
+        const errors: unknown[][] = [];
+
+        for (const entry of data) {
+            let error: SandboxError[] = [];
+            const obj = srvsdbx_ErrorHandling.handleResult(await ParticlePrototype.from(entry), srvsdbx_ErrorHandling.identity, e => (error = e, errors.push(e)));
+
+            if (obj instanceof ParticlePrototype) {
+                gamespace.prototypes.particles.set(obj.internalName, obj);
+                gamespace.events.dispatchEvent("fragmentLoaded", { res: obj });
+            } else {
+                gamespace.events.dispatchEvent("fragmentLoaded", {
+                    err: {
+                        internalName: `${entry.namespace}::${entry.name}`,
+                        includePath: entry.includePath,
+                        namespace: entry.namespace,
+                        objectType: entry.objectType,
+                        err: error
+                    }
+                });
+            }
+        }
+
+        return errors.length ? { err: errors } : srvsdbx_ErrorHandling.emptyResult();
+    },
+    async parseStatusEffectData(data: SimpleStatusEffect<{}>[]) {
+        const errors: unknown[][] = [];
+
+        for (const entry of data) {
+            let error: SandboxError[] = [];
+            const obj = srvsdbx_ErrorHandling.handleResult(await StatusEffectPrototype.from(entry), srvsdbx_ErrorHandling.identity, e => (error = e, errors.push(e)));
+
+            if (obj instanceof StatusEffectPrototype) {
+                gamespace.prototypes.statusEffects.set(obj.internalName, obj);
+                gamespace.events.dispatchEvent("fragmentLoaded", { res: obj });
+            } else {
+                gamespace.events.dispatchEvent("fragmentLoaded", {
+                    err: {
+                        internalName: `${entry.namespace}::${entry.name}`,
+                        includePath: entry.includePath,
+                        namespace: entry.namespace,
+                        objectType: entry.objectType,
+                        err: error
+                    }
+                });
+            }
+        }
+
+        return errors.length ? { err: errors } : srvsdbx_ErrorHandling.emptyResult();
+    },
+    async parseMeleeData(data: SimpleMelee[]) {
+        const errors: unknown[][] = [];
+
+        for (const entry of data) {
+            let error: SandboxError[] = [];
+            const obj = srvsdbx_ErrorHandling.handleResult(await MeleePrototype.from(entry), srvsdbx_ErrorHandling.identity, e => (error = e, errors.push(e)));
+
+            if (obj instanceof MeleePrototype) {
+                gamespace.prototypes.melees.set(obj.internalName, obj);
+                gamespace.events.dispatchEvent("fragmentLoaded", { res: obj });
+            } else {
+                gamespace.events.dispatchEvent("fragmentLoaded", {
+                    err: {
+                        internalName: `${entry.namespace}::${entry.name}`,
+                        includePath: entry.includePath,
+                        namespace: entry.namespace,
+                        objectType: entry.objectType,
+                        err: error
+                    }
+                });
+            }
+        }
+
+        return errors.length ? { err: errors } : srvsdbx_ErrorHandling.emptyResult();
+    },
+    parseLevelData(data: SimpleLevel[]) {
+        const levels = data.map(d => Level.from(d));
+
+        gamespace.levels.push(...levels);
+
+        for (const level of levels) {
+            gamespace.events.dispatchEvent("fragmentLoaded", { res: level });
+        }
     }
-
-    type InterfaceMap = {
-        ammoTypes: SimpleAmmo,
-        decals: SimpleDecal;
-        explosions: SimpleExplosion,
-        firearms: SimpleGun,
-        particles: SimpleParticle,
-        statusEffects: SimpleStatusEffect<{}>,
-        melees: SimpleMelee;
-    };
-
-    enum NameMap {
-        parseAmmoData,
-        parseDecalData,
-        parseExplosionData,
-        parseGunData,
-        parseParticleData,
-        parseStatusEffectData,
-        parseMeleeData
-    };
-
-    const arr = [
-        [Ammo, "ammoTypes", "parseAmmoData"] as const,
-        [DecalPrototype, "decals", "parseDecalData"] as const,
-        [ExplosionPrototype, "explosions", "parseExplosionData"] as const,
-        [GunPrototype, "firearms", "parseGunData"] as const,
-        [ParticlePrototype, "particles", "parseParticleData"] as const,
-        [StatusEffectPrototype, "statusEffects", "parseStatusEffectData"] as const,
-        [MeleePrototype, "melees", "parseMeleeData"] as const,
-    ] as const;
-
-    // bruh moment
-    type helper<T extends typeof arr = typeof arr> = { [K in keyof T]: [(obj: InterfaceMap[T[K][1]]) => srvsdbx_ErrorHandling.Result<undefined, unknown[][]>, T[K][2]] };
-    type helper2<T extends typeof arr = typeof arr> = { [K in keyof T]: T[K][2] };
-    type helper3<T extends typeof arr = typeof arr> = { [K in keyof helper2<T>]: helper2<T>[K] };
-    type helper4<T extends typeof arr = typeof arr> = { [K in TupleToUnion<helper3>]: helper<T>[typeof NameMap[K]][0] };
-
-    return (
-        arr.map(
-            e => [
-                generateParseFunction
-                    <InterfaceMap[(typeof e)["1"]], InstanceType<(typeof e)["0"]>, Gamespace["prototypes"][(typeof e)["1"]]>
-                    (
-                        e[0] as any,
-                        gamespace.prototypes[e[1]]
-                    ),
-                e[2]
-            ]
-        ) as unknown as helper
-    ).reduce(
-        (p, c) => {
-            p[c[1]] = c[0] as any;
-
-            return p;
-        },
-        {} as helper4
-    );
-})();
+} as const;

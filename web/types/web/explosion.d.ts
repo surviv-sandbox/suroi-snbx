@@ -213,11 +213,11 @@ declare class ExplosionPrototype extends ImportedObject {
      * @param obj The `SimpleParticle` object to parse
      * @returns A new `ParticlePrototype`
      */
-    static from(obj: SimpleExplosion): Promise<srvsdbx_ErrorHandling.Result<ExplosionPrototype, unknown[]>>;
+    static from(obj: SimpleExplosion): Promise<srvsdbx_ErrorHandling.Result<ExplosionPrototype, SandboxError[]>>;
     /**
      * `* It's a constructor. It constructs.`
      */
-    constructor(name: typeof ImportedObject.prototype.name, displayName: typeof ImportedObject.prototype.displayName, includePath: typeof ImportedObject.prototype.includePath, namespace: typeof ImportedObject.prototype.namespace, targetVersion: typeof ImportedObject.prototype.targetVersion, damage: typeof ExplosionPrototype.prototype.damage, obstacleMult: typeof ExplosionPrototype.prototype.obstacleMult, radii: typeof ExplosionPrototype.prototype.radii, particle: typeof ExplosionPrototype.prototype.particle, shakeStrength: typeof ExplosionPrototype.prototype.shakeStrength, shakeDuration: typeof ExplosionPrototype.prototype.shakeDuration, decal: typeof ExplosionPrototype.prototype.decal, shrapnel: typeof ExplosionPrototype.prototype.shrapnel, scatter: typeof ExplosionPrototype.prototype.scatter);
+    constructor(name: typeof ImportedObject.prototype.name, displayName: typeof ImportedObject.prototype.displayName, objectType: typeof ImportedObject.prototype.objectType, includePath: typeof ImportedObject.prototype.includePath, namespace: typeof ImportedObject.prototype.namespace, targetVersion: typeof ImportedObject.prototype.targetVersion, damage: typeof ExplosionPrototype.prototype.damage, obstacleMult: typeof ExplosionPrototype.prototype.obstacleMult, radii: typeof ExplosionPrototype.prototype.radii, particle: typeof ExplosionPrototype.prototype.particle, shakeStrength: typeof ExplosionPrototype.prototype.shakeStrength, shakeDuration: typeof ExplosionPrototype.prototype.shakeDuration, decal: typeof ExplosionPrototype.prototype.decal, shrapnel: typeof ExplosionPrototype.prototype.shrapnel, scatter: typeof ExplosionPrototype.prototype.scatter);
 }
 /**
  * Represents an explosion in the game world
@@ -239,7 +239,7 @@ declare class Explosion implements Destroyable {
     /**
      * This explosion's id
      */
-    get id(): number;
+    get id(): bigint;
     /**
      * The duration of this explosion's screen shake effect
      */

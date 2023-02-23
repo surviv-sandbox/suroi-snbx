@@ -11,7 +11,7 @@ interface SimpleParticle extends SimpleImport {
      */
     readonly lifetime: MayBeFunctionWrapped<number>;
     /**
-     readonly * Pragmatically, a scale factor for this particle's physics: a value of 1 is normal 0.5 is half speed, etc
+     * Pragmatically, a scale factor for this particle's physics: a value of 1 is normal 0.5 is half speed, etc
      */
     readonly drag: MayBeFunctionWrapped<number>;
     /**
@@ -43,6 +43,11 @@ interface SimpleParticle extends SimpleImport {
          * The scale this image ends at
          */
         readonly end: MayBeFunctionWrapped<number>;
+        /**
+         * Optionally, a function that will be used to interpolate between
+         * the two bounds
+         */
+        readonly interp?: srvsdbx_Animation.EasingFunction;
     } | MayBeFunctionWrapped<number, [Particle]>;
     /**
      * Information about the opacity of this particle's image.
@@ -56,6 +61,11 @@ interface SimpleParticle extends SimpleImport {
          * The opacity this image ends at
          */
         readonly end: MayBeFunctionWrapped<number>;
+        /**
+         * Optionally, a function that will be used to interpolate between
+         * the two bounds
+         */
+        readonly interp?: srvsdbx_Animation.EasingFunction;
     } | MayBeFunctionWrapped<number, [Particle]>;
     /**
      * The color to tint this image. While it can have an alpha channel, it's better to use the `alpha` property to do this
@@ -114,6 +124,11 @@ declare class ParticlePrototype extends ImportedObject {
          * The scale this image ends at
          */
         readonly end: MayBeFunctionWrapped<number, []>;
+        /**
+         * Optionally, a function that will be used to interpolate between
+         * the two bounds
+         */
+        readonly interp?: srvsdbx_Animation.EasingFunction | undefined;
     };
     /**
      * Information about the opacity of this particle's image
@@ -127,6 +142,11 @@ declare class ParticlePrototype extends ImportedObject {
          * The opacity this image ends at
          */
         readonly end: MayBeFunctionWrapped<number, []>;
+        /**
+         * Optionally, a function that will be used to interpolate between
+         * the two bounds
+         */
+        readonly interp?: srvsdbx_Animation.EasingFunction | undefined;
     };
     /**
      * The color to tint this image
@@ -143,11 +163,11 @@ declare class ParticlePrototype extends ImportedObject {
      * @param obj The `SimpleParticle` object to parse
      * @returns A new `ParticlePrototype`
      */
-    static from(obj: SimpleParticle): Promise<srvsdbx_ErrorHandling.Result<ParticlePrototype, unknown[]>>;
+    static from(obj: SimpleParticle): Promise<srvsdbx_ErrorHandling.Result<ParticlePrototype, SandboxError[]>>;
     /**
      * `* It's a constructor. It constructs.`
      */
-    constructor(name: typeof ImportedObject.prototype.name, displayName: typeof ImportedObject.prototype.displayName, includePath: typeof ImportedObject.prototype.includePath, namespace: typeof ImportedObject.prototype.namespace, targetVersion: typeof ImportedObject.prototype.targetVersion, image: typeof ParticlePrototype.prototype.image, lifetime: typeof ParticlePrototype.prototype.lifetime, drag: typeof ParticlePrototype.prototype.drag, rotVel: typeof ParticlePrototype.prototype.rotVel, baseSize: typeof ParticlePrototype.prototype.baseSize, scale: typeof ParticlePrototype.prototype.scale, alpha: typeof ParticlePrototype.prototype.alpha, tint: typeof ParticlePrototype.prototype.tint, subLayer: typeof ParticlePrototype.prototype.subLayer);
+    constructor(name: typeof ImportedObject.prototype.name, displayName: typeof ImportedObject.prototype.displayName, objectType: typeof ImportedObject.prototype.objectType, includePath: typeof ImportedObject.prototype.includePath, namespace: typeof ImportedObject.prototype.namespace, targetVersion: typeof ImportedObject.prototype.targetVersion, image: typeof ParticlePrototype.prototype.image, lifetime: typeof ParticlePrototype.prototype.lifetime, drag: typeof ParticlePrototype.prototype.drag, rotVel: typeof ParticlePrototype.prototype.rotVel, baseSize: typeof ParticlePrototype.prototype.baseSize, scale: typeof ParticlePrototype.prototype.scale, alpha: typeof ParticlePrototype.prototype.alpha, tint: typeof ParticlePrototype.prototype.tint, subLayer: typeof ParticlePrototype.prototype.subLayer);
 }
 /**
  * Represents a specific particle in the game world
@@ -180,11 +200,16 @@ declare class Particle extends Generic implements Destroyable {
         /**
          * The scale this image starts at
          */
-        start: number;
+        readonly start: number;
         /**
          * The scale this image ends at
          */
-        end: number;
+        readonly end: number;
+        /**
+         * Optionally, a function that will be used to interpolate between
+         * the two bounds
+         */
+        readonly interp: srvsdbx_Animation.EasingFunction;
     } | MayBeFunctionWrapped<number, [Particle]>;
     /**
      * Information about the opacity of this specific particle's image
@@ -193,11 +218,16 @@ declare class Particle extends Generic implements Destroyable {
         /**
          * The opacity this image starts at
          */
-        start: number;
+        readonly start: number;
         /**
          * The opacity this image ends at
          */
-        end: number;
+        readonly end: number;
+        /**
+         * Optionally, a function that will be used to interpolate between
+         * the two bounds
+         */
+        readonly interp: srvsdbx_Animation.EasingFunction;
     };
     /**
      * The color to tint this particle's image
@@ -328,11 +358,11 @@ declare class DecalPrototype extends ImportedObject {
      * @param obj The `SimpleDecal` object to parse
      * @returns A new `DecalPrototype`
      */
-    static from(obj: SimpleDecal): Promise<srvsdbx_ErrorHandling.Result<DecalPrototype, unknown[]>>;
+    static from(obj: SimpleDecal): Promise<srvsdbx_ErrorHandling.Result<DecalPrototype, SandboxError[]>>;
     /**
      * `* It's a constructor. It constructs.`
      */
-    constructor(name: typeof ImportedObject.prototype.name, displayName: typeof ImportedObject.prototype.displayName, targetVersion: typeof ImportedObject.prototype.targetVersion, namespace: typeof ImportedObject.prototype.namespace, includePath: typeof ImportedObject.prototype.includePath, image: typeof DecalPrototype.prototype.image, size: typeof DecalPrototype.prototype.size, tint: typeof DecalPrototype.prototype.tint);
+    constructor(name: typeof ImportedObject.prototype.name, displayName: typeof ImportedObject.prototype.displayName, objectType: typeof ImportedObject.prototype.objectType, targetVersion: typeof ImportedObject.prototype.targetVersion, namespace: typeof ImportedObject.prototype.namespace, includePath: typeof ImportedObject.prototype.includePath, image: typeof DecalPrototype.prototype.image, size: typeof DecalPrototype.prototype.size, tint: typeof DecalPrototype.prototype.tint);
 }
 /**
  * Represents a decal in the game world
@@ -371,7 +401,7 @@ declare class Decal implements Destroyable {
     /**
      * This decal's id
      */
-    get id(): number;
+    get id(): bigint;
     /**
      * Whether or not this decal has been destroyed
      */

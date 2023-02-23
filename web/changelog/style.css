@@ -140,10 +140,10 @@ code {
 
 @font-face {
     font-family: roboto;
-    src: url("../assets/default/fonts/RobotoCondensed-Regular.ttf");
+    src: url("../global_assets/RobotoCondensed-Regular.ttf");
 }
 
 @font-face {
     font-family: jura;
-    src: url("../assets/default/fonts/Jura-Bold.ttf");
+    src: url("../global_assets/Jura-Bold.ttf");
 }

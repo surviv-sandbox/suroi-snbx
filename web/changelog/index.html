@@ -4,20 +4,76 @@
 <head>
     <title>surviv.io sandbox changelog</title>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <link rel="stylesheet" type="text/css" href="style.css">
 
     <script src="index.js" defer></script>
 </head>
 
 <body>
-    <button id="back">Back</button>
     <title>Changelog</title>
     <aside id="sidebar"></aside>
     <main id="main-cont">
         <div class="update nightly">
             <div class="header">
-                <h2>v0.10.0 beta 1</h2>
+                <h2>v0.10.0 beta 2</h2>
                 <h3>February 14<sup>th</sup> 2023</h3>
+            </div>
+            <div class="content">
+                <ul>
+                    <li>Added:
+                        <ul>
+                            <li>Knuckles Heroic</li>
+                            <li>Knuckles Rusted</li>
+                            <li>Trench Spade</li>
+                            <li>Panzerhammer</li>
+                            <li>Crowbar (Recon)</li>
+                            <li>Crowbar (Scout)</li>
+                            <li>Ice Pick</li>
+                            <li>Lasr swrd 01-03</li>
+                            <li>Bugle</li>
+                        </ul>
+                    </li>
+                    <li>Bug fixes:
+                        <ul>
+                            <li>The Wet effect will now properly remove debuffs from players when it expires</li>
+                            <li>The ammo counter will no longer be displayed when starting out with a melee weapon</li>
+                            <li>Blood particles now follow the player who was hit, as they do in-game</li>
+                            <li>Fixed a bug that prevented objects from being followed by multiple others</li>
+                            <li>(Technical) <code>Particle.update</code> will no longer update particle's position/angle
+                                if the particle is following an object</li>
+                            <li>Fixed quickswitch implementation</li>
+                            <li>Movement speed while firing in full-auto should be more consistent</li>
+                            <li>Fixed a bug where weapons occasionally wouldn't auto-reload</li>
+                            <li>Fixed a bug where one could fire burst weapons very quickly</li>
+                        </ul>
+                    </li>
+                    <li>(Technical) An object's orientation is no longer locked to its parent's when following</li>
+                    <li>(Technical) Object ID's now use <code>BigInteger</code>s</li>
+                    <li>The Pan no longer reflects bullets while attackning</li>
+                    <li>Adjusted the rate at which targets grow when hit with the Spud Gun</li>
+                    <li>Reduced the opacity of the Potato Cannon and Spud Gun's trails</li>
+                    <li>Corrected the M134's size and position</li>
+                    <li>Corrected a date in the changelog</li>
+                    <li>Slightly thickened the Lasr Gun's and Dual Lasr Gun's tracers</li>
+                    <li>Added a loading screen and main menu screen, with links to this changelog and an attributions
+                        page</li>
+                    <li>Disabled zooming</li>
+                    <li>Some UI fixes</li>
+                    <li>
+                        <u>Roadmap:</u>
+                        <ul>
+                            <li>Vests & helmets</li>
+                            <li>Basic obstacles</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="update nightly">
+            <div class="header">
+                <h2>v0.10.0 beta 1</h2>
+                <h3>February 17<sup>th</sup> 2023</h3>
             </div>
             <div class="content">
                 <ul>

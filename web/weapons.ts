@@ -19,6 +19,10 @@ interface SimpleGun extends SimpleEquipableItem {
         readonly world: string;
         // Make the world image mandatory for firearms
     };
+    readonly handPositions: {
+        readonly leftHand: HandPositions["leftHand"] & {},
+        readonly rightHand?: HandPositions["rightHand"] & {};
+    };
     /**
      * Whether this weapon is dual-wielded or not
      */
@@ -160,6 +164,19 @@ interface SimpleGun extends SimpleEquipableItem {
         readonly projectiles: number;
     },
     /**
+     * Data about status effects applied to players within a certain radius whenever this weapon is fired
+     */
+    readonly effectsOnFire?: {
+        /**
+         * The radius of the area-of-effect
+         */
+        readonly radius: number;
+        /**
+         * The status effects to apply to targets within the AoE radius
+         */
+        readonly effects: PrototypeReference<"statusEffects">[];
+    }[],
+    /**
      * Whether or not this weapon is suppressed. Suppressed weapon have less opaque tracers and make less noise
      */
     readonly suppressed: boolean,
@@ -279,53 +296,6 @@ interface SimpleGun extends SimpleEquipableItem {
          * Under this perk, magazine sizes are set to the number indicated by this field
          */
         readonly firepower: number;
-    };
-    /**
-     * Information about where the player's hands should go while holding this weapon
-     */
-    readonly handPositions: {
-        /**
-         * Information about the left hand
-         */
-        readonly leftHand: {
-            /**
-             * How far along the axis parallel to the player's field of view the hand should be
-             */
-            readonly parr: number,
-            /**
-             * How far along the axis perpendicular to the player's field of view the hand should be
-             */
-            readonly perp: number,
-            /**
-             * Optionally, the layer this hand should reside on when this weapon is active.
-             * If not defined, the hands are rendered according to the `dimensions.layer` property.
-             *
-             readonly * - 0: Draw the hand under the gun
-             readonly * - 1: Draw the hand over the gun
-             */
-            readonly layer?: 0 | 1;
-        },
-        /**
-         * Information about the right hand
-        */
-        readonly rightHand?: {
-            /**
-             * How far along the axis parallel to the player's field of view the hand should be
-            */
-            readonly parr: number,
-            /**
-             * How far along the axis perpendicular to the player's field of view the hand should be
-            */
-            readonly perp: number;
-            /**
-             * Optionally, the layer this hand should reside on when this weapon is active.
-             * If not defined, the hands are rendered according to the `dimensions.layer` property.
-             *
-             readonly * — 0: Draw the hand under the gun
-             readonly * — 1: Draw the hand over the gun
-             */
-            readonly layer?: 0 | 1;
-        };
     };
     /**
      * Information about the offset projectiles will be spawned at, relative to their normal position
@@ -743,11 +713,20 @@ class GunPrototype extends InventoryItemPrototype {
     get magazineCapacity() { return this.#magazineCapacity; }
 
     /**
-     *  How long, after switching to this item, its user must wait before using it
+     * Data about status effects applied to players within a certain radius whenever this weapon is fired
+     */
+    #effectsOnFire: SimpleGun["effectsOnFire"];
+    /**
+     * Data about status effects applied to players within a certain radius whenever this weapon is fired
+     */
+    get effectsOnFire() { return this.#effectsOnFire; }
+
+    /**
+     * How long, after switching to this item, its user must wait before using it
      */
     #switchDelay: SimpleGun["switchDelay"];
     /**
-     *  How long, after switching to this item, its user must wait before using it
+     * How long, after switching to this item, its user must wait before using it
      */
     get switchDelay() { return this.#switchDelay; }
 
@@ -854,52 +833,52 @@ class GunPrototype extends InventoryItemPrototype {
      * @param obj The `SimpleGun` object to parse
      * @returns A new `GunPrototype`
      */
-    static async from(obj: SimpleGun): Promise<srvsdbx_ErrorHandling.Result<GunPrototype, unknown[]>> {
-        const errors: unknown[] = [],
+    static async from(obj: SimpleGun): Promise<srvsdbx_ErrorHandling.Result<GunPrototype, SandboxError[]>> {
+        const errors: SandboxError[] = [],
             pathPrefix = `${obj.includePath}/`,
             trailImage = obj.ballistics.tracer.trail
                 ? srvsdbx_ErrorHandling.handleResult(
                     await srvsdbx_AssetManagement.loadingFunctions.loadImageAsync(
-                        `${pathPrefix}/${obj.ballistics.tracer.trail.image}`
+                        `${pathPrefix}${obj.ballistics.tracer.trail.image}`
                     ),
                     srvsdbx_ErrorHandling.identity,
-                    errors.push
+                    e => errors.push(e)
                 )
 
                 : void 0,
             lootImage = srvsdbx_ErrorHandling.handleResult(
                 await srvsdbx_AssetManagement.loadingFunctions.loadImageAsync(
-                    `${pathPrefix}/${obj.images.loot}`
+                    `${pathPrefix}${obj.images.loot}`
                 ),
                 srvsdbx_ErrorHandling.identity,
-                errors.push
+                e => errors.push(e)
             ),
 
             worldImage = srvsdbx_ErrorHandling.handleResult(
                 await srvsdbx_AssetManagement.loadingFunctions.loadImageAsync(
-                    `${pathPrefix}/${obj.images.world}`
+                    `${pathPrefix}${obj.images.world}`
                 ),
                 srvsdbx_ErrorHandling.identity,
-                errors.push
+                e => errors.push(e)
             ),
 
             chargeImage = obj.chargeProps?.chargeImage?.image
                 ? srvsdbx_ErrorHandling.handleResult(
                     await srvsdbx_AssetManagement.loadingFunctions.loadImageAsync(
-                        `${pathPrefix}/${obj.chargeProps.chargeImage.image}`
+                        `${pathPrefix}${obj.chargeProps.chargeImage.image}`
                     ),
                     srvsdbx_ErrorHandling.identity,
-                    errors.push
+                    e => errors.push(e)
                 )
                 : void 0,
 
             chargeImageHUD = obj.chargeProps?.chargeImageHUD?.image
                 ? srvsdbx_ErrorHandling.handleResult(
                     await srvsdbx_AssetManagement.loadingFunctions.loadImageAsync(
-                        `${pathPrefix}/${obj.chargeProps.chargeImageHUD.image}`
+                        `${pathPrefix}${obj.chargeProps.chargeImageHUD.image}`
                     ),
                     srvsdbx_ErrorHandling.identity,
-                    errors.push
+                    e => errors.push(e)
                 )
                 : void 0,
 
@@ -924,6 +903,7 @@ class GunPrototype extends InventoryItemPrototype {
                 res: new GunPrototype(
                     obj.name,
                     obj.displayName,
+                    obj.objectType,
                     obj.includePath,
                     obj.namespace,
                     obj.targetVersion,
@@ -958,6 +938,7 @@ class GunPrototype extends InventoryItemPrototype {
                             } : void 0
                         }
                     },
+                    obj.effectsOnFire,
                     obj.suppressed,
                     obj.caliber,
                     obj.useDelay,
@@ -1118,6 +1099,7 @@ class GunPrototype extends InventoryItemPrototype {
     constructor(
         name: typeof ImportedObject.prototype.name,
         displayName: typeof ImportedObject.prototype.displayName,
+        objectType: typeof ImportedObject.prototype.objectType,
         includePath: typeof ImportedObject.prototype.includePath,
         namespace: typeof ImportedObject.prototype.namespace,
         targetVersion: typeof ImportedObject.prototype.targetVersion,
@@ -1125,6 +1107,7 @@ class GunPrototype extends InventoryItemPrototype {
         dual: typeof GunPrototype.prototype.dual,
         tint: typeof GunPrototype.prototype.tint,
         ballistics: typeof GunPrototype.prototype.ballistics,
+        effectsOnFire: typeof GunPrototype.prototype.effectsOnFire,
         suppressed: typeof GunPrototype.prototype.suppressed,
         caliber: typeof GunPrototype.prototype.caliber,
         useDelay: typeof GunPrototype.prototype.useDelay,
@@ -1146,7 +1129,7 @@ class GunPrototype extends InventoryItemPrototype {
         chargeProps: typeof GunPrototype.prototype.chargeProps,
         addons: typeof GunPrototype.prototype.addons,
     ) {
-        super(name, displayName, targetVersion, namespace, includePath, images, moveSpeedPenalties);
+        super(name, displayName, objectType, targetVersion, namespace, includePath, images, moveSpeedPenalties);
 
         const size = gamespace.PLAYER_SIZE;
 
@@ -1184,6 +1167,15 @@ class GunPrototype extends InventoryItemPrototype {
             projectiles: ballistics.projectiles,
         };
         this.#dual = dual;
+        const effects = effectsOnFire ?
+            effectsOnFire
+                .filter(e => e.effects.length)
+                .map(e => ({
+                    radius: e.radius * gamespace.PLAYER_SIZE,
+                    effects: e.effects
+                }))
+            : [];
+        this.#effectsOnFire = effects.length ? effects : void 0;
         this.#suppressed = suppressed;
         this.#tint = tint;
         this.#caliber = caliber;
@@ -1299,7 +1291,10 @@ class GunPrototype extends InventoryItemPrototype {
 /**
  * Represents a physical firearm in the game world
  */
-class Gun extends InventoryItem<GunPrototype> implements EquipableItem<Required<ItemAnimation> & { item: { offset: { parr: number, perp: number; }; }; }>, Destroyable {
+class Gun
+    extends InventoryItem<GunPrototype>
+    implements EquipableItem<Required<ItemAnimation> & { item: { offset: { parr: number, perp: number; }; }; }>,
+    Destroyable {
     /**
      * An object to manage this item's animations
      */
@@ -1422,6 +1417,67 @@ class Gun extends InventoryItem<GunPrototype> implements EquipableItem<Required<
     get cancelledAnimation() { return this.#cancelledAnimation; }
 
     /**
+     * A map storing `setTimeout` id's. Each timeout is for a certain reload that is
+     * to be attempted in the future; for example, when a weapon runs dry, a reload is scheduled,
+     * and it is stored here
+     */
+    readonly #anticipatedReloads = new Map<ObjectId, number>();
+    /**
+     * Tells this weapon to attempt a reload after `delay` milliseconds.
+     * @param delay The amount of milliseconds to wait before attempting to reload
+     * @returns A function that, when called, will cancel the reload
+     */
+    scheduleReload(delay: number) {
+        const id = generateId(),
+            timer = setTimeout(
+                () => {
+                    this.#anticipatedReloads.delete(id);
+                    this.standardReload();
+                },
+                delay
+            ) as unknown as number;
+
+        this.#anticipatedReloads.set(id, timer);
+
+        return () => {
+            clearTimerIfPresent(timer);
+            this.#anticipatedReloads.delete(id);
+        };
+    }
+    /**
+     * Tells this weapon to reload after `delay` milliseconds
+     *
+     * Unlike its public counterpart, this method will schedule a "forced" reload
+     * that only checks to see if the item being reloaded is active
+     * @param delay The amount of milliseconds to wait before attempting to reload
+     * @returns A function that, when called, will cancel the reload
+     */
+    #scheduleReload(delay: number) {
+        const id = generateId(),
+            timer = setTimeout(
+                () => {
+                    this.#anticipatedReloads.delete(id);
+                    this.#reload();
+                },
+                delay
+            ) as unknown as number;
+
+        this.#anticipatedReloads.set(id, timer);
+
+        return () => {
+            clearTimerIfPresent(timer);
+            this.#anticipatedReloads.delete(id);
+        };
+    }
+    /**
+     * Cancels every anticipated reload, and clears the map storing them
+     */
+    #cancelAnticipatedReloads() {
+        for (const [_, r] of this.#anticipatedReloads) clearTimerIfPresent(r);
+        this.#anticipatedReloads.clear();
+    }
+
+    /**
      * `* It's a constructor. It constructs.`
      * @param owner The `PlayerLike` that owns this weapon
      * @param prototype The `GunPrototype` this object is based on
@@ -1499,7 +1555,6 @@ class Gun extends InventoryItem<GunPrototype> implements EquipableItem<Required<
                                 return p;
                             })();
 
-
                         if (chargeProps.chargeParticle.scale)
                             particle.forceScale(
                                 extractValue(
@@ -1528,13 +1583,13 @@ class Gun extends InventoryItem<GunPrototype> implements EquipableItem<Required<
     }
 
     /**
-     * Returns this item's current dimensions, taking animations into account
+     * Returns this item's current animation
      *
      * **This method will stop expired animations.**
      * More specifically, if an idle animation is running, but the using animation should be used,
      * the idle animation will be terminated
      */
-    getItemReference() {
+    #getAnimation() {
         const timeSinceLastShot = gamespace.currentUpdate - (this.#lastUse ?? 0);
 
         if (
@@ -1542,11 +1597,33 @@ class Gun extends InventoryItem<GunPrototype> implements EquipableItem<Required<
             timeSinceLastShot < Math.max(this.prototype.useDelay, this.prototype.recoilImpulse.duration)
         ) {
             this.animationManager.end("idle");
-            return this.animationManager.fetch("using")(timeSinceLastShot, true)?.item;
+            return this.animationManager.fetch("using")(timeSinceLastShot, true);
         } else {
             this.animationManager.end("using");
-            return this.animationManager.fetch("idle")(gamespace.currentUpdate - this.owner.state.lastSwitch, true)?.item;
+            return this.animationManager.fetch("idle")(gamespace.currentUpdate - this.owner.state.lastSwitch, true);
         }
+    }
+
+    /**
+     * Returns this item's current dimensions and offsets, taking animations into account
+     *
+     * **This method will stop expired animations.**
+     * More specifically, if an idle animation is running, but the using animation should be used,
+     * the idle animation will be terminated
+     */
+    getItemReference() {
+        return this.#getAnimation()?.item;
+    }
+
+    /**
+     * Returns this item's current hand rigging, taking animations into account
+     *
+     * **This method will stop expired animations.**
+     * More specifically, if an idle animation is running, but the using animation should be used,
+     * the idle animation will be terminated
+     */
+    getHandReference() {
+        return this.#getAnimation()?.hands;
     }
 
     /**
@@ -1574,12 +1651,13 @@ class Gun extends InventoryItem<GunPrototype> implements EquipableItem<Required<
             burstType = isBurst ? prototype.fireMode.startsWith("auto-") ? "auto" : "semi" : srvsdbx_ErrorHandling.Nothing,
             shotsPerBurst = isBurst ? parseInt(prototype.fireMode.replace(/^(auto-)?burst-/, ""), 10) ?? 1 : Infinity,
             shotDelay = (isBurst && prototype.burstProps ? prototype.burstProps.shotDelay : prototype.useDelay) * this.owner.modifiers.ergonomics.reduced,
+            attackDelay = (isBurst && prototype.burstProps ? prototype.burstProps.burstDelay : prototype.useDelay) * this.owner.modifiers.ergonomics.reduced,
 
             state = player.state;
 
-        if (gamespace.currentUpdate - this.#lastUse >= shotDelay) {
+        // Only proceed if the time since the lsat shot is greater than the use delay
+        if (gamespace.currentUpdate - this.#lastUse >= attackDelay) {
             if (isCharge) { // Terrible charge-fire logic
-
                 // This function, as the name implies, schedules a re-attempt to fire
                 const scheduleRetry = () => {
                     player.timers.firing = setTimeout(
@@ -1623,6 +1701,7 @@ class Gun extends InventoryItem<GunPrototype> implements EquipableItem<Required<
                 }
             }
 
+            // Actual firing logic
             clearTimerIfPresent(player.timers.firing);
             this.#shots = 0;
             this.#destroyChargeParticle();
@@ -1630,7 +1709,7 @@ class Gun extends InventoryItem<GunPrototype> implements EquipableItem<Required<
 
             player.timers.firing = setTimeout(
                 function fire(weapon: Gun) {
-                    const firedAllInBurst = weapon.#shots >= shotsPerBurst;
+                    const firedAllInBurst = isBurst && weapon.#shots >= shotsPerBurst;
 
                     // Conditions to stop firing and exit (one of the below)
                     if (
@@ -1643,7 +1722,7 @@ class Gun extends InventoryItem<GunPrototype> implements EquipableItem<Required<
                             (!isBurst || firedAllInBurst)
                         ) ||
                         (
-                            // Reloading          and
+                            // Reloading   and
                             state.reloading &&
                             // It's not a partial reload
                             weapon.determineReloadType().ammoReloaded == "all"
@@ -1656,17 +1735,21 @@ class Gun extends InventoryItem<GunPrototype> implements EquipableItem<Required<
                         weapon.#ammo = Math.max(weapon.#ammo, 0);
                         state.firing = false;
 
+                        // If we've fired all the shots in our burst
                         if (firedAllInBurst) {
+                            // Swap weapon if it's a dual weapon (so that the other gun fires)
                             prototype.dual && (weapon.#recoilImpulseParity *= -1);
 
+                            // If bursts fire off automatically ("auto-burst")
                             if (burstType! == "auto") {
+                                // Then schedule a re-fire
                                 player.timers.firing = setTimeout(
                                     () => {
                                         clearTimerIfPresent(player.timers.firing);
 
                                         if (state.attacking) weapon.usePrimary();
                                     },
-                                    prototype.burstProps ? prototype.burstProps.burstDelay : shotDelay
+                                    prototype.burstProps!.burstDelay
                                 ) as unknown as number;
                             }
                         }
@@ -1678,7 +1761,7 @@ class Gun extends InventoryItem<GunPrototype> implements EquipableItem<Required<
                     weapon.#charged = false;
                     weapon.#isCharging = false;
                     state.reloading = false;
-                    clearTimerIfPresent(player.timers.anticipatedReload);
+                    weapon.#cancelAnticipatedReloads();
                     clearTimerIfPresent(player.timers.reload);
 
                     if (gamespace.currentUpdate - state.lastSwitch < state.effectiveSwitchDelay) {
@@ -1754,21 +1837,28 @@ class Gun extends InventoryItem<GunPrototype> implements EquipableItem<Required<
                         );
                     }
 
-                    if (prototype.casings?.spawnOn == "fire") {
-                        for (let i = 0, limit = prototype.casings.count ?? 1; i < limit; i++) {
+                    if (prototype.casings?.spawnOn == "fire")
+                        for (let i = 0, limit = prototype.casings.count ?? 1; i < limit; i++)
                             weapon.makeCasing(prototype.casings.spawnDelay);
-                        }
-                    }
+
+                    const players = [...gamespace.objects.players.values()].map(p => [p, srvsdbx_Geometry.Vector2D.squaredDistBetweenPts(p.position, player.position)] as const);
+
+                    if (prototype.effectsOnFire?.length)
+                        for (const query of prototype.effectsOnFire)
+                            for (const target of players.filter(p => p[1] <= query.radius * query.radius))
+                                for (const effect of query.effects)
+                                    target[0].statusEffects.add(
+                                        new StatusEffect(
+                                            gamespace.prototypes.statusEffects.get(effect)!,
+                                            target[0]
+                                        )
+                                    );
 
                     if (!["semi", "auto-charge", "release-charge"].includes(prototype.fireMode))
                         player.timers.firing = setTimeout(fire, shotDelay, weapon) as unknown as number;
                     else weapon.#shots = 0;
 
-                    if (!weapon.#ammo) {
-                        clearTimerIfPresent(player.timers.anticipatedReload);
-
-                        player.timers.anticipatedReload = setTimeout(weapon.#reload.bind(weapon), shotDelay, weapon);
-                    }
+                    if (!weapon.#ammo) weapon.#scheduleReload(attackDelay);
 
                     weapon.#lastUse = gamespace.currentUpdate;
                     state.firing = false;
@@ -1788,6 +1878,7 @@ class Gun extends InventoryItem<GunPrototype> implements EquipableItem<Required<
         this.#chargeStart = 0;
         this.#shots = 0;
         this.#lastUse = 0;
+        this.#cancelAnticipatedReloads();
     }
 
     /**
@@ -1952,8 +2043,10 @@ class Gun extends InventoryItem<GunPrototype> implements EquipableItem<Required<
     destroy() {
         super.destroy();
 
+        this.#cancelAnticipatedReloads();
+
         // @ts-expect-error
-        this.#animationManager = this.#chargeParticle = this.#chargedDimensions = this.#destroyChargeParticle = this.#dimensions = this.#updateChargeParticle = void 0;
+        this.#anticipatedReloads = this.#animationManager = this.#chargeParticle = this.#chargedDimensions = this.#destroyChargeParticle = this.#dimensions = this.#updateChargeParticle = void 0;
     }
 }
 
@@ -1968,109 +2061,111 @@ interface SimpleAmmo extends SimpleImport {
     /**
      * Information about the various colors of this ammo's tracers
      */
-    tints: {
+    readonly tints: {
         /**
          * The regular color tracers should adopt
          */
-        normal: string;
+        readonly normal: string;
         /**
-         * A color unused in regular surviv, but that is used to indicate headshots
+         * A color unused in regular surviv
          */
-        saturated: string;
+        readonly saturated: string;
         /**
          * The color to used when the user is under the effects of a perk such as Hollow Points
          */
-        chambered: string;
+        readonly chambered: string;
     };
     /**
      * Information about how opaque this tracer is
      */
-    alpha: {
+    readonly alpha: {
         /**
          * The rate at which the tracer's opacity changes, measured in %/ms
          */
-        rate: number;
+        readonly rate: number;
         /**
          * The minimum opacity of a tracer
          */
-        min: number;
+        readonly min: number;
         /**
          * The maximum opacity of a tracer
          */
-        max: number;
+        readonly max: number;
     };
     /**
      * Either the dimensions of a box or the radius of a circle.
      *
      * The area outlined by this shape defines where projectiles of this ammo type may spawn
      */
-    spawnVar?: {
+    readonly spawnVar?: {
         /**
          * The rectangle's width
          */
-        width: number,
+        readonly width: number,
         /**
          * The rectangle's height
          */
-        height: number;
+        readonly height: number;
     } | {
         /**
          * The circle's radius
          */
-        radius: number;
+        readonly radius: number;
     };
     /**
      * Dictates an offset, relative to the projectile's hitbox, that this tracer will be drawn at
      */
-    imageOffset: {
+    readonly imageOffset: {
         /**
          * The offset along the axis parallel to the projectile's trajectory
          */
-        parr: number;
+        readonly parr: number;
         /**
          * The offset along the axis perpendicular to the projectile's trajectory
          */
-        perp: number;
+        readonly perp: number;
     };
     /**
      * Information pertaining more to the projectile itself
      */
-    projectileInfo: ({
+    readonly projectileInfo: ({
         /**
          * The projectile's type
          */
-        type: "explosive";
+        readonly type: "explosive";
         /**
          * The *internal name* of the explosion object associated with this projectile
          */
-        explosionType: PrototypeReference<"explosions">;
+        readonly explosionType: PrototypeReference<"explosions">;
         /**
          * Whether or not the explosion should be spawned when colliding with an object or not
          */
-        explodeOnContact: boolean;
+        readonly explodeOnContact: boolean;
         /**
          * Dictates the magnitude of the scaling effect applied to this projectile's world image in order to simulate height change
          */
-        heightPeak?: number;
+        readonly heightPeak?: number;
     } | {
         /**
          * The projectile's type
          */
-        type: "bullet";
+        readonly type: "bullet";
     }) & {
         /**
          * An array containing paths for the images corresponding to this projectile
+         *
+         * If this ammo type has no images, specify the string `"none"`
          */
-        images: string[];
+        readonly images: string[] | "none";
         /**
          * How fast, in rad/s, this projectile should spin
          */
-        spinVel?: MayBeFunctionWrapped<number>;
+        readonly spinVel?: MayBeFunctionWrapped<number>;
     };
     /**
      * The internal name of the particle corresponding to the casing guns firing this ammo type eject
      */
-    casing?: string;
+    readonly casing?: string;
 }
 
 /**
@@ -2082,19 +2177,20 @@ class Ammo extends ImportedObject {
      * @param obj The `SimpleAmmo` object to parse
      * @returns Either a new `Ammo` object, or an array containing the errors that prevented its creation
      */
-    static async from(ammo: SimpleAmmo): Promise<srvsdbx_ErrorHandling.Result<Ammo, unknown[]>> {
-        const errors: unknown[] = [],
+    static async from(ammo: SimpleAmmo): Promise<srvsdbx_ErrorHandling.Result<Ammo, SandboxError[]>> {
+        const errors: SandboxError[] = [],
 
-            projectileImages = await srvsdbx_AssetManagement.loadImageArray(ammo.projectileInfo.images, errors, `${ammo.includePath}/`);
+            projectileImages = ammo.projectileInfo.images == "none" || ammo.projectileInfo.images.length == 0
+                ? "none"
+                : await srvsdbx_AssetManagement.loadImageArray(ammo.projectileInfo.images, errors, `${ammo.includePath}/`);
 
-        if (errors.length) {
-            return { err: errors };
-        }
+        if (errors.length) return { err: errors };
 
         return {
             res: new Ammo(
                 ammo.name,
                 ammo.displayName,
+                ammo.objectType,
                 ammo.includePath,
                 ammo.namespace,
                 ammo.targetVersion,
@@ -2118,7 +2214,7 @@ class Ammo extends ImportedObject {
     /**
      * Information about the various colors of this ammo's tracers
      */
-    #tints: SimpleAmmo["tints"];
+    readonly #tints: SimpleAmmo["tints"];
     /**
      * Information about the various colors of this ammo's tracers
      */
@@ -2127,7 +2223,7 @@ class Ammo extends ImportedObject {
     /**
      * Information about how opaque this tracer is
      */
-    #alpha: SimpleAmmo["alpha"];
+    readonly #alpha: SimpleAmmo["alpha"];
     /**
      * Information about how opaque this tracer is
      */
@@ -2138,7 +2234,7 @@ class Ammo extends ImportedObject {
      *
      * The area outlined by this shape defines where projectiles of this ammo type may spawn
      */
-    #spawnVar: SimpleAmmo["spawnVar"];
+    readonly #spawnVar: SimpleAmmo["spawnVar"];
     /**
      * Either the dimensions of a box or the radius of a circle.
      *
@@ -2149,7 +2245,7 @@ class Ammo extends ImportedObject {
     /**
      * Dictates an offset, relative to the projectile's hitbox, that this tracer will be drawn at
      */
-    #imageOffset: SimpleAmmo["imageOffset"];
+    readonly #imageOffset: SimpleAmmo["imageOffset"];
     /**
      * Dictates an offset, relative to the projectile's hitbox, that this tracer will be drawn at
      */
@@ -2158,7 +2254,40 @@ class Ammo extends ImportedObject {
     /**
      * Information pertaining more to the projectile itself
      */
-    #projectileInfo: srvsdbx_AssetManagement.ConvertPathsToImages<SimpleAmmo["projectileInfo"]>;
+    readonly #projectileInfo: ({
+        /**
+         * The projectile's type
+         */
+        readonly type: "explosive";
+        /**
+         * The *internal name* of the explosion object associated with this projectile
+         */
+        readonly explosionType: PrototypeReference<"explosions">;
+        /**
+         * Whether or not the explosion should be spawned when colliding with an object or not
+         */
+        readonly explodeOnContact: boolean;
+        /**
+         * Dictates the magnitude of the scaling effect applied to this projectile's world image in order to simulate height change
+         */
+        readonly heightPeak?: number;
+    } | {
+        /**
+         * The projectile's type
+         */
+        readonly type: "bullet";
+    }) & {
+        /**
+         * An array containing paths for the images corresponding to this projectile
+         *
+         * If this ammo type has no images, specify the string `"none"`
+         */
+        readonly images: srvsdbx_AssetManagement.ImageSrcPair[] | "none";
+        /**
+         * How fast, in rad/s, this projectile should spin
+         */
+        readonly spinVel?: MayBeFunctionWrapped<number>;
+    };
     /**
      * Information pertaining more to the projectile itself
      */
@@ -2167,7 +2296,7 @@ class Ammo extends ImportedObject {
     /**
      * The internal name of the particle corresponding to the casing guns firing this ammo type eject
      */
-    #casing?: string;
+    readonly #casing?: string;
     /**
      * The internal name of the particle corresponding to the casing guns firing this ammo type eject
      */
@@ -2179,6 +2308,7 @@ class Ammo extends ImportedObject {
     constructor(
         name: typeof ImportedObject.prototype.name,
         displayName: typeof ImportedObject.prototype.displayName,
+        objectType: typeof ImportedObject.prototype.objectType,
         includePath: typeof ImportedObject.prototype.includePath,
         namespace: typeof ImportedObject.prototype.namespace,
         targetVersion: typeof ImportedObject.prototype.targetVersion,
@@ -2189,7 +2319,7 @@ class Ammo extends ImportedObject {
         projectileInfo: typeof Ammo.prototype.projectileInfo,
         casing: typeof Ammo.prototype.casing,
     ) {
-        super(name, displayName, targetVersion, namespace, includePath);
+        super(name, displayName, objectType, targetVersion, namespace, includePath);
         this.#tints = tints;
         this.#alpha = alpha;
         this.#spawnVar = spawnVar;

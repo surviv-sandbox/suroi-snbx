@@ -146,10 +146,6 @@ class PlayerLike extends Generic<{
      */
     readonly #timers: {
         /**
-         * A reload that will start in the future (switching to an empty weapon, emptying a weapon's ammo)
-         */
-        anticipatedReload: false | number,
-        /**
          * The timer responsible for firing the user's current weapon
          */
         firing: false | number,
@@ -158,7 +154,6 @@ class PlayerLike extends Generic<{
          */
         reload: false | number;
     } = {
-            anticipatedReload: false,
             firing: false,
             reload: false
         };
@@ -241,12 +236,26 @@ class PlayerLike extends Generic<{
         damage: new ReducibleMap<string, number>((acc, cur) => acc * cur, 1),
         /**
           * A `Map` whose values will modify incoming damage by multiplying it and whose keys are their respectives sources
-        */
+         */
         protection: new ReducibleMap<string, number>((acc, cur) => acc * cur, 1),
         /**
          * A `Map` whose values are speed multipliers and whose keys are their respectives sources
-        */
-        speed: new ReducibleMap<string, number>((acc, cur) => acc * cur, 1),
+         *
+         * Note that additive modifiers have precedence over multiplicative ones; the formula
+         * for the final speed is therefore `(s + a) * m`, where `s` is the base speed, `m` is
+         * the product of all the multiplicative speed modifiers and `a` is the sum of all the
+         * additive modifiers
+         */
+        speedMult: new ReducibleMap<string, number>((acc, cur) => acc * cur, 1),
+        /**
+         * A `Map` whose values are speed additions and whose keys are their respectives sources
+         *
+         * Note that additive modifiers have precedence over multiplicative ones; the formula
+         * for the final speed is therefore `(s + a) * m`, where `s` is the base speed, `m` is
+         * the product of all the multiplicative speed modifiers and `a` is the sum of all the
+         * additive modifiers
+         */
+        speedAdd: new ReducibleMap<string, number>((acc, cur) => acc + cur, 0),
         /**
          * A `Map` whose values will modify reload time and fire rate by multiplying it and whose keys are their respectives sources
          */
@@ -424,20 +433,7 @@ class PlayerLike extends Generic<{
                         }
                     },
                         fallback = activeItem.animationManager.fetch("idle")(gamespace.currentUpdate - T.#state.lastSwitch, true)?.hands ?? defaultHandPos,
-                        handReference = (() => {
-                            const timeSinceLastShot = gamespace.currentUpdate - (T.activeItem?.lastUse ?? 0);
-
-                            if (
-                                !activeItem.cancelledAnimation &&
-                                timeSinceLastShot < Math.max(itemPrototype.useDelay, (itemPrototype as unknown as GunPrototype)?.recoilImpulse?.duration ?? -Infinity)
-                            ) {
-                                activeItem.animationManager.end("idle");
-                                return activeItem.animationManager.fetch("using")(timeSinceLastShot, true)?.hands;
-                            } else {
-                                activeItem.animationManager.end("using");
-                                return fallback;
-                            }
-                        })() ?? defaultHandPos;
+                        handReference = activeItem.getHandReference() ?? defaultHandPos;
 
                     return [
                         generate(
@@ -503,7 +499,7 @@ class PlayerLike extends Generic<{
                         p5.rectMode(p5.CENTER);
                         p5.imageMode(p5.CENTER);
 
-                        const drawAddons = (addons: GunPrototype["addons"], dual: boolean) => {
+                        function drawAddons(addons: GunPrototype["addons"], dual: boolean) {
                             for (const addon of addons ?? []) {
                                 if (extractValue(addon.show, activeItem as Gun & Melee) === false || (dual && addon.dual !== true)) continue;
 
@@ -554,17 +550,11 @@ class PlayerLike extends Generic<{
                             p5.push();
                             p5.tint((itemPrototype as unknown as GunPrototype).tint ?? "#FFFFFF");
 
-                            if (itemPrototype instanceof MeleePrototype) {
-                                p5.translate(
-                                    (recoilImpulseParity == 1 ? offsetPerp : fallbackOffset.perp) * currentSize,
-                                    -(recoilImpulseParity == 1 ? offsetParr : fallbackOffset.parr) * currentSize
-                                );
-                            } else {
-                                p5.translate(
-                                    (recoilImpulseParity == 1 ? offsetPerp : fallbackOffset.perp) * defaultSize,
-                                    -(recoilImpulseParity == 1 ? offsetParr : fallbackOffset.parr) * defaultSize
-                                );
-                            }
+                            const scale = itemPrototype instanceof MeleePrototype ? currentSize : defaultSize;
+                            p5.translate(
+                                (recoilImpulseParity == 1 ? offsetPerp : fallbackOffset.perp) * scale,
+                                -(recoilImpulseParity == 1 ? offsetParr : fallbackOffset.parr) * scale
+                            );
 
                             p5.rotate(offset.angle ?? 0);
 
@@ -584,7 +574,7 @@ class PlayerLike extends Generic<{
                             if (activeItem instanceof Melee && itemPrototype instanceof MeleePrototype) {
                                 const collider = activeItem.getCollider();
 
-                                if (collider) {
+                                if (collider && (itemPrototype.canReflectWhileAttacking || !T.#state.attacking)) {
                                     p5.push();
 
                                     // random component switch is random
@@ -610,7 +600,10 @@ class PlayerLike extends Generic<{
                             p5.pop();
                         }
 
-                        if (activeItem instanceof Melee && itemPrototype instanceof MeleePrototype) {
+                        if (
+                            activeItem instanceof Melee
+                            && itemPrototype instanceof MeleePrototype
+                        ) {
                             // Show the damage closest to the current time, ±100ms
                             const damages = itemPrototype.damages.filter(
                                 d => 100 >= Math.abs(gamespace.currentUpdate - activeItem.lastUse - d.time)
@@ -633,6 +626,18 @@ class PlayerLike extends Generic<{
                                     p5.pop();
                                 }
                         }
+
+                        if (
+                            activeItem instanceof Gun
+                            && itemPrototype instanceof GunPrototype
+                            && itemPrototype.effectsOnFire
+                        )
+                            for (const query of itemPrototype.effectsOnFire)
+                                gamespace.drawHitboxIfEnabled(p5, "AREA_OF_EFFECT", () => {
+                                    // This AoE tends to be big enough that the default level of detail
+                                    // isn't enough
+                                    p5.ellipse(0, 0, 2 * query.radius, 2 * query.radius, 50);
+                                });
 
                         drawAddons((itemPrototype as unknown as GunPrototype | MeleePrototype).addonsAbove, false);
 
@@ -733,10 +738,10 @@ class PlayerLike extends Generic<{
                 const hands = { left: true, right: true };
 
                 function drawItemAndHands() {
-                    if (itemPrototype instanceof GunPrototype) {
+                    if (itemPrototype && itemPrototype.handPositions) {
                         const handPos = itemPrototype.handPositions;
 
-                        if (handPos.leftHand.layer == 0) {
+                        if (handPos.leftHand?.layer == 0) {
                             hands.left = false;
                             drawLeftHand();
                         }
@@ -813,6 +818,23 @@ class PlayerLike extends Generic<{
     }
 
     /**
+     * Determines if this player can currently use their active item
+     *
+     * A player can use their active item if:
+     * - There is an active item
+     * - It is equippable
+     * - The elapsed time since its last use is greater than the item's use delay
+     * @returns Whether or not the item can be used
+     */
+    canAttack() {
+        const item = this.activeItem;
+
+        if (!item || !(typeof (item.prototype as InventoryItemPrototype & SimpleEquipableItem).useDelay != "number")) return false;
+
+        return item.lastUse - gamespace.currentUpdate >= (item.prototype as InventoryItemPrototype & SimpleEquipableItem).useDelay;
+    }
+
+    /**
      * Inverses the weapon slots, putting the first weapon in the second and vice versa
      */
     swapWeapons() {
@@ -851,32 +873,32 @@ class PlayerLike extends Generic<{
 
             if (slotId != oldIndex) {
                 const proto = this.activeItem?.prototype,
-                    oldProto = oldItem?.prototype;
+                    oldProto = oldItem?.prototype,
+
+                    freeSwitchExpired = gamespace.currentUpdate - this.#state.lastFreeSwitch >= 1000;
+
+                if (freeSwitchExpired) this.#state.lastFreeSwitch = gamespace.currentUpdate;
 
                 this.#state.effectiveSwitchDelay = (proto as srvsdbx_ErrorHandling.Maybe<GunPrototype>)?.switchDelay ?? 0;
                 this.#state.noSlow = true;
 
                 this.#previousActiveIndex = oldIndex;
+                if (
+                    // last free switch happened over a second ago
+                    freeSwitchExpired &&
 
-                if (!activeItemIsGun() || !(oldProto instanceof GunPrototype)) {
-                    this.#state.effectiveSwitchDelay = proto instanceof GunPrototype ? 250 : 0;
-                } else if (
-                    gamespace.currentUpdate - this.#state.lastFreeSwitch >= 1000 &&
-
+                    // the switch is occurring before the weapon can fire
                     gamespace.currentUpdate - (oldItem?.lastUse ?? 0) < (
                         ((
-                            !!oldProto?.fireMode?.match?.(/^(auto-)?burst/)
-                                && oldProto?.burstProps
-                                ? oldProto?.burstProps?.burstDelay
-                                : oldProto?.useDelay
+                            !!(oldProto as GunPrototype)?.fireMode?.match?.(/^(auto-)?burst/) && (oldProto as GunPrototype)?.burstProps
+                                ? (oldProto as GunPrototype)?.burstProps?.burstDelay
+                                : (oldProto as InventoryItemPrototype & SimpleEquipableItem)?.useDelay
                         ) ?? Infinity)
                     ) &&
 
-                    ((oldProto as srvsdbx_ErrorHandling.Maybe<GunPrototype>)?.deployGroup ?? 0) / ((proto as srvsdbx_ErrorHandling.Maybe<GunPrototype>)?.deployGroup ?? 0) != 1 // Different non - zero deployGroups(0 / 0 gives NaN, and NaN != 1)
-                ) {
-                    this.#state.effectiveSwitchDelay = 250;
-                    this.#state.lastFreeSwitch = gamespace.currentUpdate;
-                }
+                    // Different non-zero deployGroups (0 / 0 gives NaN, and NaN != 1)
+                    ((oldProto as srvsdbx_ErrorHandling.Maybe<GunPrototype>)?.deployGroup ?? 0) / ((proto as srvsdbx_ErrorHandling.Maybe<GunPrototype>)?.deployGroup ?? 0) != 1
+                ) this.#state.effectiveSwitchDelay = 250;
 
                 this.#state.lastSwitch = gamespace.currentUpdate;
 
@@ -888,7 +910,7 @@ class PlayerLike extends Generic<{
                     const item = this.activeItem as Gun;
 
                     if (!item.ammo) {
-                        this.#timers.anticipatedReload = setTimeout(() => item.standardReload(), this.#state.effectiveSwitchDelay) as unknown as number;
+                        item.scheduleReload(this.#state.effectiveSwitchDelay);
                     }
                 }
             }
@@ -943,6 +965,8 @@ class PlayerLike extends Generic<{
                     this.#state.firing || // Currently firing
                     gamespace.currentUpdate - (this.activeItem?.lastUse ?? 0) < ((!!prototype.fireMode.match(/^(auto-)?burst/) && prototype.burstProps ? prototype.burstProps.burstDelay : prototype.useDelay) ?? Infinity)
                     // Or the delay between now and the last shot is less than the weapon's firing delay
+                    + (this.#state.attacking && prototype.fireMode != "semi" ? 50 : 1)
+                    // If firing in full auto, we add padding to the movement penalty to prevent the speed from viscously vibrating
                 ) : false;
 
         const speed = this.#speed.default // Base speed
@@ -951,54 +975,14 @@ class PlayerLike extends Generic<{
             + (applyFiringPenalty ? (prototype as GunPrototype).moveSpeedPenalties.using : 0) //   Firing speed penalty
             + (isCharging ? prototype.chargeProps?.speedPenalty ?? 0 : 0);// Charging speed penalty
 
-        return (applyFiringPenalty ? speed / 2 : speed - 1) * this.#modifiers.speed.reduced;
+        return ((applyFiringPenalty ? speed / 2 : speed - 1) + this.#modifiers.speedAdd.reduced) * this.#modifiers.speedMult.reduced;
     }
-
-    /**
-     * Context:
-     * To establish a ratio between screen pixels and in-game units, the following method was used:
-     *
-     * Given a game window with some aspect ratio `a`:
-     * - Place the player at (400, 400).
-     * - Place the cursor at (0, 0).
-     * - Measure how many pixels away from the player the cursor is (axis doesn't matter).
-     * - This gives us a ratio: 400 in-game units to some number `p`.
-     * - Repeat for various window sizes whose aspect ratios are `a`.
-     *
-     * Repeat the above for various other aspect ratios.
-     *
-     * These were then compiled into a Desmos graph, and a curious fact appeared:
-     * for each aspect ratio, the relation between the window's width and the amount `p`
-     * previously mentioned was linear—minus some outliers.
-     *
-     * Between aspect ratios, however, the exact ratio changed
-     * And thus, we attempt to find a relationship between the aspect ratio and the
-     * previously-mentioned ratio. This relation turns out to be exponential, approximated
-     * with the function `5.1271399901e^-(1.3697806015a + 2.0079957) + 0.08619961`, where `a` is the aspect ratio.
-     *
-     * Thus, given an aspect ratio `a`, we may calculate the slope of a line—this slope is the
-     * ratio between the window's width and the amount of pixels it takes to travel 400 units.
-     * At any given moment, the difference between the mouse's position and that of the player's,
-     * when multiplied by the calculated ratio and added to the player's position, will give the
-     * point in the game world over which the mouse is hovering.
-     *
-     *
-     * All these findings are summarized (although not annotated) in the following Desmos graph: https://www.desmos.com/calculator/agiykvhwdo
-     *
-     * **This is literally the worst thing I have ever written.**
-     *
-     * ~~and now the length of the method's name is the same as the average Java class name~~
-     *
-     * @returns The ratio between in-game units and screen pixels; it converts from screen pixels to in-game units.
-     */
-    static readonly #superCringeEmpiricallyDerivedPixelToUnitRatio = 400 / ((5.1271399901 * Math.E ** -(1.3697806015 * (window.innerWidth / window.innerHeight) + 2.0079957) + 0.08619961) * window.innerWidth);
-    static get superCringeEmpiricallyDerivedPixelToUnitRatio() { return this.#superCringeEmpiricallyDerivedPixelToUnitRatio; }
 
     /**
      * Makes the player face the user's mouse cursor, setting its aim point to that of the mouse cursor's (after adjustment)
      */
     lookAtMouse(p5: import("p5")) {
-        const scaleFactor = PlayerLike.#superCringeEmpiricallyDerivedPixelToUnitRatio,
+        const scaleFactor = gamespace.superCringeEmpiricallyDerivedPixelToUnitRatio,
             offsetFromCenter = srvsdbx_Geometry.Vector2D.fromPoint2D({ x: p5.mouseX, y: p5.mouseY })
                 .minus({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
 
@@ -1187,6 +1171,8 @@ class Inventory implements Destroyable {
      * Fetches an item in a given slot corresponding to some category
      * @param slot The slot number
      * @param category The category this item belongs to. (ex: `Main` for firearms, `Medical` for consumables, `Ammo` for ammunition)
+     * @template T The category type. `Main` returns `EquipableItem`s, while others just return `InventoryItem`s
+     * @template U The type of animations this item has, if applicable
      * @returns The item at the specified location, if it exists
      */
     getItem<
@@ -1195,8 +1181,18 @@ class Inventory implements Destroyable {
     >(
         slot: number,
         category: T
-    ): T extends "Main" ? (InventoryItem & EquipableItem<U>) | undefined : InventoryItem | undefined {
+    ): InventoryItem & (T extends "Main" ? (EquipableItem<U>) : {}) | undefined {
         return this.#items.get(`${category}${slot}`) as any;
+    }
+
+    /**
+     * Checks to see if an item exists in a slot
+     * @param slot The slot number
+     * @param category The category this item belongs to. (ex: `Main` for firearms, `Medical` for consumables, `Ammo` for ammunition)
+     * @returns Whether or not there exists an item there
+     */
+    hasItem(slot: number, category: string) {
+        return this.#items.has(`${category}${slot}`);
     }
 
     /**
@@ -1205,6 +1201,8 @@ class Inventory implements Destroyable {
      * @param category The category this item belongs to. (ex: `Main` for firearms, `Medical` for consumables, `Ammo` for ammunition)
      * @param item The item to store at that slot
      * @param reset Whether or not to reset the item that was just passed in
+     * @template T The category type. `Main` returns `EquipableItem`s, while others just return `InventoryItem`s
+     * @template U The type of animations this item has, if applicable
      */
     setItem<
         T extends "Main" | string,
@@ -1212,22 +1210,24 @@ class Inventory implements Destroyable {
     >(
         slot: number,
         category: T,
-        item: T extends "Main" ? (InventoryItem & EquipableItem<U>) : InventoryItem,
+        item: InventoryItem & (T extends "Main" ? (EquipableItem<U, string>) : {}),
         reset?: boolean
     ) {
         const key = `${category}${slot}`;
 
         this.#items.set(key, item);
-        reset && category == "Main" && (item as EquipableItem<U>).reset();
+        reset && category == "Main" && (item as InventoryItem & EquipableItem<U>).reset();
 
         this.#owner.activeItem ?? this.#owner.setActiveItemIndex(slot);
     }
 
     /**
      * Clears object attributes from this instance
+     *
+     * **Warning: Any and all items that are in this inventory when this method is called
+     * will also be destroyed. If this is undesirable, drop them into the game world beforehand**
      */
     destroy() {
-        // If you don't want an inventory's items to be destroyed when the inventory is destroyed, drop them into the game world beforehand
         for (const [_, i] of this.#items)
             i.destroy();
 
@@ -1254,19 +1254,19 @@ interface SimpleInventoryItem extends SimpleImport {
         readonly world?: string;
     },
     /**
-     * By how much this weapon slows down its user, all in surviv units / second
+     * By how much this item slows down its user, all in surviv units / second
      */
     readonly moveSpeedPenalties: {
         /**
-         * The movement penalty incurred when this weapon is in a player's inventory
+         * The movement penalty incurred when this item is in a player's inventory
          */
         readonly passive: number;
         /**
-         * The movement penalty incurred when this weapon is active
+         * The movement penalty incurred when this item is active
          */
         readonly active: number;
         /**
-         * The movement penalty incurred when this weapon is firing
+         * The movement penalty incurred when this item is firing
          */
         readonly using: number;
     };
@@ -1310,16 +1310,28 @@ class InventoryItemPrototype extends ImportedObject {
      */
     get moveSpeedPenalties() { return this.#moveSpeedPenalties; }
 
+    /**
+     * `* It's a constructor. It constructs.`
+     * @param name The name of the item
+     * @param displayName Optionally specify a prettier name for this object
+     * @param objectType The type of object this is
+     * @param targetVersion The version of the sandbox this object targets
+     * @param namespace The namespace this object belongs to
+     * @param includePath The path this object was imported this
+     * @param images Images associated with this item
+     * @param moveSpeedPenalties Movement penalties associated with this item
+     */
     constructor(
         name: typeof ImportedObject.prototype.name,
         displayName: typeof ImportedObject.prototype.displayName,
+        objectType: typeof ImportedObject.prototype.objectType,
         targetVersion: typeof ImportedObject.prototype.targetVersion,
         namespace: typeof ImportedObject.prototype.namespace,
         includePath: typeof ImportedObject.prototype.includePath,
         images: typeof InventoryItemPrototype.prototype.images,
         moveSpeedPenalties: typeof InventoryItemPrototype.prototype.moveSpeedPenalties,
     ) {
-        super(name, displayName, targetVersion, namespace, includePath);
+        super(name, displayName, objectType, targetVersion, namespace, includePath);
         this.#images = images;
         this.#moveSpeedPenalties = moveSpeedPenalties;
     }
@@ -1333,7 +1345,59 @@ interface SimpleEquipableItem extends SimpleInventoryItem {
      * The minimum amount of time that the user must wait before two uses of an item
      */
     readonly useDelay: number;
+    /**
+     * Specify default positions for the user's hands when holding this weapon when no animations are playing
+     */
+    readonly handPositions?: HandPositions;
 }
+
+/**
+ * Represents the positions of a player's hands
+ */
+type HandPositions = {
+    /**
+     * Information about the left hand
+     */
+    readonly leftHand?: {
+        /**
+         * The hand's offset in surviv units along the axis parallel to the player's aim line
+         */
+        readonly parr: number,
+        /**
+         * The hand's offset in surviv units along the axis perpendicular to the player's aim line
+         */
+        readonly perp: number,
+        /**
+         * What layer to render this hand on
+         * The right hand will be rendered above the left one if they are on the same layer
+         *
+         * - `0`: The default, renders the hand below the item
+         * - `1`: Renders the hand above the item
+         */
+        readonly layer?: 0 | 1;
+    },
+    /**
+     * Information about the right hand
+     */
+    readonly rightHand?: {
+        /**
+         * The hand's offset in surviv units along the axis parallel to the player's aim line
+         */
+        readonly parr: number,
+        /**
+         * The hand's offset in surviv units along the axis perpendicular to the player's aim line
+         */
+        readonly perp: number,
+        /**
+         * What layer to render this hand on
+         * The right hand will be rendered above the left one if they are on the same layer
+         *
+         * - `0`: The default, renders the hand below the item
+         * - `1`: Renders the hand above the item
+         */
+        readonly layer?: 0 | 1;
+    };
+};
 
 /**
  * Represents the data for animating an object
@@ -1382,12 +1446,14 @@ type ItemAnimation = {
 
 /**
  * Represents an item that can be equipped by the user, such as guns, melees and grenades
+ * @template T The type of animation this item has
+ * @template K The names of the animations this item has
  */
-interface EquipableItem<T extends ItemAnimation = ItemAnimation> {
+interface EquipableItem<T extends ItemAnimation = ItemAnimation, K extends string = "idle" | "using"> {
     /**
      * An object to manage this item's animations
      */
-    readonly animationManager: srvsdbx_Animation.AnimationManager<T, "idle" | "using">;
+    readonly animationManager: srvsdbx_Animation.AnimationManager<T, K>;
     /**
      * A timestamp indicating the last time this item was used
      */
@@ -1404,6 +1470,10 @@ interface EquipableItem<T extends ItemAnimation = ItemAnimation> {
      * Calculates this item's dimensions and offsets, taking into account any animations currently active
      */
     getItemReference(): ItemAnimation["item"];
+    /**
+     * Calculates this item's hand rigging, taking into account any animations currently active
+     */
+    getHandReference(): ItemAnimation["hands"];
     /**
      * Serves to stop any animation related to this item that are currently playing
      */

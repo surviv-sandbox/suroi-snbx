@@ -49,8 +49,6 @@
         return element;
     }
 
-    document.getElementById("back")!.addEventListener("click", e => void (!e.button && window.open("../index.html", "_self")));
-
     const updates = [...document.querySelectorAll("div.update")].map(update => {
         const [header, content] = [...update.children] as [HTMLDivElement, HTMLDivElement],
             [version, date] = [...header.children] as [HTMLAnchorElement, HTMLHeadingElement];

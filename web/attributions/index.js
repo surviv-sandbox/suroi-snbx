@@ -105,7 +105,7 @@
 
                                 if (!i) {
                                     const a = document.createElement("a");
-                                    a.href = links[v.frameworks[f]];
+                                    a.title = a.href = links[v.frameworks[f]];
                                     a.textContent = v.frameworks[f];
                                     td.appendChild(a);
                                 } else {
@@ -138,8 +138,7 @@
                 after = v.slice(c + 1),
                 a = document.createElement("a");
 
-            a.href = href;
-            a.title = href;
+            a.title = a.href = href;
             a.textContent = textContent;
 
             return [a, document.createTextNode(after)];
@@ -151,5 +150,4 @@
     doc.appendChild(p);
 
     document.body.appendChild(doc);
-    document.getElementById("back").addEventListener("click", e => void (!e.button && window.open("../index.html", "_self")));
 })();

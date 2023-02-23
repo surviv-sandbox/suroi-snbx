@@ -11,7 +11,7 @@ declare abstract class Projectile implements Destroyable {
     /**
      * This projectile's id, picked from the same pool as every other id
      */
-    get id(): number;
+    get id(): bigint;
     /**
      * Represents the this projectile's start point (where it spawns)
      */
@@ -204,17 +204,17 @@ declare class Bullet extends Projectile implements Destroyable {
     /**
      * Various informations about this projectile's behavior
      */
-    get properties(): srvsdbx_AssetManagement.ConvertPathsToImages<({
-        type: "explosive";
-        explosionType: string;
-        explodeOnContact: boolean;
-        heightPeak?: number | undefined;
+    get properties(): ({
+        readonly type: "explosive";
+        readonly explosionType: string;
+        readonly explodeOnContact: boolean;
+        readonly heightPeak?: number | undefined;
     } | {
-        type: "bullet";
+        readonly type: "bullet";
     }) & {
-        images: string[];
-        spinVel?: MayBeFunctionWrapped<number, []> | undefined;
-    }>;
+        readonly images: "none" | srvsdbx_AssetManagement.ImageSrcPair[];
+        readonly spinVel?: MayBeFunctionWrapped<number, []> | undefined;
+    };
     /**
      * Whether or not this projectile's type is `explosive`
      */

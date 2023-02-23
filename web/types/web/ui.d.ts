@@ -35,7 +35,7 @@ declare const UIManager: {
     /**
      * The `HTMLDivElement` containing the UI
      */
-    readonly "__#24@#container": HTMLDivElement;
+    readonly "__#25@#container": HTMLDivElement;
     /**
      * The `HTMLDivElement` containing the UI
      */
@@ -43,7 +43,7 @@ declare const UIManager: {
     /**
      * A Map whose values correspond to this manager's elements and whose keys are their corresponding names
      */
-    "__#24@#elements": Map<string, UIElement>;
+    "__#25@#elements": Map<string, UIElement>;
     /**
      * A Map whose valuess correspond to this manager's elements and whose keys are their corresponding names
      */

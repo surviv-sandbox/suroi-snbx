@@ -82,7 +82,7 @@ namespace srvsdbx_Animation {
      * @returns The same object with two additional properties: `default` refers to the default binding, and `bindToBounds` allows
      * one to create a version of this curve bound to an interval of one's choosing.
      */
-    function addBindings(fn: (a: number, b: number, t: number) => number) {
+    function addBindings(fn: EasingFunction) {
         type Extended = typeof fn & {
             /**
              * A version of this interpolation function whose lower bound is 0 and whose upper bound is 1
@@ -105,6 +105,11 @@ namespace srvsdbx_Animation {
     }
 
     /**
+     * Represents a function used to interpolate (or ease) between two values
+     */
+    export type EasingFunction = (a: number, b: number, t: number) => number;
+
+    /**
      * A collection of functions for easing, based on [this helpful reference](https://easings.net) and others
      *
      * For all functions, `t = 0` is guaranteed to return `a`, and `t = 1` is guaranteed to return `b`
@@ -118,7 +123,7 @@ namespace srvsdbx_Animation {
          * @returns The number at the specified point.\
          * `t = 0` is guaranteed to return `a`, and `t = 1` is guaranteed to return `b`.
          */
-        linterp: addBindings(function(a: number, b: number, t: number) {
+        linterp: addBindings((a: number, b: number, t: number) => {
             switch (t) {
                 case 0: return a;
                 case 1: return b;
@@ -132,7 +137,7 @@ namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        easeInSine: addBindings(function(a: number, b: number, t: number) {
+        easeInSine: addBindings((a: number, b: number, t: number) => {
             switch (t) {
                 case 0: return a;
                 case 1: return b;
@@ -146,7 +151,7 @@ namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        easeOutSine: addBindings(function(a: number, b: number, t: number) {
+        easeOutSine: addBindings((a: number, b: number, t: number) => {
             switch (t) {
                 case 0: return a;
                 case 1: return b;
@@ -160,7 +165,7 @@ namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        easeInOutSine: addBindings(function(a: number, b: number, t: number) {
+        easeInOutSine: addBindings((a: number, b: number, t: number) => {
             switch (t) {
                 case 0: return a;
                 case 1: return b;
@@ -174,7 +179,7 @@ namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        easeInCubic: addBindings(function(a: number, b: number, t: number) {
+        easeInCubic: addBindings((a: number, b: number, t: number) => {
             switch (t) {
                 case 0: return a;
                 case 1: return b;
@@ -188,7 +193,7 @@ namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        easeOutCubic: addBindings(function(a: number, b: number, t: number) {
+        easeOutCubic: addBindings((a: number, b: number, t: number) => {
             switch (t) {
                 case 0: return a;
                 case 1: return b;
@@ -202,7 +207,7 @@ namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        easeInOutCubic: addBindings(function(a: number, b: number, t: number) {
+        easeInOutCubic: addBindings((a: number, b: number, t: number) => {
             switch (t) {
                 case 0: return a;
                 case 1: return b;
@@ -216,7 +221,7 @@ namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        easeInQuintic: addBindings(function(a: number, b: number, t: number) {
+        easeInQuintic: addBindings((a: number, b: number, t: number) => {
             switch (t) {
                 case 0: return a;
                 case 1: return b;
@@ -230,7 +235,7 @@ namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        easeOutQuintic: addBindings(function(a: number, b: number, t: number) {
+        easeOutQuintic: addBindings((a: number, b: number, t: number) => {
             switch (t) {
                 case 0: return a;
                 case 1: return b;
@@ -244,7 +249,7 @@ namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        easeInOutQuintic: addBindings(function(a: number, b: number, t: number) {
+        easeInOutQuintic: addBindings((a: number, b: number, t: number) => {
             switch (t) {
                 case 0: return a;
                 case 1: return b;
@@ -258,7 +263,7 @@ namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        easeInCirc: addBindings(function(a: number, b: number, t: number) {
+        easeInCirc: addBindings((a: number, b: number, t: number) => {
             switch (t) {
                 case 0: return a;
                 case 1: return b;
@@ -272,7 +277,7 @@ namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        easeOutCirc: addBindings(function(a: number, b: number, t: number) {
+        easeOutCirc: addBindings((a: number, b: number, t: number) => {
             switch (t) {
                 case 0: return a;
                 case 1: return b;
@@ -286,7 +291,7 @@ namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        easeInOutCirc: addBindings(function(a: number, b: number, t: number) {
+        easeInOutCirc: addBindings((a: number, b: number, t: number) => {
             switch (t) {
                 case 0: return a;
                 case 1: return b;
@@ -302,7 +307,7 @@ namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        easeInElastic: addBindings(function(a: number, b: number, t: number) {
+        easeInElastic: addBindings((a: number, b: number, t: number) => {
             switch (t) {
                 case 0: return a;
                 case 1: return b;
@@ -316,7 +321,7 @@ namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        easeOutElastic: addBindings(function(a: number, b: number, t: number) {
+        easeOutElastic: addBindings((a: number, b: number, t: number) => {
             switch (t) {
                 case 0: return a;
                 case 1: return b;
@@ -330,7 +335,7 @@ namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        easeInOutElastic: addBindings(function(a: number, b: number, t: number) {
+        easeInOutElastic: addBindings((a: number, b: number, t: number) => {
             switch (t) {
                 case 0: return a;
                 case 1: return b;
@@ -346,7 +351,7 @@ namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        easeInQuad: addBindings(function(a: number, b: number, t: number) {
+        easeInQuad: addBindings((a: number, b: number, t: number) => {
             switch (t) {
                 case 0: return a;
                 case 1: return b;
@@ -360,7 +365,7 @@ namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        easeOutQuad: addBindings(function(a: number, b: number, t: number) {
+        easeOutQuad: addBindings((a: number, b: number, t: number) => {
             switch (t) {
                 case 0: return a;
                 case 1: return b;
@@ -374,7 +379,7 @@ namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        easeInOutQuad: addBindings(function(a: number, b: number, t: number) {
+        easeInOutQuad: addBindings((a: number, b: number, t: number) => {
             switch (t) {
                 case 0: return a;
                 case 1: return b;
@@ -390,7 +395,7 @@ namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        easeInQuart: addBindings(function(a: number, b: number, t: number) {
+        easeInQuart: addBindings((a: number, b: number, t: number) => {
             switch (t) {
                 case 0: return a;
                 case 1: return b;
@@ -404,7 +409,7 @@ namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        easeOutQuart: addBindings(function(a: number, b: number, t: number) {
+        easeOutQuart: addBindings((a: number, b: number, t: number) => {
             switch (t) {
                 case 0: return a;
                 case 1: return b;
@@ -418,7 +423,7 @@ namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        easeInOutQuart: addBindings(function(a: number, b: number, t: number) {
+        easeInOutQuart: addBindings((a: number, b: number, t: number) => {
             switch (t) {
                 case 0: return a;
                 case 1: return b;
@@ -434,7 +439,7 @@ namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        easeInExpo: addBindings(function(a: number, b: number, t: number) {
+        easeInExpo: addBindings((a: number, b: number, t: number) => {
             switch (t) {
                 case 0: return a;
                 case 1: return b;
@@ -448,7 +453,7 @@ namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        easeOutExpo: addBindings(function(a: number, b: number, t: number) {
+        easeOutExpo: addBindings((a: number, b: number, t: number) => {
             switch (t) {
                 case 0: return a;
                 case 1: return b;
@@ -462,7 +467,7 @@ namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        easeInOutExpo: addBindings(function(a: number, b: number, t: number) {
+        easeInOutExpo: addBindings((a: number, b: number, t: number) => {
             switch (t) {
                 case 0: return a;
                 case 1: return b;
@@ -478,7 +483,7 @@ namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        easeInBack: addBindings(function(a: number, b: number, t: number) {
+        easeInBack: addBindings((a: number, b: number, t: number) => {
             switch (t) {
                 case 0: return a;
                 case 1: return b;
@@ -492,7 +497,7 @@ namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        easeOutBack: addBindings(function(a: number, b: number, t: number) {
+        easeOutBack: addBindings((a: number, b: number, t: number) => {
             switch (t) {
                 case 0: return a;
                 case 1: return b;
@@ -506,7 +511,7 @@ namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        easeInOutBack: addBindings(function(a: number, b: number, t: number) {
+        easeInOutBack: addBindings((a: number, b: number, t: number) => {
             switch (t) {
                 case 0: return a;
                 case 1: return b;
@@ -523,6 +528,7 @@ namespace srvsdbx_Animation {
          * @param p2x The x-component of the second control point. Must be within `[0, 1]`
          * @param p2y The y-component of the second control point
          * @returns An interpolation function accepting two bounds and an interpolation factor.
+         * @throws {RangeError} If one of the control points is out-of-bounds
          */
         cubicBezier(p1x: number, p1y: number, p2x: number, p2y: number) {
             if (!srvsdbx_Math.checkBounds(p1x, 0, 1) || !srvsdbx_Math.checkBounds(p2x, 0, 1))
@@ -531,7 +537,7 @@ namespace srvsdbx_Animation {
             const p1 = new srvsdbx_Geometry.Vector2D(p1x, p1y),
                 p2 = new srvsdbx_Geometry.Vector2D(p2x, p2y);
 
-            return addBindings(function(a: number, b: number, t: number) {
+            return addBindings((a: number, b: number, t: number) => {
                 switch (t) {
                     case 0: return a;
                     case 1: return b;
@@ -552,6 +558,7 @@ namespace srvsdbx_Animation {
          * @param points A series of control points. Note that the curve's endpoints are locked at (0, 0) and (1, 1),
          * and that the x components of every control point must lie within `[0, 1]`.
          * @returns An interpolation function accepting two bounds and an interpolation factor
+         * @throws {RangeError} If one of the control points is out-of-bounds
          */
         bezier(...points: srvsdbx_Geometry.Point2D[]) {
             switch (points.length) {
@@ -562,7 +569,8 @@ namespace srvsdbx_Animation {
 
                     if (invalidPoints.length)
                         throw new RangeError(
-                            `Invalid control points for bézier curve; all control points must have x components within [0, 1], but the following points did not:\n  ${invalidPoints.map(([p, i]) => `${srvsdbx_Geometry.Vector2D.prototype.toString.call(p)} (index: ${i})`).join("\n  ")}`
+                            "Invalid control points for bézier curve; all control points must have x components within [0, 1], but the following points did not:" +
+                            `\n  ${invalidPoints.map(([p, i]) => `${srvsdbx_Geometry.Vector2D.prototype.toString.call(p)} (index: ${i})`).join("\n  ")}`
                         );
 
                     // We omit the (0, 0) control point, because any operations performed on it return (0, 0) anyways
@@ -573,7 +581,7 @@ namespace srvsdbx_Animation {
                     ],
                         coefficients = srvsdbx_ErrorHandling.passAlongOrThrow(srvsdbx_Math.getBinomialCoefficients(points.length));
 
-                    return addBindings(function(a: number, b: number, t: number) {
+                    return addBindings((a: number, b: number, t: number) => {
                         switch (t) {
                             case 0: return a;
                             case 1: return b;
@@ -593,16 +601,20 @@ namespace srvsdbx_Animation {
 
     /**
      * Represents a function that, when called, will return an animation
+     * @template T The type of data this animation will interpolate through
      */
     export type IndeterminateAnimation<T extends object = {}> = (interpolationFunction: ConstructorParameters<typeof Animation<T>>[1]) => Animation<T>;
 
     /**
      * Represents a function for generating animations whose interpolation function has already been specified
+     * @template T The type of data this animation will interpolate through
+     * @template I The indeterminate animation being bound
      */
     export type BoundIndeterminateAnimation<T extends object = {}, I extends IndeterminateAnimation<T> = IndeterminateAnimation<T>> = () => ReturnType<I>;
 
     /**
      * Represents a series of movements applied on an object
+     * @template T The type of data this animation will interpolate through
      */
     export class Animation<T extends object = {}> {
         /**
@@ -700,6 +712,8 @@ namespace srvsdbx_Animation {
 
     /**
      * A utility class for playing animations
+     * @template T The kind of data this animation will be interpolating through
+     * @template K The names of the animations in this manager
      */
     export class AnimationManager<T extends object = {}, K extends string = string>{
         /**
@@ -765,11 +779,13 @@ namespace srvsdbx_Animation {
         }
 
         /**
-         * Animations can have "dynamic" keyframes that change, but evaluating such keyframes every draw often leads to broken results. To remedy this, we determine all the keyframes ahead of time for this instance of the animation.
+         * Animations can have "dynamic" keyframes that change, but evaluating such keyframes every draw often leads to broken results.
+         * To remedy this, we determine all the keyframes ahead of time for this instance of the animation.
          * @param name The name of the animation which is to be started
          * @returns A function that can be used to determine the state of the animated object at a specified time
          *
-         * **Returned function:**\
+         * **Returned function:**
+         *
          * Determines the state of the animated object at a specified time
          * @param time A time at which to evaluate the animation, in ms. `1` is 1ms after the animation's start, not the animation's end
          * @param overflowReturnsLastFrame Whether or not to return the last keyframe if a time beyond the animation's duration is passed
@@ -845,8 +861,22 @@ namespace srvsdbx_Animation {
         }
 
         /**
+         * Fetches an animation instance. If this animation isn't currently running, it will be started
+         * @param name The name of the animation to fetch
+         * @returns A pair whose first element is the resolved version of the animation and whose
+         * second element is its `evaluate` function.
+         */
+        fetchInstance(name: K) {
+            if (!this.#activeAnimations.has(name)) this.start(name);
+
+            return this.#activeAnimations.get(name)!;
+        }
+
+        /**
          * Fetches an animation instance's `evaluate` function, starting the animation if it isn't already
          * @param name The name of the animation to fetch
+         * @returns A function that, when called with a certain time value, will determine the state of
+         * the animated object at that time
          */
         fetch(name: K) {
             return this.#activeAnimations.get(name)?.[1] ?? this.start(name);

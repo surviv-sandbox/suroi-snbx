@@ -170,7 +170,7 @@ abstract class Generic<E extends BaseGenericEvents = BaseGenericEvents> implemen
     /**
      * A Map whose values are `Generic`s following this object and whose keys are their corresponding `id`s
      */
-    readonly #followers: Map<number, Generic> = new Map;
+    readonly #followers: Map<ObjectId, Generic> = new Map;
     /**
      * A Map whose values are `Generic`s following this object and whose keys are their corresponding `id`s
      */
@@ -280,18 +280,7 @@ abstract class Generic<E extends BaseGenericEvents = BaseGenericEvents> implemen
 
         this.layer += velocity.z * deltaTime;
 
-        for (const [_, follower] of this.#followers) {
-            if (follower.#destroyed) return;
-
-            const pos = srvsdbx_Geometry.Vector3D.fromPoint3D({ x: body.position.x, y: body.position.y, z: this.#layer })
-                .plus(follower.#followOffset, true)
-                .plus(srvsdbx_Geometry.Vector2D.fromPolarToVec(this.#angle - Math.PI / 2, follower.#followOffset.parr).toPoint3D(), true)
-                .plus(srvsdbx_Geometry.Vector2D.fromPolarToVec(this.#angle, follower.#followOffset.perp).toPoint3D(), true);
-
-            follower.setPosition(pos);
-            follower.angle = this.#angle;
-            follower.#layer = pos.z;
-        }
+        this.#updateFollowers();
     }
 
     /**
@@ -303,6 +292,28 @@ abstract class Generic<E extends BaseGenericEvents = BaseGenericEvents> implemen
             x: position.x,
             y: position.y
         });
+
+        this.#updateFollowers();
+    }
+
+    /**
+     * Updates the positions and angles of this generic's followers
+     */
+    #updateFollowers() {
+        for (const [_, follower] of this.#followers) {
+            if (follower.#destroyed) {
+                this.#followers.delete(_);
+                continue;
+            }
+
+            const pos = srvsdbx_Geometry.Vector3D.fromPoint3D({ x: this.position.x, y: this.position.y, z: this.#layer })
+                .plus(follower.#followOffset, true)
+                .plus(srvsdbx_Geometry.Vector2D.fromPolarToVec(this.#angle - Math.PI / 2, follower.#followOffset.parr).toPoint3D(), true)
+                .plus(srvsdbx_Geometry.Vector2D.fromPolarToVec(this.#angle, follower.#followOffset.perp).toPoint3D(), true);
+
+            follower.setPosition(pos);
+            follower.#layer = pos.z;
+        }
     }
 
     /**
@@ -310,7 +321,7 @@ abstract class Generic<E extends BaseGenericEvents = BaseGenericEvents> implemen
      * @param p5 The gamespace's p5 instance
      */
     draw(p5: import("p5")) {
-        if (this.destroyed) return;
+        if (this.#destroyed) return;
 
         this.#draw.call(this, p5);
     }
@@ -375,9 +386,11 @@ abstract class Generic<E extends BaseGenericEvents = BaseGenericEvents> implemen
     follow(obj: Generic, offset?: { x: number, y: number, z: number, parr: number, perp: number; }) {
         if (obj == this as unknown as Generic) return;
 
-        this.#parent?.followers.delete(this.#id);
-        obj.#followers.set(obj.#id, this as unknown as Generic);
-        this.#parent = obj;
+        if (this.#parent != obj) {
+            this.#parent?.followers.delete(this.#id);
+            obj.#followers.set(this.#id, this as unknown as Generic);
+            this.#parent = obj;
+        }
 
         offset ??= { x: 0, y: 0, z: 0, parr: 0, perp: 0 };
 
@@ -400,34 +413,6 @@ abstract class Generic<E extends BaseGenericEvents = BaseGenericEvents> implemen
 }
 
 /**
- * Represents an imported level
- */
-interface Level {
-    /**
-     * Information about the world this level creates
-     */
-    readonly world: {
-        /**
-         * The world's width
-         */
-        readonly width: number,
-        /**
-         * The world's height
-         */
-        readonly height: number,
-        /**
-         * The ground's color
-         */
-        readonly color: string,
-        /**
-         * The color of the overlayed grid lines
-         */
-        readonly gridColor: string;
-    };
-    initializer(): void;
-}
-
-/**
  * The most generalized expression of an object stored by the game
  */
 type GameObject = Generic | Decal | Explosion | Projectile;
@@ -436,6 +421,11 @@ type GameObject = Generic | Decal | Explosion | Projectile;
  * A central object consolidating classes and the game's global state
  */
 const gamespace = new (createSingleton(class Gamespace {
+    /**
+     * The game's version
+     */
+    get VERSION() { return "0.10.0 beta 2"; }
+
     /**
      * The default radius for a player, in pixels
      */
@@ -458,7 +448,7 @@ const gamespace = new (createSingleton(class Gamespace {
     /**
      * A reference to the level currently being played
      */
-    #currentLevel: Level | undefined;
+    #currentLevel: SimpleLevel | undefined;
     /**
      * A reference to the level currently being played
      */
@@ -486,9 +476,58 @@ const gamespace = new (createSingleton(class Gamespace {
      * An event target on which listeners can be added
      */
     readonly #events = new SandboxEventTarget<{
+        /**
+         * Fired when the gamespace becomes ready to work with
+         */
         ready: {
+            /**
+             * The `Event` object
+             */
             event: Event,
+            /**
+             * The time it took for the gamespace to become ready
+            */
             args: [number];
+        },
+        /**
+         * Fired when an item is registered by the game. No `fragmentLoaded`
+         * event should be fired after the `ready` event
+        */
+        fragmentLoaded: {
+            /**
+             * The `Event` object
+             */
+            event: Event,
+            /**
+             * The type of object that has just been loaded
+             */
+            args: [
+                srvsdbx_ErrorHandling.Result<
+                    MapValue<Gamespace["prototypes"][keyof Gamespace["prototypes"]]> | Level,
+                    {
+                        /**
+                         * The internal name of the object which just failed
+                         */
+                        readonly internalName: string,
+                        /**
+                         * The path the failed object was imported from
+                         */
+                        readonly includePath: string,
+                        /**
+                         * The namespace the failed object belongs to
+                         */
+                        readonly namespace: string,
+                        /**
+                         * The type of the failed object
+                         */
+                        readonly objectType: string,
+                        /**
+                         * An array of errors relating to this object's failure
+                         */
+                        readonly err: SandboxError[];
+                    }
+                >
+            ];
         };
     }>;
     /**
@@ -515,15 +554,6 @@ const gamespace = new (createSingleton(class Gamespace {
     get levels() { return this.#levels; }
 
     /**
-     * An object containing data about which keys are currently being pressed
-     */
-    readonly #keys: { readonly [key: KeyboardEvent["code"]]: boolean; } = {};
-    /**
-     * An object containing data about which keys are currently being pressed
-     */
-    get keys() { return this.#keys; }
-
-    /**
      * Returns whether the game has finished loading all its assets and is ready to play
      */
     #isReady = false;
@@ -539,27 +569,27 @@ const gamespace = new (createSingleton(class Gamespace {
         /**
          * Every `decal` object currently in the game world
          */
-        readonly decals: EventMap<number, Decal>;
+        readonly decals: EventMap<ObjectId, Decal>;
         /**
          * Every `explosion` object currently in the game world
          */
-        readonly explosions: EventMap<number, Explosion>;
+        readonly explosions: EventMap<ObjectId, Explosion>;
         /**
          * Every 'plain' `generic` object currently in the game world (Other game objects inherit from `generic`, but those are not pushed)
          */
-        readonly obstacles: EventMap<number, Generic>;
+        readonly obstacles: EventMap<ObjectId, Generic>;
         /**
          * Every `particle` object currently in the game world
          */
-        readonly particles: EventMap<number, Particle>;
+        readonly particles: EventMap<ObjectId, Particle>;
         /**
          * Every `playerLike` object currently in the game world
          */
-        readonly players: EventMap<number, PlayerLike>;
+        readonly players: EventMap<ObjectId, PlayerLike>;
         /**
          * Every `projectile` object currently in the game world
          */
-        readonly projectiles: EventMap<number, Projectile>;
+        readonly projectiles: EventMap<ObjectId, Projectile>;
     } = {
             decals: new EventMap,
             explosions: new EventMap,
@@ -577,20 +607,20 @@ const gamespace = new (createSingleton(class Gamespace {
      * Organizes the game objects by layer
      */
     readonly #layeredObjects = new Map<number, {
-        decals: Map<number, Decal>,
-        explosions: Map<number, Explosion>,
-        obstacles: Map<number, Generic>,
-        particlesOver: Map<number, Particle>,
-        particlesUnder: Map<number, Particle>,
-        players: Map<number, PlayerLike>,
-        projectilesUnder: Map<number, Projectile>;
-        projectilesOver: Map<number, Projectile>;
+        decals: Map<ObjectId, Decal>,
+        explosions: Map<ObjectId, Explosion>,
+        obstacles: Map<ObjectId, Generic>,
+        particlesOver: Map<ObjectId, Particle>,
+        particlesUnder: Map<ObjectId, Particle>,
+        players: Map<ObjectId, PlayerLike>,
+        projectilesUnder: Map<ObjectId, Projectile>;
+        projectilesOver: Map<ObjectId, Projectile>;
     }>;
 
     /**
      * Aggregates every game object
      */
-    readonly #objectPool = new Map<number, GameObject>();
+    readonly #objectPool = new Map<ObjectId, GameObject>();
 
     /**
      * A collection of every object prototype registered with the game
@@ -723,6 +753,121 @@ const gamespace = new (createSingleton(class Gamespace {
     get settings() { return this.#settings; }
 
     /**
+     * Context:
+     * To establish a ratio between screen pixels and in-game units, the following method was used:
+     *
+     * Given a game window with some aspect ratio `a`:
+     * - Place the player at (400, 400).
+     * - Place the cursor at (0, 0).
+     * - Measure how many pixels away from the player the cursor is (axis doesn't matter).
+     * - This gives us a ratio: 400 in-game units to some number `p`.
+     * - Repeat for various window sizes whose aspect ratios are `a`.
+     *
+     * Repeat the above for various other aspect ratios.
+     *
+     * These were then compiled into a Desmos graph, and a curious fact appeared:
+     * for each aspect ratio, the relation between the window's width and the amount `p`
+     * previously mentioned was linear—minus some outliers.
+     *
+     * Between aspect ratios, however, the exact ratio changed
+     * And thus, we attempt to find a relationship between the aspect ratio and the
+     * previously-mentioned ratio. This relation turns out to be exponential, approximated
+     * with the function `5.1271399901e^-(1.3697806015a + 2.0079957) + 0.08619961`, where `a` is the aspect ratio.
+     *
+     * Thus, given an aspect ratio `a`, we may calculate the slope of a line—this slope is the
+     * ratio between the window's width and the amount of pixels it takes to travel 400 units.
+     * At any given moment, the difference between the mouse's position and that of the player's,
+     * when multiplied by the calculated ratio and added to the player's position, will give the
+     * point in the game world over which the mouse is hovering.
+     *
+     *
+     * All these findings are summarized (although not annotated) in the following Desmos graph: https://www.desmos.com/calculator/agiykvhwdo
+     *
+     * **This is literally the worst thing I have ever written.**
+     *
+     * ~~and now the length of the method's name is the same as the average Java class name~~
+     *
+     * @returns The ratio between in-game units and screen pixels; it converts from screen pixels to in-game units
+     */
+    static readonly #superCringeEmpiricallyDerivedPixelToUnitRatio = 400 / ((5.1271399901 * Math.E ** -(1.3697806015 * (window.innerWidth / window.innerHeight) + 2.0079957) + 0.08619961) * window.innerWidth);
+    /**
+     * Context:
+     * To establish a ratio between screen pixels and in-game units, the following method was used:
+     *
+     * Given a game window with some aspect ratio `a`:
+     * - Place the player at (400, 400).
+     * - Place the cursor at (0, 0).
+     * - Measure how many pixels away from the player the cursor is (axis doesn't matter).
+     * - This gives us a ratio: 400 in-game units to some number `p`.
+     * - Repeat for various window sizes whose aspect ratios are `a`.
+     *
+     * Repeat the above for various other aspect ratios.
+     *
+     * These were then compiled into a Desmos graph, and a curious fact appeared:
+     * for each aspect ratio, the relation between the window's width and the amount `p`
+     * previously mentioned was linear—minus some outliers.
+     *
+     * Between aspect ratios, however, the exact ratio changed
+     * And thus, we attempt to find a relationship between the aspect ratio and the
+     * previously-mentioned ratio. This relation turns out to be exponential, approximated
+     * with the function `5.1271399901e^-(1.3697806015a + 2.0079957) + 0.08619961`, where `a` is the aspect ratio.
+     *
+     * Thus, given an aspect ratio `a`, we may calculate the slope of a line—this slope is the
+     * ratio between the window's width and the amount of pixels it takes to travel 400 units.
+     * At any given moment, the difference between the mouse's position and that of the player's,
+     * when multiplied by the calculated ratio and added to the player's position, will give the
+     * point in the game world over which the mouse is hovering.
+     *
+     *
+     * All these findings are summarized (although not annotated) in the following Desmos graph: https://www.desmos.com/calculator/agiykvhwdo
+     *
+     * **This is literally the worst thing I have ever written.**
+     *
+     * ~~and now the length of the method's name is the same as the average Java class name~~
+     *
+     * @returns The ratio between in-game units and screen pixels; it converts from screen pixels to in-game units
+     */
+    static get superCringeEmpiricallyDerivedPixelToUnitRatio() { return this.#superCringeEmpiricallyDerivedPixelToUnitRatio; }
+    /**
+     * Context:
+     * To establish a ratio between screen pixels and in-game units, the following method was used:
+     *
+     * Given a game window with some aspect ratio `a`:
+     * - Place the player at (400, 400).
+     * - Place the cursor at (0, 0).
+     * - Measure how many pixels away from the player the cursor is (axis doesn't matter).
+     * - This gives us a ratio: 400 in-game units to some number `p`.
+     * - Repeat for various window sizes whose aspect ratios are `a`.
+     *
+     * Repeat the above for various other aspect ratios.
+     *
+     * These were then compiled into a Desmos graph, and a curious fact appeared:
+     * for each aspect ratio, the relation between the window's width and the amount `p`
+     * previously mentioned was linear—minus some outliers.
+     *
+     * Between aspect ratios, however, the exact ratio changed
+     * And thus, we attempt to find a relationship between the aspect ratio and the
+     * previously-mentioned ratio. This relation turns out to be exponential, approximated
+     * with the function `5.1271399901e^-(1.3697806015a + 2.0079957) + 0.08619961`, where `a` is the aspect ratio.
+     *
+     * Thus, given an aspect ratio `a`, we may calculate the slope of a line—this slope is the
+     * ratio between the window's width and the amount of pixels it takes to travel 400 units.
+     * At any given moment, the difference between the mouse's position and that of the player's,
+     * when multiplied by the calculated ratio and added to the player's position, will give the
+     * point in the game world over which the mouse is hovering.
+     *
+     *
+     * All these findings are summarized (although not annotated) in the following Desmos graph: https://www.desmos.com/calculator/agiykvhwdo
+     *
+     * **This is literally the worst thing I have ever written.**
+     *
+     * ~~and now the length of the method's name is the same as the average Java class name~~
+     *
+     * @returns The ratio between in-game units and screen pixels; it converts from screen pixels to in-game units
+     */
+    get superCringeEmpiricallyDerivedPixelToUnitRatio() { return Gamespace.superCringeEmpiricallyDerivedPixelToUnitRatio; }
+
+    /**
      * The timestamp at which the gamespace became ready
      */
     #startup = Date.now();
@@ -746,14 +891,14 @@ const gamespace = new (createSingleton(class Gamespace {
         type GameObjectEventMaps = GameObjects[GameObjectTypes];
 
         type LayerMapEntry = {
-            decals: Map<number, Decal>,
-            explosions: Map<number, Explosion>,
-            obstacles: Map<number, Generic>,
-            particlesOver: Map<number, Particle>,
-            particlesUnder: Map<number, Particle>,
-            players: Map<number, PlayerLike>,
-            projectilesUnder: Map<number, Projectile>;
-            projectilesOver: Map<number, Projectile>;
+            decals: Map<ObjectId, Decal>,
+            explosions: Map<ObjectId, Explosion>,
+            obstacles: Map<ObjectId, Generic>,
+            particlesOver: Map<ObjectId, Particle>,
+            particlesUnder: Map<ObjectId, Particle>,
+            players: Map<ObjectId, PlayerLike>,
+            projectilesUnder: Map<ObjectId, Projectile>;
+            projectilesOver: Map<ObjectId, Projectile>;
         };
 
         function getAndSetIfAbsent(map: Map<number, LayerMapEntry>, key: number) {
@@ -786,7 +931,7 @@ const gamespace = new (createSingleton(class Gamespace {
         for (const key in this.#objects) {
             const map: GameObjectEventMaps = this.#objects[key as GameObjectTypes];
 
-            map.addEventListener("set", (_: Event, __: number, gameObject: GameObject) => {
+            map.addEventListener("set", (_: Event, __: ObjectId, gameObject: GameObject) => {
                 const destinationMap = getAndSetIfAbsent(this.#layeredObjects, gameObject.position.z);
                 this.#objectPool.set(gameObject.id, gameObject);
 
@@ -820,10 +965,27 @@ const gamespace = new (createSingleton(class Gamespace {
     }
 
     /**
+     * Specify a callback to be invoked when the gamespace becomes ready.
+     * If the `ready` event has already been fired, the callback will
+     * immediately be invoked
+     *
+     * This is the recommended method of performing actions on startup
+     * @param callback A function that will be called when the gamespace's
+     * `ready` event is emitted, or immediately if the gamespace is already
+     * ready
+     */
+    invokeWhenReady(callback: (startupTime: number) => void) {
+        if (this.#isReady) return callback(this.#startup);
+
+        this.#events.once("ready", (_, s) => callback(s));
+    }
+
+    /**
      * Starts a given level
      * @param id The level's id
      */
     startLevel(id: number) {
+        document.getElementById("main-menu-cont")?.remove?.();
         (this.#currentLevel = gamespace.levels[id]).initializer();
     }
 
@@ -1046,19 +1208,56 @@ const gamespace = new (createSingleton(class Gamespace {
                             (
                                 (i.owner.activeItem != i && i.prototype.holstered?.collider) ||
                                 (i.owner.activeItem == i && i.prototype.worldObject?.collider)
+                            ) && (
+                                !player.canAttack() || i.prototype.canReflectWhileAttacking
                             )
                     ) as Melee[]
                 ).map(m => {
                     const collider = m.getCollider()!,
-                        reference = m.owner.activeItem == m ? m.prototype.worldObject! : m.prototype.holstered!;
+                        reference = (() => {
+                            if (m.owner.activeItem == m) {
+                                const ref = m.getItemReference(),
+                                    world = m.prototype.worldObject;
+
+                                return {
+                                    dimensions: {
+                                        width: ref?.dimensions?.width ?? world?.dimensions.width ?? 0,
+                                        height: ref?.dimensions?.height ?? world?.dimensions.height ?? 0
+                                    },
+                                    offset: {
+                                        parr: ref?.offset?.parr ?? world?.offset.parr ?? 0,
+                                        perp: ref?.offset?.perp ?? world?.offset.perp ?? 0,
+                                        offsetParr: world?.collider?.offsetParr ?? 0,
+                                        offsetPerp: world?.collider?.offsetPerp ?? 0,
+                                        angle: ref?.offset?.angle ?? world?.offset.angle ?? 0
+                                    }
+                                };
+                            }
+
+                            const holster = m.prototype.holstered;
+
+                            return {
+                                dimensions: {
+                                    width: holster?.dimensions.width ?? 0,
+                                    height: holster?.dimensions.height ?? 0
+                                },
+                                offset: {
+                                    parr: holster?.offset.parr ?? 0,
+                                    perp: holster?.offset.perp ?? 0,
+                                    offsetParr: holster?.collider?.offsetParr ?? 0,
+                                    offsetPerp: holster?.collider?.offsetPerp ?? 0,
+                                    angle: holster?.offset.angle ?? 0
+                                }
+                            };
+                        })();
 
                     Matter.Body.translate(
                         collider,
                         srvsdbx_Geometry.Vector2D.zeroVec()
                             .plus({ direction: player.angle + Math.PI / 2, magnitude: -reference.offset.parr * size }, true)
                             .plus({ direction: player.angle, magnitude: reference.offset.perp * size }, true)
-                            .plus({ direction: player.angle + reference.offset.angle, magnitude: -reference.collider!.offsetParr * size }, true)
-                            .plus({ direction: player.angle + reference.offset.angle + Math.PI / 2, magnitude: reference.collider!.offsetPerp * size }, true)
+                            .plus({ direction: player.angle + reference.offset.angle, magnitude: -reference.offset.offsetParr * size }, true)
+                            .plus({ direction: player.angle + reference.offset.angle + Math.PI / 2, magnitude: reference.offset.offsetPerp * size }, true)
                             .plus(player.position, true)
                     );
                     Matter.Body.rotate(collider, player.angle + (reference.offset.angle ?? 0));
@@ -1173,9 +1372,8 @@ const gamespace = new (createSingleton(class Gamespace {
                     })();
 
                     // Exit now, no special logic to run
-                    if (!parsedCollision) {
+                    if (!parsedCollision)
                         return obj.events.dispatchEvent(new CollisionEvent(collision), target!);
-                    }
 
                     if (parsedCollision == reflectCollision) {
                         /*
@@ -1231,6 +1429,8 @@ const gamespace = new (createSingleton(class Gamespace {
                             + srvsdbx_Math.toRad(srvsdbx_Math.meanDevPM_random(0, 5, true), "degrees"),
                             reflectCollision[0]
                         );
+
+                        (reflectCollision[0].activeItem as Melee).lastReflect = gamespace.currentUpdate;
                     } else {
                         obj.events.dispatchEvent(
                             new CollisionEvent(
@@ -1245,7 +1445,9 @@ const gamespace = new (createSingleton(class Gamespace {
         });
 
         // Draw the ground
+        //@ts-expect-error
         p5.clear();
+        // p5's typings are broken, thanks for that
 
         const level = gamespace.#currentLevel!,
             { width, height } = level.world;
@@ -1290,7 +1492,7 @@ const gamespace = new (createSingleton(class Gamespace {
                             this.#cameraPosition,
                             object.position
                         ) < srvsdbx_Geometry.Vector2D.squaredDist({ x: window.innerWidth, y: window.innerHeight })
-                        * PlayerLike.superCringeEmpiricallyDerivedPixelToUnitRatio * 1.21
+                        * Gamespace.superCringeEmpiricallyDerivedPixelToUnitRatio * 1.21
                     ) object.draw(p5);
         }
 
@@ -1301,6 +1503,8 @@ const gamespace = new (createSingleton(class Gamespace {
     }
 }));
 
+type Gamespace = typeof gamespace;
+
 /**
  * A simplified representation of an imported object
  */
@@ -1309,6 +1513,10 @@ interface SimpleImport {
      * This gun's name
      */
     readonly name: string,
+    /**
+     * The type of object this is
+     */
+    readonly objectType: string,
     /**
      * The name this item will be referred to as in the HUD; if omitted, the value for `name` is used.
      */
@@ -1334,7 +1542,7 @@ class ImportedObject {
     /**
     * This item's name
     */
-    #name: string;
+    readonly #name: string;
     /**
      * This item's name
      */
@@ -1343,7 +1551,7 @@ class ImportedObject {
     /**
      * What the item will be referred to as in the HUD; if omitted, then `name` is used
      */
-    #displayName?: string;
+    readonly #displayName?: string;
     /**
      * What the item will be referred to as in the HUD; if omitted, then `name` is used
      */
@@ -1352,16 +1560,25 @@ class ImportedObject {
     /**
      * The version of the sandbox this item was made for
      */
-    #targetVersion: string;
+    readonly #targetVersion: string;
     /**
      * The version of the sandbox this item was made for
      */
     get targetVersion() { return this.#targetVersion; }
 
     /**
+     * The type of object this is
+     */
+    readonly #objectType: string;
+    /**
+     * The type of object this is
+     */
+    get objectType() { return this.#objectType; }
+
+    /**
      * The namespace this prototype belongs to
      */
-    #namespace: string;
+    readonly #namespace: string;
     /**
      * The namespace this prototype belongs to
      */
@@ -1375,7 +1592,7 @@ class ImportedObject {
     /**
      * From where this item was imported
      */
-    #includePath: string;
+    readonly #includePath: string;
     /**
      * From where this item was imported
      */
@@ -1391,19 +1608,108 @@ class ImportedObject {
     constructor(
         name: typeof ImportedObject.prototype.name,
         displayName: typeof ImportedObject.prototype.displayName,
+        objectType: typeof ImportedObject.prototype.objectType,
         targetVersion: typeof ImportedObject.prototype.targetVersion,
         namespace: typeof ImportedObject.prototype.namespace,
-        includePath: typeof ImportedObject.prototype.includePath,
+        includePath: typeof ImportedObject.prototype.includePath
     ) {
         this.#name = name;
         this.#displayName = displayName;
+        this.#objectType = objectType;
         this.#targetVersion = targetVersion;
         this.#namespace = namespace;
         this.#includePath = includePath;
     }
 }
 
-type Gamespace = typeof gamespace;
+/**
+ * A simplified representation of a game level
+ */
+interface SimpleLevel extends SimpleImport {
+    /**
+     * Information about the world this level creates
+     */
+    readonly world: {
+        /**
+         * The world's width
+         */
+        readonly width: number,
+        /**
+         * The world's height
+         */
+        readonly height: number,
+        /**
+         * The ground's color
+         */
+        readonly color: string,
+        /**
+         * The color of the overlayed grid lines
+         */
+        readonly gridColor: string;
+    },
+    /**
+     * A function used to start this level's logic: adding entities,
+     * setting the environment up, scripting, etc
+     */
+    initializer(): void;
+}
+
+/**
+ * Represents a game level
+ */
+class Level extends ImportedObject {
+    /**
+     * Information about the world this level creates
+     */
+    #world: SimpleLevel["world"];
+    /**
+     * Information about the world this level creates
+     */
+    get world() { return this.#world; }
+
+    /**
+     * A function used to start this level's logic: adding entities,
+     * setting the environment up, scripting, etc
+     */
+    #initializer: SimpleLevel["initializer"];
+    /**
+     * A function used to start this level's logic: adding entities,
+     * setting the environment up, scripting, etc
+     */
+    get initializer() { return this.#initializer; }
+
+    static from(data: SimpleLevel) {
+        return new Level(
+            data.name,
+            data.displayName,
+            data.objectType,
+            data.targetVersion,
+            data.namespace,
+            data.includePath,
+            data.world,
+            data.initializer
+        );
+    }
+
+    /**
+     * `It's a constructor. It constructs.`
+     */
+    constructor(
+        name: typeof ImportedObject.prototype.name,
+        displayName: typeof ImportedObject.prototype.displayName,
+        objectType: typeof ImportedObject.prototype.objectType,
+        targetVersion: typeof ImportedObject.prototype.targetVersion,
+        namespace: typeof ImportedObject.prototype.namespace,
+        includePath: typeof ImportedObject.prototype.includePath,
+        world: SimpleLevel["world"],
+        initializer: SimpleLevel["initializer"],
+    ) {
+        super(name, displayName, objectType, targetVersion, namespace, includePath);
+
+        this.#world = world;
+        this.#initializer = initializer;
+    }
+}
 
 /*
 

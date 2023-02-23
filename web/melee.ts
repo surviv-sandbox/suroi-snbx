@@ -1,36 +1,4 @@
 /**
- * Represents the positions of a player's hands
- */
-type HandPositions = {
-    /**
-     * Information about the left hand
-     */
-    leftHand?: {
-        /**
-         * The hand's offset in surviv units along the axis parallel to the player's aim line
-         */
-        parr: number,
-        /**
-         * The hand's offset in surviv units along the axis perpendicular to the player's aim line
-         */
-        perp: number;
-    },
-    /**
-     * Information about the right hand
-     */
-    rightHand?: {
-        /**
-         * The hand's offset in surviv units along the axis parallel to the player's aim line
-         */
-        parr: number,
-        /**
-         * The hand's offset in surviv units along the axis perpendicular to the player's aim line
-         */
-        perp: number;
-    };
-};
-
-/**
  * A simplified representation of a melee weapon
  */
 interface SimpleMelee extends SimpleEquipableItem {
@@ -38,10 +6,6 @@ interface SimpleMelee extends SimpleEquipableItem {
      * Whether or not this melee is swung as long as the attack input is down—whether the melee "fires automatically"
      */
     readonly autoAttack: boolean,
-    /**
-     * Specify default positions for the user's hands when holding this weapon when no animations are playing
-     */
-    readonly handPositions?: Required<HandPositions>;
     /**
      * Information about the damage this melee weapon deals, their offsets in time and their areas of effect
      */
@@ -79,14 +43,25 @@ interface SimpleMelee extends SimpleEquipableItem {
     }[],
     /**
      * Whether or not this melee weapon's bounding box reflects bullets
+     *
+     * `false` if omitted
      */
     readonly isReflective?: boolean;
+    /**
+     * Whether or not this melee weapon can reflect bullets while attacking with
+     * said melee weapon
+     *
+     * `false` if omitted
+     */
+    readonly canReflectWhileAttacking?: boolean;
     /**
      * The maximum amount of targets this melee weapon can strike per hit
      *
      * This applies every time a damage calculation is done, so a melee weapon
      * that deals damage twice per swing (like the bonesaw) and that has this
      * property set to 3 can hit a total of 6 targets per swing
+     *
+     * `1` if omitted
      */
     readonly maxTargets?: number;
     /**
@@ -123,11 +98,16 @@ interface SimpleMelee extends SimpleEquipableItem {
             readonly layer?: 0 | 1 | 2;
         },
         /**
-         * Determine a rectangle that will act as this melee weapon's collider when holstered
+         * Determine a rectangle or circle that will act as this melee weapon's collider when holstered
          *
          * THe rectangle has the same orientation as the holstered image
          */
-        readonly collider?: {
+        readonly collider?: ({
+            /**
+             * The circle's radius, in surviv units
+             */
+            readonly radius: number,
+        } | {
             /**
              * The rectangle's width, in surviv units
              *
@@ -139,7 +119,8 @@ interface SimpleMelee extends SimpleEquipableItem {
              *
              * If `match` is specified, the holstered image's corresponding dimension is used
              */
-            readonly height: Dimension | "match",
+            readonly height: Dimension | "match";
+        }) & {
             /**
              * The offset along the axis parallel to the player's aim line
              */
@@ -249,6 +230,10 @@ interface SimpleMelee extends SimpleEquipableItem {
          * An animation to be played when this weapon is being used
          */
         readonly using: MayBeFunctionWrapped<srvsdbx_Animation.AnimationSkeleton<ItemAnimation> | "none">;
+        /**
+         * An animation to be played when a projectile is deflected off this weapon
+         */
+        readonly deflect?: MayBeFunctionWrapped<srvsdbx_Animation.AnimationSkeleton<ItemAnimation> | "none">;
     },
     /**
      * An array of additional objects that can be rendered alongside this item
@@ -316,6 +301,15 @@ interface SimpleMelee extends SimpleEquipableItem {
  */
 class MeleePrototype extends InventoryItemPrototype {
     /**
+     * Specify default positions for the user's hands when holding this weapon when no animations are playing
+     */
+    #handPositions: SimpleMelee["handPositions"];
+    /**
+     * Specify default positions for the user's hands when holding this weapon when no animations are playing
+     */
+    get handPositions() { return this.#handPositions; }
+
+    /**
      * Whether or not this melee is swung as long as the attack input is down—whether the melee "fires automatically"
      */
     #autoAttack: SimpleMelee["autoAttack"];
@@ -366,6 +360,15 @@ class MeleePrototype extends InventoryItemPrototype {
     get isReflective() { return this.#isReflective; }
 
     /**
+     * Whether or not this melee weapon's bounding box reflects bullets
+     */
+    #canReflectWhileAttacking: boolean;
+    /**
+     * Whether or not this melee weapon's bounding box reflects bullets
+     */
+    get canReflectWhileAttacking() { return this.#canReflectWhileAttacking; }
+
+    /**
      * A number by which this weapon's damage will be multiplied when the damage is applied to an obstacle
      */
     #obstacleMult: SimpleMelee["obstacleMult"];
@@ -386,7 +389,7 @@ class MeleePrototype extends InventoryItemPrototype {
     /**
      * A set of `Animation`s for this melee weapon to use
      */
-    #animations: { [K in keyof SimpleMelee["animations"]]: srvsdbx_Animation.Animation<ItemAnimation> | srvsdbx_Animation.BoundIndeterminateAnimation<ItemAnimation> };
+    #animations: { [K in keyof SimpleMelee["animations"]]-?: srvsdbx_Animation.Animation<ItemAnimation> | srvsdbx_Animation.BoundIndeterminateAnimation<ItemAnimation> };
     /**
      * A set of `Animation`s for this melee weapon to use
      */
@@ -396,7 +399,7 @@ class MeleePrototype extends InventoryItemPrototype {
      * Information about this weapon's in-world rendition
      */
     #worldObject: Omit<SimpleMelee["worldObject"] & {}, "collider"> & {
-        collider?: Omit<(SimpleMelee["worldObject"] & {})["collider"] & {}, "width" | "height"> & { width: number, height: number; };
+        collider?: Omit<(SimpleMelee["worldObject"] & {})["collider"] & {}, "width" | "height" | "radius"> & ({ radius: number; } | { width: number, height: number; });
     } | undefined;
     /**
      * Information about this weapon's in-world rendition
@@ -462,25 +465,25 @@ class MeleePrototype extends InventoryItemPrototype {
      * @param obj The `SimpleMelee` object to parse
      * @returns A new `MeleePrototype`
      */
-    static async from(obj: SimpleMelee): Promise<srvsdbx_ErrorHandling.Result<MeleePrototype, unknown[]>> {
-        const errors: unknown[] = [],
+    static async from(obj: SimpleMelee): Promise<srvsdbx_ErrorHandling.Result<MeleePrototype, SandboxError[]>> {
+        const errors: SandboxError[] = [],
             pathPrefix = `${obj.includePath}/`,
             lootImage = srvsdbx_ErrorHandling.handleResult(
                 await srvsdbx_AssetManagement.loadingFunctions.loadImageAsync(`${pathPrefix}${obj.images.loot}`),
                 srvsdbx_ErrorHandling.identity,
-                errors.push
+                e => errors.push(e)
             ),
 
             worldImage = obj.images.world ? srvsdbx_ErrorHandling.handleResult(
                 await srvsdbx_AssetManagement.loadingFunctions.loadImageAsync(`${pathPrefix}${obj.images.world}`),
                 srvsdbx_ErrorHandling.identity,
-                errors.push
+                e => errors.push(e)
             ) : void 0,
 
             holsteredImage = obj.holstered && !!(obj.holstered.image ?? obj.images.world) ? srvsdbx_ErrorHandling.handleResult(
                 await srvsdbx_AssetManagement.loadingFunctions.loadImageAsync(`${pathPrefix}${obj.holstered.image ?? obj.images.world}`),
                 srvsdbx_ErrorHandling.identity,
-                errors.push
+                e => errors.push(e)
             ) : void 0,
 
             addonImages = obj.addons ? await (async () => {
@@ -539,11 +542,11 @@ class MeleePrototype extends InventoryItemPrototype {
                 hands: {
                     leftHand: {
                         parr: linterp(leftA?.parr ?? leftB?.parr ?? 0.85, leftB?.parr ?? leftA?.parr ?? 0.85, t),
-                        perp: linterp(leftA?.perp ?? leftB?.perp ?? 0.75, leftB?.perp ?? leftA?.perp ?? 0.75, t),
+                        perp: linterp(leftA?.perp ?? leftB?.perp ?? 0.75, leftB?.perp ?? leftA?.perp ?? 0.75, t)
                     },
                     rightHand: {
                         parr: linterp(rightA?.parr ?? rightB?.parr ?? 0.85, rightB?.parr ?? rightA?.parr ?? 0.85, t),
-                        perp: linterp(rightA?.perp ?? rightB?.perp ?? -0.75, rightB?.perp ?? rightA?.perp ?? -0.75, t),
+                        perp: linterp(rightA?.perp ?? rightB?.perp ?? -0.75, rightB?.perp ?? rightA?.perp ?? -0.75, t)
                     }
                 },
                 item: worldImage ? {
@@ -584,12 +587,12 @@ class MeleePrototype extends InventoryItemPrototype {
             return srvsdbx_Animation.Animation.createStillFrame({
                 hands: {
                     leftHand: {
-                        parr: (obj.handPositions?.leftHand.parr ?? 0.85),
-                        perp: (obj.handPositions?.leftHand.perp ?? -0.75)
+                        parr: (obj.handPositions?.leftHand?.parr ?? 0.85),
+                        perp: (obj.handPositions?.leftHand?.perp ?? -0.75)
                     },
                     rightHand: {
-                        parr: (obj.handPositions?.rightHand.parr ?? 0.85),
-                        perp: (obj.handPositions?.rightHand.perp ?? 0.75)
+                        parr: (obj.handPositions?.rightHand?.parr ?? 0.85),
+                        perp: (obj.handPositions?.rightHand?.perp ?? 0.75)
                     }
                 },
                 item: {
@@ -637,6 +640,7 @@ class MeleePrototype extends InventoryItemPrototype {
             res: new MeleePrototype(
                 obj.name,
                 obj.displayName,
+                obj.objectType,
                 obj.targetVersion,
                 obj.namespace,
                 obj.includePath,
@@ -645,7 +649,9 @@ class MeleePrototype extends InventoryItemPrototype {
                     world: worldImage as srvsdbx_AssetManagement.ImageSrcPair | undefined
                 },
                 obj.moveSpeedPenalties,
+                obj.handPositions,
                 obj.isReflective ?? false,
+                obj.canReflectWhileAttacking ?? false,
                 obj.autoAttack,
                 obj.maxTargets,
                 obj.damages,
@@ -665,7 +671,8 @@ class MeleePrototype extends InventoryItemPrototype {
                 obj.useDelay,
                 {
                     idle: determineAnimation(obj.animations.idle),
-                    using: determineAnimation(obj.animations.using)
+                    using: determineAnimation(obj.animations.using),
+                    deflect: determineAnimation(obj.animations.deflect ?? "none"),
                 },
                 obj.addons ?
                     obj.addons.map((addon, i) => {
@@ -689,12 +696,15 @@ class MeleePrototype extends InventoryItemPrototype {
     constructor(
         name: typeof ImportedObject.prototype.name,
         displayName: typeof ImportedObject.prototype.displayName,
+        objectType: typeof ImportedObject.prototype.objectType,
         targetVersion: typeof ImportedObject.prototype.targetVersion,
         namespace: typeof ImportedObject.prototype.namespace,
         includePath: typeof ImportedObject.prototype.includePath,
         images: typeof InventoryItemPrototype.prototype.images,
         moveSpeedPenalties: typeof InventoryItemPrototype.prototype.moveSpeedPenalties,
+        handPositions: typeof MeleePrototype.prototype.handPositions,
         isReflective: typeof MeleePrototype.prototype.isReflective,
+        canReflectWhileAttacking: typeof MeleePrototype.prototype.canReflectWhileAttacking,
         autoAttack: typeof MeleePrototype.prototype.autoAttack,
         maxTargets: typeof MeleePrototype.prototype.maxTargets,
         damages: typeof MeleePrototype.prototype.damages,
@@ -718,6 +728,7 @@ class MeleePrototype extends InventoryItemPrototype {
         super(
             name,
             displayName,
+            objectType,
             targetVersion,
             namespace,
             includePath,
@@ -731,10 +742,12 @@ class MeleePrototype extends InventoryItemPrototype {
             return dim == "auto" ? dim : dim * size;
         }
 
+        this.#handPositions = handPositions;
         this.#autoAttack = autoAttack;
         this.#maxTargets = maxTargets;
         this.#damages = damages;
         this.#isReflective = isReflective;
+        this.#canReflectWhileAttacking = canReflectWhileAttacking;
         this.#worldObject = worldObject ? (() => {
             const image = images.world!.asset,
                 worldDim = srvsdbx_AssetManagement.determineImageDimensions(image, worldObject.dimensions);
@@ -752,19 +765,32 @@ class MeleePrototype extends InventoryItemPrototype {
                     layer: worldObject.dimensions.layer ?? 0
                 },
                 collider: worldObject.collider ? (() => {
-                    const dim = srvsdbx_AssetManagement.determineImageDimensions(
-                        image,
-                        {
-                            width: worldObject.collider.width == "match" ? worldDim.width : worldObject.collider.width,
-                            height: worldObject.collider.height == "match" ? worldDim.height : worldObject.collider.height
-                        }
-                    );
-
-                    return {
-                        width: dim.width * size,
-                        height: dim.height * size,
+                    const offset = {
                         offsetParr: worldObject.collider.offsetParr,
                         offsetPerp: worldObject.collider.offsetPerp
+                    };
+
+                    if ("width" in worldObject.collider) {
+                        const dim = srvsdbx_AssetManagement.determineImageDimensions(
+                            image,
+                            {
+                                width: worldObject.collider.width == "match" ? worldDim.width : worldObject.collider.width,
+                                height: worldObject.collider.height == "match" ? worldDim.height : worldObject.collider.height
+                            }
+                        );
+
+                        return {
+                            width: dim.width * size,
+                            height: dim.height * size,
+                            offsetParr: offset.offsetParr,
+                            offsetPerp: offset.offsetPerp
+                        };
+                    }
+
+                    return {
+                        radius: worldObject.collider.radius * size,
+                        offsetParr: offset.offsetParr,
+                        offsetPerp: offset.offsetPerp
                     };
                 })() : void 0
             };
@@ -836,7 +862,10 @@ class MeleePrototype extends InventoryItemPrototype {
 /**
  * Represents a specific instance of a melee weapon
  */
-class Melee extends InventoryItem<MeleePrototype> implements EquipableItem, Destroyable {
+class Melee
+    extends InventoryItem<MeleePrototype>
+    implements EquipableItem<ItemAnimation, "idle" | "using" | "deflect">,
+    Destroyable {
     /**
      * An object to manage this item's animations
      */
@@ -865,6 +894,22 @@ class Melee extends InventoryItem<MeleePrototype> implements EquipableItem, Dest
     get cancelledAnimation() { return this.#cancelledAnimation; }
 
     /**
+     * The last time this melee weapon reflected a projectile
+     */
+    #lastReflect = 0;
+    /**
+     * The last time this melee weapon reflected a projectile
+     *
+     * - `get`: Returns the last time this melee weapon reflected a projectile
+     * - `set`: Sets the last time this melee weapon reflected a projectile
+     */
+    get lastReflect() { return this.#lastReflect; }
+    set lastReflect(v) {
+        this.#lastReflect = v;
+        this.#animationManager.end("deflect");
+    }
+
+    /**
      * `* It's a constructor. It constructs`
      */
     constructor(owner: PlayerLike, prototype: MeleePrototype) {
@@ -891,13 +936,76 @@ class Melee extends InventoryItem<MeleePrototype> implements EquipableItem, Dest
                 this.prototype.holstered!.collider.height
             );
         } else if (this == this.owner.activeItem && this.prototype.worldObject?.collider) {
-            return Matter.Bodies.rectangle(
+            const collider = this.prototype.worldObject.collider;
+
+            if ("width" in collider)
+                return Matter.Bodies.rectangle(
+                    0,
+                    0,
+                    collider.width,
+                    collider.height
+                );
+
+            return Matter.Bodies.circle(
                 0,
                 0,
-                this.prototype.worldObject.collider.width,
-                this.prototype.worldObject.collider.height
+                collider.radius
             );
         }
+    }
+
+    /**
+     * Returns this item's current animation
+     *
+     * **This method will stop expired animations.**
+     * More specifically, if an idle animation is running, but the using animation should be used,
+     * the idle animation will be terminated
+     */
+    #getAnimation(): ItemAnimation | undefined {
+        if (this != this.owner.activeItem && this.prototype.holstered?.collider) {
+            return {
+                item: {
+                    dimensions: {
+                        width: this.prototype.holstered.collider.width,
+                        height: this.prototype.holstered.collider.height
+                    },
+                    offset: {
+                        parr: this.prototype.holstered.collider.offsetParr,
+                        perp: this.prototype.holstered.collider.offsetPerp,
+                    }
+                },
+                hands: {
+                    leftHand: {
+                        parr: this.prototype.handPositions?.leftHand?.parr ?? 0.75,
+                        perp: this.prototype.handPositions?.leftHand?.perp ?? 0.85
+                    },
+                    rightHand: {
+                        parr: this.prototype.handPositions?.rightHand?.parr ?? 0.75,
+                        perp: this.prototype.handPositions?.rightHand?.perp ?? 0.85
+                    }
+                }
+            };
+        }
+
+        const timeSinceLastShot = gamespace.currentUpdate - (this.#lastUse ?? 0),
+            timeSinceLastReflect = gamespace.currentUpdate - this.#lastReflect;
+
+        if (!this.cancelledAnimation) {
+            if (timeSinceLastReflect < this.#animationManager.fetchInstance("deflect")[0].duration) {
+                this.#animationManager.end("using");
+                this.#animationManager.end("idle");
+                return this.#animationManager.fetch("deflect")(timeSinceLastReflect, true);
+
+            } else if (timeSinceLastShot < this.prototype.useDelay) {
+                this.#animationManager.end("deflect");
+                this.#animationManager.end("idle");
+                return this.#animationManager.fetch("using")(timeSinceLastShot, true);
+            }
+        }
+
+        this.#animationManager.end("deflect");
+        this.#animationManager.end("using");
+        return this.#animationManager.fetch("idle")(gamespace.currentUpdate - this.owner.state.lastSwitch, true);
     }
 
     /**
@@ -907,32 +1015,19 @@ class Melee extends InventoryItem<MeleePrototype> implements EquipableItem, Dest
      * More specifically, if an idle animation is running, but the using animation should be used,
      * the idle animation will be terminated
      */
-    getItemReference(): ItemAnimation["item"] {
-        if (this != this.owner.activeItem && this.prototype.holstered?.collider) {
-            return {
-                dimensions: {
-                    width: this.prototype.holstered.collider.width,
-                    height: this.prototype.holstered.collider.height
-                },
-                offset: {
-                    parr: this.prototype.holstered.collider.offsetParr,
-                    perp: this.prototype.holstered.collider.offsetPerp,
-                }
-            };
-        }
+    getHandReference() {
+        return this.#getAnimation()?.hands;
+    }
 
-        const timeSinceLastShot = gamespace.currentUpdate - (this.#lastUse ?? 0);
-
-        if (
-            !this.cancelledAnimation &&
-            timeSinceLastShot < this.prototype.useDelay
-        ) {
-            this.animationManager.end("idle");
-            return this.animationManager.fetch("using")(timeSinceLastShot, true)?.item;
-        } else {
-            this.animationManager.end("using");
-            return this.animationManager.fetch("idle")(gamespace.currentUpdate - this.owner.state.lastSwitch, true)?.item;
-        }
+    /**
+     * Returns this item's current dimensions, taking animations into account
+     *
+     * **This method will stop expired animations.**
+     * More specifically, if an idle animation is running, but the using animation should be used,
+     * the idle animation will be terminated
+     */
+    getItemReference() {
+        return this.#getAnimation()?.item;
     }
 
     /**
@@ -1006,12 +1101,23 @@ class Melee extends InventoryItem<MeleePrototype> implements EquipableItem, Dest
                         for (let i = 0, limit = Math.min(targets.length, prototype.maxTargets ?? 1); i < limit; i++) {
                             const target = targets[i];
 
-                            new Particle(
+                            const particleSpawn = srvsdbx_Geometry.Vector2D.fromPolarToVec(target.direction, -target.player.radius)
+                                .plus(target.player.position, true),
+                                offsetFromTarget = srvsdbx_Geometry.Vector2D.minus(particleSpawn, target.player.position);
+
+                            const p = new Particle(
                                 gamespace.prototypes.particles.get("srvsdbx::blood_splat")!,
-                                srvsdbx_Geometry.Vector2D.fromPolarToVec(target.direction, -target.player.radius)
-                                    .plus(target.player.position, true),
+                                particleSpawn,
                                 srvsdbx_Math.randomAngle()
                             );
+
+                            p.follow(target.player, {
+                                x: offsetFromTarget.x,
+                                y: offsetFromTarget.y,
+                                z: 0, parr: 0, perp: 0
+                            });
+
+                            target.player.events.once("death", () => p.destroyed || p.destroy());
 
                             target.player.applyDamage(damage);
                         }

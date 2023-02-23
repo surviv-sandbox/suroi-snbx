@@ -1,7 +1,8 @@
 /**
  * Represents the callback invoked when a user presses a key bound to an action
+ * @param parity Whether the input is being pressed or released
  */
-type InputCallback = (parity: "up" | "down") => void;
+type InputCallback = (parity: "start" | "stop") => void;
 /**
  * A singleton for managing user input
  */
@@ -9,7 +10,7 @@ declare const InputManager: {
     /**
      * A map whose keys are the names of the bound keys and whose values are arrays of callbacks to be invoked when the key is pressed
      */
-    readonly "__#8@#keybinds": Map<string, InputCallback[]>;
+    readonly "__#9@#keybinds": Map<string, InputCallback[]>;
     /**
      * A map whose keys are the names of the bound keys and whose values are arrays of callbacks to be invoked when the key is pressed
      */
@@ -21,5 +22,5 @@ declare const InputManager: {
      * - For mouse buttons, according to the format "Mouse + `MouseEvent.button`" (`Mouse0`, `Mouse3`)
      * @param callback The callback to be invoked when the key is pressed
      */
-    register(key: KeyboardEvent["code"] | `Mouse${MouseEvent["button"]}`, callback: InputCallback): void;
+    register(key: KeyboardEvent["code"] | `Mouse${MouseEvent["button"]}` | `MWheel${"Right" | "Left" | "Down" | "Up" | "Forwards" | "Backwards"}`, callback: InputCallback): void;
 };

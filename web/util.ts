@@ -130,10 +130,15 @@ type DeepRequired<T extends object> = {
  * A simple function for generating unique, sequential IDs
  */
 const generateId = (() => {
-    let i = 0;
+    let i = 0n;
 
     return () => i++;
 })();
+
+/**
+ * Represents the ID of an object
+ */
+type ObjectId = ReturnType<typeof generateId>;
 
 /**
  * A namespace containing types and functions related to a Rust-inspired error handling system
@@ -306,9 +311,7 @@ function makeElement<K extends keyof HTMLElementTagNameMap>(
                     objVal
                 ] of
                 Object.entries(value as object) as [keyof ElementAttribute, ElementAttribute[keyof ElementAttribute]][]
-            )
-                element[key][objKey] = objVal;
-
+            ) element[key][objKey] = objVal;
         else element[key] = value;
     }
 
@@ -322,6 +325,23 @@ function makeElement<K extends keyof HTMLElementTagNameMap>(
                 (element.addEventListener as any /* anyScript */)(event, li.callback, li.options);
 
     return element;
+}
+
+/**
+ * A custom error class (Java moment) representing errors relating to the
+ * sandbox's operation
+ */
+class SandboxError extends Error {
+    /**
+     * `* It's a constructor. It constructs.`
+     *
+     * Creates a new `SandboxErorr`.
+     * @param message Optionally specify an error message
+     * @param options Optionally specify a set of options
+     */
+    constructor(message?: string, options?: ErrorOptions) {
+        super(message, options);
+    }
 }
 
 /**
@@ -361,15 +381,18 @@ namespace srvsdbx_AssetManagement {
      */
     export const loadingFunctions = (() => {
         function promisify<T, R>(operation: (args: T, success: (args: R) => any, failure: (error: unknown) => any) => R, args: T) {
-            return new Promise<R>(
-                (res, rej) => {
-                    operation.call(/* p5 magic (aka getting p5 to not crash) */{ _decrementPreload() { } }, args, res, rej);
-                }
-            );
+            return new Promise<R>((resolve, reject) => {
+                operation.call(
+                    { _decrementPreload() { } },
+                    args,
+                    resolve,
+                    reject
+                );
+            });
         }
 
         function toAsync<R>(original: (path: string, success: (args: R) => any, failure: (error: unknown) => any) => R) {
-            return async function(path: string): Promise<srvsdbx_ErrorHandling.Result<AssetSrcPair<R>, unknown>> {
+            return async function(path: string): Promise<srvsdbx_ErrorHandling.Result<AssetSrcPair<R>, SandboxError>> {
                 try {
                     return {
                         res: {
@@ -378,7 +401,7 @@ namespace srvsdbx_AssetManagement {
                         }
                     };
                 } catch (e) {
-                    return { err: e };
+                    return { err: new SandboxError(`Failed loading asset at path '${path}'`) };
                 }
             };
         }
@@ -1876,7 +1899,6 @@ namespace srvsdbx_Geometry {
                     /*
                         Non-parallel lines (most common case)
 
-
                         Isolate x through some simple algebra
 
                         slopeA * x + intA = slopeB * x + intB
@@ -2165,7 +2187,7 @@ class SandboxEventTarget<E extends SandboxEventMap> {
      *
      * If the name is passed, the last callback with the specified name is removed. Callbacks which are anonymous functions can therefore be removed by passing the empty string.
      *
-     * If a function is passed, the last callback to be equal to the function is removed
+     * If a function is passed, the last callback which equal to the function (using `==`) is removed
      * @returns Whether or not a listener was removed
      */
     removeListener<K extends keyof E & string>(event: K, selector: string | Listener<E, K>["callback"]) {
@@ -2474,7 +2496,8 @@ namespace srvsdbx_Math {
  * further notice**
  */
 function generateCosmeticDecorator() {
-    return function <T extends (...args: any[]) => unknown>(value: T, context: ClassMethodDecoratorContext | ClassGetterDecoratorContext | ClassSetterDecoratorContext) { };
+    //                                                                              cuz tsc kept whining
+    return function <T extends (...args: any[]) => unknown>(value: T, context: any/* ClassMethodDecoratorContext | ClassGetterDecoratorContext | ClassSetterDecoratorContext */) { };
 }
 
 /**
@@ -2828,6 +2851,57 @@ class ReducibleMap<K, V, R = V> implements Map<K, V> {
  */
 function clearTimerIfPresent(timer: false | number) {
     timer !== false && clearInterval(timer);
+}
+
+/**
+ * Represents a `Promise` whose state can be monitored
+ * @template T The type of value this promise may return
+ */
+class WatchablePromise<T> {
+    /**
+     * The promise being watched
+     */
+    readonly #promise: Promise<T>;
+    /**
+     * The promise being watched
+     */
+    get promise() { return this.#promise; }
+
+    /**
+     * Whether or not the `Promise` has been fulfilled
+     */
+    #isFulfilled = false;
+    /**
+     * Whether or not the `Promise` has been fulfilled
+     */
+    get isFulfilled() { return this.#isFulfilled; }
+
+    /**
+     * Whether or not the `Promise` has been rejected
+     */
+    #isRejected = false;
+    /**
+     * Whether or not the `Promise` has been rejected
+     */
+    get isRejected() { return this.#isRejected; }
+
+    /**
+     * Whether or not the `Promise` has not been resolved
+     */
+    get isPending() { return !this.isResolved; }
+    /**
+     * Whether or not the `Promise` has been resolved
+     */
+    get isResolved() { return this.#isFulfilled || this.#isRejected; }
+
+    /**
+     * `* It's a constructor. It constructs.`
+     * @param promise A `Promise` to watch
+     */
+    constructor(promise: Promise<T>) {
+        this.#promise = promise;
+        promise.then(v => (this.#isFulfilled = false, v), e => (this.#isRejected = false, e));
+    }
 }
 
 /**

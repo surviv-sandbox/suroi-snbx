@@ -52,12 +52,12 @@ class StatusEffectPrototype<S extends { [key: string]: unknown; }> extends Impor
      * @param obj The `SimpleStatusEffect` object to parse
      * @returns A new `StatusEffectPrototype`
      */
-    static async from<S extends { [key: string]: unknown; }>(obj: SimpleStatusEffect<S>): Promise<srvsdbx_ErrorHandling.Result<StatusEffectPrototype<S>, unknown[]>> {
-        const errors: unknown[] = [],
+    static async from<S extends { [key: string]: unknown; }>(obj: SimpleStatusEffect<S>): Promise<srvsdbx_ErrorHandling.Result<StatusEffectPrototype<S>, SandboxError[]>> {
+        const errors: SandboxError[] = [],
             HPDeco = obj.healthBarDecoration ? srvsdbx_ErrorHandling.handleResult(
                 await srvsdbx_AssetManagement.loadingFunctions.loadImageAsync(`${obj.includePath}/${obj.healthBarDecoration}`),
                 srvsdbx_ErrorHandling.identity,
-                errors.push
+                e => errors.push(e)
             ) : void 0;
 
         if (errors.length) return { err: errors };
@@ -66,6 +66,7 @@ class StatusEffectPrototype<S extends { [key: string]: unknown; }> extends Impor
             res: new StatusEffectPrototype<S>(
                 obj.name,
                 obj.displayName,
+                obj.objectType,
                 obj.targetVersion,
                 obj.namespace,
                 obj.includePath,
@@ -143,6 +144,7 @@ class StatusEffectPrototype<S extends { [key: string]: unknown; }> extends Impor
     constructor(
         name: typeof ImportedObject.prototype.name,
         displayName: typeof ImportedObject.prototype.displayName,
+        objectType: typeof ImportedObject.prototype.objectType,
         targetVersion: typeof ImportedObject.prototype.targetVersion,
         namespace: typeof ImportedObject.prototype.namespace,
         includePath: typeof ImportedObject.prototype.includePath,
@@ -153,7 +155,7 @@ class StatusEffectPrototype<S extends { [key: string]: unknown; }> extends Impor
         decay: typeof StatusEffectPrototype.prototype.decay,
         healthBarDecoration: typeof StatusEffectPrototype.prototype.healthBarDecoration,
     ) {
-        super(name, displayName, targetVersion, namespace, includePath);
+        super(name, displayName, objectType, targetVersion, namespace, includePath);
 
         this.#init = init;
         this.#renew = renew;

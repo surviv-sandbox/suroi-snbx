@@ -116,7 +116,11 @@ type DeepRequired<T extends object> = {
 /**
  * A simple function for generating unique, sequential IDs
  */
-declare const generateId: () => number;
+declare const generateId: () => bigint;
+/**
+ * Represents the ID of an object
+ */
+type ObjectId = ReturnType<typeof generateId>;
 /**
  * A namespace containing types and functions related to a Rust-inspired error handling system
  */
@@ -239,6 +243,20 @@ declare function makeElement<K extends keyof HTMLElementTagNameMap>(key: K, prop
     [key in keyof HTMLElementEventMap]?: SimpleListener<K, key> | OptionsListener<K, key> | (SimpleListener<K, key> | OptionsListener<K, key>)[];
 }): HTMLElementTagNameMap[K];
 /**
+ * A custom error class (Java moment) representing errors relating to the
+ * sandbox's operation
+ */
+declare class SandboxError extends Error {
+    /**
+     * `* It's a constructor. It constructs.`
+     *
+     * Creates a new `SandboxErorr`.
+     * @param message Optionally specify an error message
+     * @param options Optionally specify a set of options
+     */
+    constructor(message?: string, options?: ErrorOptions);
+}
+/**
  * A namespace containing types and functions to manage assets and work with p5's corresponding classes
  */
 declare namespace srvsdbx_AssetManagement {
@@ -276,13 +294,13 @@ declare namespace srvsdbx_AssetManagement {
          * @param path The path of the asset
          * @returns Either the created asset, or whatever error prevented its creation
          */
-        loadImageAsync: (path: string) => Promise<srvsdbx_ErrorHandling.Result<AssetSrcPair<import("p5").Image>, unknown>>;
+        loadImageAsync: (path: string) => Promise<srvsdbx_ErrorHandling.Result<AssetSrcPair<import("p5").Image>, SandboxError>>;
         /**
          * Attempts to construct a p5 `Font` object from a given path
          * @param path The path of the asset
          * @returns Either the created asset, or whatever error prevented its creation
          */
-        loadFontAsync: (path: string) => Promise<srvsdbx_ErrorHandling.Result<AssetSrcPair<any>, unknown>>;
+        loadFontAsync: (path: string) => Promise<srvsdbx_ErrorHandling.Result<AssetSrcPair<any>, SandboxError>>;
     };
     /**
      * Loads an array of images
@@ -1237,7 +1255,7 @@ declare class SandboxEventTarget<E extends SandboxEventMap> {
      *
      * If the name is passed, the last callback with the specified name is removed. Callbacks which are anonymous functions can therefore be removed by passing the empty string.
      *
-     * If a function is passed, the last callback to be equal to the function is removed
+     * If a function is passed, the last callback which equal to the function (using `==`) is removed
      * @returns Whether or not a listener was removed
      */
     removeListener<K extends keyof E & string>(event: K, selector: string | Listener<E, K>["callback"]): boolean;
@@ -1378,12 +1396,12 @@ declare namespace srvsdbx_Math {
  * having Typescript transpile them isn't worth it; for that reason, they've been commented until
  * further notice**
  */
-declare function generateCosmeticDecorator(): <T extends (...args: any[]) => unknown>(value: T, context: ClassMethodDecoratorContext | ClassGetterDecoratorContext | ClassSetterDecoratorContext) => void;
+declare function generateCosmeticDecorator(): <T extends (...args: any[]) => unknown>(value: T, context: any) => void;
 /**
  * A purely cosmetic decorator, indicating that a method may throw certain types of errors
  * @param errors The types of errors this method may throw
  */
-declare function Throws(...errors: ErrorConstructor[]): <T extends (...args: any[]) => unknown>(value: T, context: ClassMethodDecoratorContext<unknown, (this: unknown, ...args: any) => any> | ClassGetterDecoratorContext<unknown, unknown> | ClassSetterDecoratorContext<unknown, unknown>) => void;
+declare function Throws(...errors: ErrorConstructor[]): <T extends (...args: any[]) => unknown>(value: T, context: any) => void;
 /**
  * Extracts the key type from an EventMap type
  */
@@ -1400,7 +1418,7 @@ declare const EventMap: {
         /**
          * The internal map
          */
-        "__#29@#internal": Map<K, V>;
+        "__#30@#internal": Map<K, V>;
         /**
          * The internal map's size
          */
@@ -1466,7 +1484,7 @@ declare const EventMap: {
         /**
          * The amount of listeners on this target
          */
-        "__#27@#listenerCount": number;
+        "__#28@#listenerCount": number;
         /**
          * The amount of listeners on this target
          */
@@ -1474,7 +1492,7 @@ declare const EventMap: {
         /**
          * An array containing each listener registered on this target
          */
-        "__#27@#listeners": Listener<{
+        "__#28@#listeners": Listener<{
             get: {
                 event: Event;
                 args: [K];
@@ -1602,7 +1620,7 @@ declare const EventMap: {
          *
          * If the name is passed, the last callback with the specified name is removed. Callbacks which are anonymous functions can therefore be removed by passing the empty string.
          *
-         * If a function is passed, the last callback to be equal to the function is removed
+         * If a function is passed, the last callback which equal to the function (using `==`) is removed
          * @returns Whether or not a listener was removed
          */
         removeListener<K_3 extends "set" | "clear" | "get" | "delete">(event: K_3, selector: string | ((event: {
@@ -1800,6 +1818,38 @@ declare class ReducibleMap<K, V, R = V> implements Map<K, V> {
  * @param timer The timer to be cleared
  */
 declare function clearTimerIfPresent(timer: false | number): void;
+/**
+ * Represents a `Promise` whose state can be monitored
+ * @template T The type of value this promise may return
+ */
+declare class WatchablePromise<T> {
+    #private;
+    /**
+     * The promise being watched
+     */
+    get promise(): Promise<T>;
+    /**
+     * Whether or not the `Promise` has been fulfilled
+     */
+    get isFulfilled(): boolean;
+    /**
+     * Whether or not the `Promise` has been rejected
+     */
+    get isRejected(): boolean;
+    /**
+     * Whether or not the `Promise` has not been resolved
+     */
+    get isPending(): boolean;
+    /**
+     * Whether or not the `Promise` has been resolved
+     */
+    get isResolved(): boolean;
+    /**
+     * `* It's a constructor. It constructs.`
+     * @param promise A `Promise` to watch
+     */
+    constructor(promise: Promise<T>);
+}
 /**
  * An object containing fields who are in turn objects is subject to taxing the GC
  * unnecessarily. By forcefully re-assigning those object fields to `undefined`, we

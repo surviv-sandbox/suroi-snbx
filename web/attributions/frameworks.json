@@ -135,7 +135,17 @@
             }
         },
         {
-            "version": "v0.10.0 beta 1",
+            "version": "v0.10.0 b1",
+            "frameworks": {
+                "p5": "1.5.0",
+                "matterjs": "0.18.0",
+                "poly-decomp": "0.3.0",
+                "decimaljs": "10.4.0",
+                "electron": "23.1.0"
+            }
+        },
+        {
+            "version": "v0.10.0 b2",
             "frameworks": {
                 "p5": "1.5.0",
                 "matterjs": "0.18.0",

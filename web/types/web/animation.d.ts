@@ -72,6 +72,10 @@ declare namespace srvsdbx_Animation {
      */
     export type ExtractAnimationExtension<A extends AnimationSkeleton> = A extends AnimationSkeleton<infer K> ? K : never;
     /**
+     * Represents a function used to interpolate (or ease) between two values
+     */
+    export type EasingFunction = (a: number, b: number, t: number) => number;
+    /**
      * A collection of functions for easing, based on [this helpful reference](https://easings.net) and others
      *
      * For all functions, `t = 0` is guaranteed to return `a`, and `t = 1` is guaranteed to return `b`
@@ -85,7 +89,7 @@ declare namespace srvsdbx_Animation {
          * @returns The number at the specified point.\
          * `t = 0` is guaranteed to return `a`, and `t = 1` is guaranteed to return `b`.
          */
-        readonly linterp: ((a: number, b: number, t: number) => number) & {
+        readonly linterp: EasingFunction & {
             /**
              * A version of this interpolation function whose lower bound is 0 and whose upper bound is 1
              * @param t The interpolation factor
@@ -106,7 +110,7 @@ declare namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        readonly easeInSine: ((a: number, b: number, t: number) => number) & {
+        readonly easeInSine: EasingFunction & {
             /**
              * A version of this interpolation function whose lower bound is 0 and whose upper bound is 1
              * @param t The interpolation factor
@@ -127,7 +131,7 @@ declare namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        readonly easeOutSine: ((a: number, b: number, t: number) => number) & {
+        readonly easeOutSine: EasingFunction & {
             /**
              * A version of this interpolation function whose lower bound is 0 and whose upper bound is 1
              * @param t The interpolation factor
@@ -148,7 +152,7 @@ declare namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        readonly easeInOutSine: ((a: number, b: number, t: number) => number) & {
+        readonly easeInOutSine: EasingFunction & {
             /**
              * A version of this interpolation function whose lower bound is 0 and whose upper bound is 1
              * @param t The interpolation factor
@@ -169,7 +173,7 @@ declare namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        readonly easeInCubic: ((a: number, b: number, t: number) => number) & {
+        readonly easeInCubic: EasingFunction & {
             /**
              * A version of this interpolation function whose lower bound is 0 and whose upper bound is 1
              * @param t The interpolation factor
@@ -190,7 +194,7 @@ declare namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        readonly easeOutCubic: ((a: number, b: number, t: number) => number) & {
+        readonly easeOutCubic: EasingFunction & {
             /**
              * A version of this interpolation function whose lower bound is 0 and whose upper bound is 1
              * @param t The interpolation factor
@@ -211,7 +215,7 @@ declare namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        readonly easeInOutCubic: ((a: number, b: number, t: number) => number) & {
+        readonly easeInOutCubic: EasingFunction & {
             /**
              * A version of this interpolation function whose lower bound is 0 and whose upper bound is 1
              * @param t The interpolation factor
@@ -232,7 +236,7 @@ declare namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        readonly easeInQuintic: ((a: number, b: number, t: number) => number) & {
+        readonly easeInQuintic: EasingFunction & {
             /**
              * A version of this interpolation function whose lower bound is 0 and whose upper bound is 1
              * @param t The interpolation factor
@@ -253,7 +257,7 @@ declare namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        readonly easeOutQuintic: ((a: number, b: number, t: number) => number) & {
+        readonly easeOutQuintic: EasingFunction & {
             /**
              * A version of this interpolation function whose lower bound is 0 and whose upper bound is 1
              * @param t The interpolation factor
@@ -274,7 +278,7 @@ declare namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        readonly easeInOutQuintic: ((a: number, b: number, t: number) => number) & {
+        readonly easeInOutQuintic: EasingFunction & {
             /**
              * A version of this interpolation function whose lower bound is 0 and whose upper bound is 1
              * @param t The interpolation factor
@@ -295,7 +299,7 @@ declare namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        readonly easeInCirc: ((a: number, b: number, t: number) => number) & {
+        readonly easeInCirc: EasingFunction & {
             /**
              * A version of this interpolation function whose lower bound is 0 and whose upper bound is 1
              * @param t The interpolation factor
@@ -316,7 +320,7 @@ declare namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        readonly easeOutCirc: ((a: number, b: number, t: number) => number) & {
+        readonly easeOutCirc: EasingFunction & {
             /**
              * A version of this interpolation function whose lower bound is 0 and whose upper bound is 1
              * @param t The interpolation factor
@@ -337,7 +341,7 @@ declare namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        readonly easeInOutCirc: ((a: number, b: number, t: number) => number) & {
+        readonly easeInOutCirc: EasingFunction & {
             /**
              * A version of this interpolation function whose lower bound is 0 and whose upper bound is 1
              * @param t The interpolation factor
@@ -358,7 +362,7 @@ declare namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        readonly easeInElastic: ((a: number, b: number, t: number) => number) & {
+        readonly easeInElastic: EasingFunction & {
             /**
              * A version of this interpolation function whose lower bound is 0 and whose upper bound is 1
              * @param t The interpolation factor
@@ -379,7 +383,7 @@ declare namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        readonly easeOutElastic: ((a: number, b: number, t: number) => number) & {
+        readonly easeOutElastic: EasingFunction & {
             /**
              * A version of this interpolation function whose lower bound is 0 and whose upper bound is 1
              * @param t The interpolation factor
@@ -400,7 +404,7 @@ declare namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        readonly easeInOutElastic: ((a: number, b: number, t: number) => number) & {
+        readonly easeInOutElastic: EasingFunction & {
             /**
              * A version of this interpolation function whose lower bound is 0 and whose upper bound is 1
              * @param t The interpolation factor
@@ -421,7 +425,7 @@ declare namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        readonly easeInQuad: ((a: number, b: number, t: number) => number) & {
+        readonly easeInQuad: EasingFunction & {
             /**
              * A version of this interpolation function whose lower bound is 0 and whose upper bound is 1
              * @param t The interpolation factor
@@ -442,7 +446,7 @@ declare namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        readonly easeOutQuad: ((a: number, b: number, t: number) => number) & {
+        readonly easeOutQuad: EasingFunction & {
             /**
              * A version of this interpolation function whose lower bound is 0 and whose upper bound is 1
              * @param t The interpolation factor
@@ -463,7 +467,7 @@ declare namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        readonly easeInOutQuad: ((a: number, b: number, t: number) => number) & {
+        readonly easeInOutQuad: EasingFunction & {
             /**
              * A version of this interpolation function whose lower bound is 0 and whose upper bound is 1
              * @param t The interpolation factor
@@ -484,7 +488,7 @@ declare namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        readonly easeInQuart: ((a: number, b: number, t: number) => number) & {
+        readonly easeInQuart: EasingFunction & {
             /**
              * A version of this interpolation function whose lower bound is 0 and whose upper bound is 1
              * @param t The interpolation factor
@@ -505,7 +509,7 @@ declare namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        readonly easeOutQuart: ((a: number, b: number, t: number) => number) & {
+        readonly easeOutQuart: EasingFunction & {
             /**
              * A version of this interpolation function whose lower bound is 0 and whose upper bound is 1
              * @param t The interpolation factor
@@ -526,7 +530,7 @@ declare namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        readonly easeInOutQuart: ((a: number, b: number, t: number) => number) & {
+        readonly easeInOutQuart: EasingFunction & {
             /**
              * A version of this interpolation function whose lower bound is 0 and whose upper bound is 1
              * @param t The interpolation factor
@@ -547,7 +551,7 @@ declare namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        readonly easeInExpo: ((a: number, b: number, t: number) => number) & {
+        readonly easeInExpo: EasingFunction & {
             /**
              * A version of this interpolation function whose lower bound is 0 and whose upper bound is 1
              * @param t The interpolation factor
@@ -568,7 +572,7 @@ declare namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        readonly easeOutExpo: ((a: number, b: number, t: number) => number) & {
+        readonly easeOutExpo: EasingFunction & {
             /**
              * A version of this interpolation function whose lower bound is 0 and whose upper bound is 1
              * @param t The interpolation factor
@@ -589,7 +593,7 @@ declare namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        readonly easeInOutExpo: ((a: number, b: number, t: number) => number) & {
+        readonly easeInOutExpo: EasingFunction & {
             /**
              * A version of this interpolation function whose lower bound is 0 and whose upper bound is 1
              * @param t The interpolation factor
@@ -610,7 +614,7 @@ declare namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        readonly easeInBack: ((a: number, b: number, t: number) => number) & {
+        readonly easeInBack: EasingFunction & {
             /**
              * A version of this interpolation function whose lower bound is 0 and whose upper bound is 1
              * @param t The interpolation factor
@@ -631,7 +635,7 @@ declare namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        readonly easeOutBack: ((a: number, b: number, t: number) => number) & {
+        readonly easeOutBack: EasingFunction & {
             /**
              * A version of this interpolation function whose lower bound is 0 and whose upper bound is 1
              * @param t The interpolation factor
@@ -652,7 +656,7 @@ declare namespace srvsdbx_Animation {
          * @param b The end value
          * @param t The interpolation factor
          */
-        readonly easeInOutBack: ((a: number, b: number, t: number) => number) & {
+        readonly easeInOutBack: EasingFunction & {
             /**
              * A version of this interpolation function whose lower bound is 0 and whose upper bound is 1
              * @param t The interpolation factor
@@ -674,8 +678,9 @@ declare namespace srvsdbx_Animation {
          * @param p2x The x-component of the second control point. Must be within `[0, 1]`
          * @param p2y The y-component of the second control point
          * @returns An interpolation function accepting two bounds and an interpolation factor.
+         * @throws {RangeError} If one of the control points is out-of-bounds
          */
-        readonly cubicBezier: (p1x: number, p1y: number, p2x: number, p2y: number) => ((a: number, b: number, t: number) => number) & {
+        readonly cubicBezier: (p1x: number, p1y: number, p2x: number, p2y: number) => EasingFunction & {
             /**
              * A version of this interpolation function whose lower bound is 0 and whose upper bound is 1
              * @param t The interpolation factor
@@ -694,8 +699,9 @@ declare namespace srvsdbx_Animation {
          * @param points A series of control points. Note that the curve's endpoints are locked at (0, 0) and (1, 1),
          * and that the x components of every control point must lie within `[0, 1]`.
          * @returns An interpolation function accepting two bounds and an interpolation factor
+         * @throws {RangeError} If one of the control points is out-of-bounds
          */
-        readonly bezier: (...points: srvsdbx_Geometry.Point2D[]) => ((a: number, b: number, t: number) => number) & {
+        readonly bezier: (...points: srvsdbx_Geometry.Point2D[]) => EasingFunction & {
             /**
              * A version of this interpolation function whose lower bound is 0 and whose upper bound is 1
              * @param t The interpolation factor
@@ -712,14 +718,18 @@ declare namespace srvsdbx_Animation {
     };
     /**
      * Represents a function that, when called, will return an animation
+     * @template T The type of data this animation will interpolate through
      */
     export type IndeterminateAnimation<T extends object = {}> = (interpolationFunction: ConstructorParameters<typeof Animation<T>>[1]) => Animation<T>;
     /**
      * Represents a function for generating animations whose interpolation function has already been specified
+     * @template T The type of data this animation will interpolate through
+     * @template I The indeterminate animation being bound
      */
     export type BoundIndeterminateAnimation<T extends object = {}, I extends IndeterminateAnimation<T> = IndeterminateAnimation<T>> = () => ReturnType<I>;
     /**
      * Represents a series of movements applied on an object
+     * @template T The type of data this animation will interpolate through
      */
     export class Animation<T extends object = {}> {
         #private;
@@ -760,6 +770,8 @@ declare namespace srvsdbx_Animation {
     }
     /**
      * A utility class for playing animations
+     * @template T The kind of data this animation will be interpolating through
+     * @template K The names of the animations in this manager
      */
     export class AnimationManager<T extends object = {}, K extends string = string> {
         #private;
@@ -768,11 +780,13 @@ declare namespace srvsdbx_Animation {
          */
         constructor(animations: Record<K, Animation<T> | BoundIndeterminateAnimation<T>>);
         /**
-         * Animations can have "dynamic" keyframes that change, but evaluating such keyframes every draw often leads to broken results. To remedy this, we determine all the keyframes ahead of time for this instance of the animation.
+         * Animations can have "dynamic" keyframes that change, but evaluating such keyframes every draw often leads to broken results.
+         * To remedy this, we determine all the keyframes ahead of time for this instance of the animation.
          * @param name The name of the animation which is to be started
          * @returns A function that can be used to determine the state of the animated object at a specified time
          *
-         * **Returned function:**\
+         * **Returned function:**
+         *
          * Determines the state of the animated object at a specified time
          * @param time A time at which to evaluate the animation, in ms. `1` is 1ms after the animation's start, not the animation's end
          * @param overflowReturnsLastFrame Whether or not to return the last keyframe if a time beyond the animation's duration is passed
@@ -780,8 +794,29 @@ declare namespace srvsdbx_Animation {
          */
         start(name: K): <B extends boolean>(time: number, overflowReturnsLastFrame: B) => B extends true ? T | undefined : srvsdbx_ErrorHandling.Maybe<T>;
         /**
+         * Fetches an animation instance. If this animation isn't currently running, it will be started
+         * @param name The name of the animation to fetch
+         * @returns A pair whose first element is the resolved version of the animation and whose
+         * second element is its `evaluate` function.
+         */
+        fetchInstance(name: K): [Omit<Animation<T>, "animationSkeleton"> & {
+            animationSkeleton: Omit<Omit<AnimationSkeleton<T>, "keyframes"> & {
+                keyframes: (TimeBasedKeyframe & {
+                    data: MayBeFunctionWrapped<T, []>;
+                })[];
+            }, "keyframes"> & {
+                keyframes: (Omit<TimeBasedKeyframe & {
+                    data: MayBeFunctionWrapped<T, []>;
+                }, "data"> & {
+                    data: T;
+                })[];
+            };
+        }, <B extends boolean>(time: number, overflowReturnsLastFrame: B) => B extends true ? T | undefined : srvsdbx_ErrorHandling.Maybe<T>];
+        /**
          * Fetches an animation instance's `evaluate` function, starting the animation if it isn't already
          * @param name The name of the animation to fetch
+         * @returns A function that, when called with a certain time value, will determine the state of
+         * the animated object at that time
          */
         fetch(name: K): <B extends boolean>(time: number, overflowReturnsLastFrame: B) => B extends true ? T | undefined : srvsdbx_ErrorHandling.Maybe<T>;
         /**

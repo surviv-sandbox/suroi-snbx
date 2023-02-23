@@ -1,35 +1,4 @@
 /**
- * Represents the positions of a player's hands
- */
-type HandPositions = {
-    /**
-     * Information about the left hand
-     */
-    leftHand?: {
-        /**
-         * The hand's offset in surviv units along the axis parallel to the player's aim line
-         */
-        parr: number;
-        /**
-         * The hand's offset in surviv units along the axis perpendicular to the player's aim line
-         */
-        perp: number;
-    };
-    /**
-     * Information about the right hand
-     */
-    rightHand?: {
-        /**
-         * The hand's offset in surviv units along the axis parallel to the player's aim line
-         */
-        parr: number;
-        /**
-         * The hand's offset in surviv units along the axis perpendicular to the player's aim line
-         */
-        perp: number;
-    };
-};
-/**
  * A simplified representation of a melee weapon
  */
 interface SimpleMelee extends SimpleEquipableItem {
@@ -37,10 +6,6 @@ interface SimpleMelee extends SimpleEquipableItem {
      * Whether or not this melee is swung as long as the attack input is down—whether the melee "fires automatically"
      */
     readonly autoAttack: boolean;
-    /**
-     * Specify default positions for the user's hands when holding this weapon when no animations are playing
-     */
-    readonly handPositions?: Required<HandPositions>;
     /**
      * Information about the damage this melee weapon deals, their offsets in time and their areas of effect
      */
@@ -78,14 +43,25 @@ interface SimpleMelee extends SimpleEquipableItem {
     }[];
     /**
      * Whether or not this melee weapon's bounding box reflects bullets
+     *
+     * `false` if omitted
      */
     readonly isReflective?: boolean;
+    /**
+     * Whether or not this melee weapon can reflect bullets while attacking with
+     * said melee weapon
+     *
+     * `false` if omitted
+     */
+    readonly canReflectWhileAttacking?: boolean;
     /**
      * The maximum amount of targets this melee weapon can strike per hit
      *
      * This applies every time a damage calculation is done, so a melee weapon
      * that deals damage twice per swing (like the bonesaw) and that has this
      * property set to 3 can hit a total of 6 targets per swing
+     *
+     * `1` if omitted
      */
     readonly maxTargets?: number;
     /**
@@ -122,11 +98,16 @@ interface SimpleMelee extends SimpleEquipableItem {
             readonly layer?: 0 | 1 | 2;
         };
         /**
-         * Determine a rectangle that will act as this melee weapon's collider when holstered
+         * Determine a rectangle or circle that will act as this melee weapon's collider when holstered
          *
          * THe rectangle has the same orientation as the holstered image
          */
-        readonly collider?: {
+        readonly collider?: ({
+            /**
+             * The circle's radius, in surviv units
+             */
+            readonly radius: number;
+        } | {
             /**
              * The rectangle's width, in surviv units
              *
@@ -139,6 +120,7 @@ interface SimpleMelee extends SimpleEquipableItem {
              * If `match` is specified, the holstered image's corresponding dimension is used
              */
             readonly height: Dimension | "match";
+        }) & {
             /**
              * The offset along the axis parallel to the player's aim line
              */
@@ -248,6 +230,10 @@ interface SimpleMelee extends SimpleEquipableItem {
          * An animation to be played when this weapon is being used
          */
         readonly using: MayBeFunctionWrapped<srvsdbx_Animation.AnimationSkeleton<ItemAnimation> | "none">;
+        /**
+         * An animation to be played when a projectile is deflected off this weapon
+         */
+        readonly deflect?: MayBeFunctionWrapped<srvsdbx_Animation.AnimationSkeleton<ItemAnimation> | "none">;
     };
     /**
      * An array of additional objects that can be rendered alongside this item
@@ -315,6 +301,10 @@ interface SimpleMelee extends SimpleEquipableItem {
 declare class MeleePrototype extends InventoryItemPrototype {
     #private;
     /**
+     * Specify default positions for the user's hands when holding this weapon when no animations are playing
+     */
+    get handPositions(): HandPositions | undefined;
+    /**
      * Whether or not this melee is swung as long as the attack input is down—whether the melee "fires automatically"
      */
     get autoAttack(): boolean;
@@ -369,6 +359,10 @@ declare class MeleePrototype extends InventoryItemPrototype {
      */
     get isReflective(): boolean;
     /**
+     * Whether or not this melee weapon's bounding box reflects bullets
+     */
+    get canReflectWhileAttacking(): boolean;
+    /**
      * A number by which this weapon's damage will be multiplied when the damage is applied to an obstacle
      */
     get obstacleMult(): number;
@@ -382,6 +376,7 @@ declare class MeleePrototype extends InventoryItemPrototype {
     get animations(): {
         readonly idle: srvsdbx_Animation.Animation<ItemAnimation> | srvsdbx_Animation.BoundIndeterminateAnimation<ItemAnimation, srvsdbx_Animation.IndeterminateAnimation<ItemAnimation>>;
         readonly using: srvsdbx_Animation.Animation<ItemAnimation> | srvsdbx_Animation.BoundIndeterminateAnimation<ItemAnimation, srvsdbx_Animation.IndeterminateAnimation<ItemAnimation>>;
+        readonly deflect: srvsdbx_Animation.Animation<ItemAnimation> | srvsdbx_Animation.BoundIndeterminateAnimation<ItemAnimation, srvsdbx_Animation.IndeterminateAnimation<ItemAnimation>>;
     };
     /**
      * Information about this weapon's in-world rendition
@@ -413,11 +408,16 @@ declare class MeleePrototype extends InventoryItemPrototype {
             readonly layer?: 0 | 2 | 1 | undefined;
         };
         /**
-         * Determine a rectangle that will act as this melee weapon's collider when holstered
+         * Determine a rectangle or circle that will act as this melee weapon's collider when holstered
          *
          * THe rectangle has the same orientation as the holstered image
          */
-        readonly collider?: {
+        readonly collider?: (({
+            /**
+             * The circle's radius, in surviv units
+             */
+            readonly radius: number;
+        } | {
             /**
              * The rectangle's width, in surviv units
              *
@@ -430,6 +430,7 @@ declare class MeleePrototype extends InventoryItemPrototype {
              * If `match` is specified, the holstered image's corresponding dimension is used
              */
             readonly height: "match" | Dimension;
+        }) & {
             /**
              * The offset along the axis parallel to the player's aim line
              */
@@ -438,7 +439,7 @@ declare class MeleePrototype extends InventoryItemPrototype {
              * The offset along the axis perpendicular to the player's aim line
              */
             readonly offsetPerp: number;
-        } | undefined;
+        }) | undefined;
         /**
          * At what offset to draw this image, with (0, 0) being the player's center
          */
@@ -457,7 +458,21 @@ declare class MeleePrototype extends InventoryItemPrototype {
             readonly angle: number;
         };
     }, "collider"> & {
-        collider?: (Omit<{
+        collider?: (Omit<({
+            /**
+             * The circle's radius, in surviv units
+             */
+            readonly radius: number;
+        } & {
+            /**
+             * The offset along the axis parallel to the player's aim line
+             */
+            readonly offsetParr: number;
+            /**
+             * The offset along the axis perpendicular to the player's aim line
+             */
+            readonly offsetPerp: number;
+        }) | ({
             /**
              * The rectangle's width, in surviv units
              *
@@ -470,6 +485,7 @@ declare class MeleePrototype extends InventoryItemPrototype {
              * If `match` is specified, the holstered image's corresponding dimension is used
              */
             readonly height: "match" | Dimension;
+        } & {
             /**
              * The offset along the axis parallel to the player's aim line
              */
@@ -478,10 +494,12 @@ declare class MeleePrototype extends InventoryItemPrototype {
              * The offset along the axis perpendicular to the player's aim line
              */
             readonly offsetPerp: number;
-        }, "height" | "width"> & {
+        }), "height" | "width" | "radius"> & ({
+            radius: number;
+        } | {
             width: number;
             height: number;
-        }) | undefined;
+        })) | undefined;
     }) | undefined;
     /**
      * Information about this weapon's in-world rendition
@@ -702,11 +720,11 @@ declare class MeleePrototype extends InventoryItemPrototype {
      * @param obj The `SimpleMelee` object to parse
      * @returns A new `MeleePrototype`
      */
-    static from(obj: SimpleMelee): Promise<srvsdbx_ErrorHandling.Result<MeleePrototype, unknown[]>>;
+    static from(obj: SimpleMelee): Promise<srvsdbx_ErrorHandling.Result<MeleePrototype, SandboxError[]>>;
     /**
      * `* It's a constructor. It constructs`
      */
-    constructor(name: typeof ImportedObject.prototype.name, displayName: typeof ImportedObject.prototype.displayName, targetVersion: typeof ImportedObject.prototype.targetVersion, namespace: typeof ImportedObject.prototype.namespace, includePath: typeof ImportedObject.prototype.includePath, images: typeof InventoryItemPrototype.prototype.images, moveSpeedPenalties: typeof InventoryItemPrototype.prototype.moveSpeedPenalties, isReflective: typeof MeleePrototype.prototype.isReflective, autoAttack: typeof MeleePrototype.prototype.autoAttack, maxTargets: typeof MeleePrototype.prototype.maxTargets, damages: typeof MeleePrototype.prototype.damages, worldObject: srvsdbx_AssetManagement.ConvertPathsToImages<Omit<SimpleMelee["worldObject"] & {}, "collider"> & {
+    constructor(name: typeof ImportedObject.prototype.name, displayName: typeof ImportedObject.prototype.displayName, objectType: typeof ImportedObject.prototype.objectType, targetVersion: typeof ImportedObject.prototype.targetVersion, namespace: typeof ImportedObject.prototype.namespace, includePath: typeof ImportedObject.prototype.includePath, images: typeof InventoryItemPrototype.prototype.images, moveSpeedPenalties: typeof InventoryItemPrototype.prototype.moveSpeedPenalties, handPositions: typeof MeleePrototype.prototype.handPositions, isReflective: typeof MeleePrototype.prototype.isReflective, canReflectWhileAttacking: typeof MeleePrototype.prototype.canReflectWhileAttacking, autoAttack: typeof MeleePrototype.prototype.autoAttack, maxTargets: typeof MeleePrototype.prototype.maxTargets, damages: typeof MeleePrototype.prototype.damages, worldObject: srvsdbx_AssetManagement.ConvertPathsToImages<Omit<SimpleMelee["worldObject"] & {}, "collider"> & {
         collider?: (SimpleMelee["worldObject"] & {})["collider"] & {};
     }> | undefined, holstered: srvsdbx_AssetManagement.ConvertPathsToImages<Omit<Required<SimpleMelee["holstered"] & {}>, "collider"> & {
         collider?: (SimpleMelee["holstered"] & {})["collider"];
@@ -715,12 +733,12 @@ declare class MeleePrototype extends InventoryItemPrototype {
 /**
  * Represents a specific instance of a melee weapon
  */
-declare class Melee extends InventoryItem<MeleePrototype> implements EquipableItem, Destroyable {
+declare class Melee extends InventoryItem<MeleePrototype> implements EquipableItem<ItemAnimation, "idle" | "using" | "deflect">, Destroyable {
     #private;
     /**
      * An object to manage this item's animations
      */
-    get animationManager(): srvsdbx_Animation.AnimationManager<ItemAnimation, "idle" | "using">;
+    get animationManager(): srvsdbx_Animation.AnimationManager<ItemAnimation, "idle" | "using" | "deflect">;
     /**
      * The last time this weapon was fired
      */
@@ -729,6 +747,14 @@ declare class Melee extends InventoryItem<MeleePrototype> implements EquipableIt
      * Whether or not this melee's animation has been cancelled
      */
     get cancelledAnimation(): boolean;
+    /**
+     * The last time this melee weapon reflected a projectile
+     *
+     * - `get`: Returns the last time this melee weapon reflected a projectile
+     * - `set`: Sets the last time this melee weapon reflected a projectile
+     */
+    get lastReflect(): number;
+    set lastReflect(v: number);
     /**
      * `* It's a constructor. It constructs`
      */
@@ -748,7 +774,25 @@ declare class Melee extends InventoryItem<MeleePrototype> implements EquipableIt
      * More specifically, if an idle animation is running, but the using animation should be used,
      * the idle animation will be terminated
      */
-    getItemReference(): ItemAnimation["item"];
+    getHandReference(): HandPositions | undefined;
+    /**
+     * Returns this item's current dimensions, taking animations into account
+     *
+     * **This method will stop expired animations.**
+     * More specifically, if an idle animation is running, but the using animation should be used,
+     * the idle animation will be terminated
+     */
+    getItemReference(): {
+        readonly dimensions?: {
+            readonly width?: number | undefined;
+            readonly height?: number | undefined;
+        } | undefined;
+        readonly offset?: {
+            readonly parr?: number | undefined;
+            readonly perp?: number | undefined;
+            readonly angle?: number | undefined;
+        } | undefined;
+    } | undefined;
     /**
      * Serves to stop any animation related to this melee that are currently playeing
      */
