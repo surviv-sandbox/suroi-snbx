@@ -2,6 +2,7 @@
 !/**/libraries/**/*.js
 !/**/attributions/*.js
 /**/*.js.map
+!import.js
 .DS_Store
 node_modules
 .vscode
