@@ -2,54 +2,33 @@
  * Represents a bot or player: generally, something that can act as a player
  */
 class PlayerLike extends Generic<{
-    collision: {
-        event: CollisionEvent,
-        args: [Generic];
-    },
+    collision: [Generic, srvsdbx_Geometry.Point2D[]],
     /**
      * This player's death
+     *
+     * This event is fired whenever this object's health reaches 0
      */
-    death: {
-        /**
-         * The `Event` instance
-         */
-        event: Event,
-        /**
-         * The `PlayerLike` that killed this instance, if applicable
-         */
-        args: [PlayerLike | undefined];
-    },
+    death: [PlayerLike | undefined],
     /**
      * This player's killing of another
      */
-    kill: {
-        /**
-         * The `Event` instance
-         */
-        event: Event,
-        /**
-         * The `PlayerLike` that was killed
-         */
-        args: [PlayerLike];
-    };
+    kill: [PlayerLike];
 }> implements Destroyable {
     /**
-     * This player's inventory object
+     * The default movement speed for players
      */
-    readonly #inventory = new Inventory(this);
+    static readonly #DEFAULT_SPEED = 12;
     /**
-     * This player's inventory object
+     * The default movement speed for players
      */
-    get inventory() { return this.#inventory; }
+    static get DEFAULT_SPEED() { return this.#DEFAULT_SPEED; }
 
     /**
-     * The index of the last active item
+     * The item currently in use by the PlayerLike
+     *
+     * If they do not currently have an item equipped, `undefined` is returned
      */
-    #previousActiveIndex = 1;
-    /**
-     * The index of the last active item
-     */
-    get previousActiveIndex() { return this.#previousActiveIndex; }
+    get activeItem() { return this.#inventory.containers.main.get(this.#activeItemIndex) as (InventoryItem<InventoryItemPrototype & EquipableItemPrototype> & EquipableItem) | undefined; }
 
     /**
      * The index of the active item
@@ -61,103 +40,13 @@ class PlayerLike extends Generic<{
     get activeItemIndex() { return this.#activeItemIndex; }
 
     /**
-     * The item currently in use by the PlayerLike
+     * The point in the game world this player is aiming at
      */
-    get activeItem() { return this.#inventory.getItem(this.#activeItemIndex, "Main"); }
-
+    #aimPoint: srvsdbx_Geometry.Point2D;
     /**
-     * Holds information about the current state of this player
+     * The point in the game world this player is aiming at
      */
-    readonly #state: {
-        /**
-         * Whether or not this player is currently attempting to attack
-         */
-        attacking: boolean,
-        /**
-         * The amount of time a user will have to wait before using their item, taking free switches into account
-         */
-        effectiveSwitchDelay: number,
-        /**
-         * Whether or not this player is currently firing their weapon
-         */
-        firing: boolean,
-        /**
-         * The timestamp of the last time the user swapped items
-         */
-        lastSwitch: number,
-        /**
-         * The timestamp of the last "free" switch the user has performed
-         *
-         * A "free switch" is defined as an item switch that bypasses an item's usual switch delay: "quickswitching"
-         */
-        lastFreeSwitch: number,
-        /**
-         * Whether firing speed penalties should apply
-         */
-        noSlow: boolean;
-        /**
-         * Whether or not this player is currently reloading their weapon
-         */
-        reloading: false | number;
-    } = {
-            attacking: false,
-            effectiveSwitchDelay: 0,
-            firing: false,
-            lastSwitch: 0,
-            lastFreeSwitch: 0,
-            noSlow: false,
-            reloading: false
-        };
-    get state() { return this.#state; }
-
-    /**
-     * The maximum amount of health this player may have
-     */
-    #maxHealth = 100;
-    /**
-     * The maximum amount of health this player may have
-     *
-     * `get`: Returns the player's maximum health
-     *
-     * `set`: Sets the player's maximum health, except if the value is `NaN` (the setter serves to prevent accidentally corrupting the health with a `NaN`)
-     */
-    get maxHealth() { return this.#maxHealth; }
-    set maxHealth(v) {
-        !Number.isNaN(v) && (this.#maxHealth = v);
-    }
-
-    /**
-     * The player's current health
-     */
-    #health = 100;
-    /**
-     * The player's current health
-     *
-     * `get`: Returns the player's current health
-     *
-     * `set`: Sets the player's current health, except if the value is `NaN` (the setter serves to prevent accidentally corrupting the health with a `NaN`)
-     */
-    get health() { return this.#health; }
-
-    /**
-     * Stores any timers on this player. Timers are used to delay actions, like reloads.
-     *
-     * **When assigning these timers, take care to clear any timer that might be stored there!**
-     */
-    readonly #timers: {
-        /**
-         * The timer responsible for firing the user's current weapon
-         */
-        firing: false | number,
-        /**
-         * The timer responsible for replenishing the user's ammo after some delay
-         */
-        reload: false | number;
-    } = {
-            firing: false,
-            reload: false
-        };
-    get timers() { return this.#timers; }
+    get aimPoint() { return this.#aimPoint; }
 
     /**
      * Information about this player's hand positions
@@ -190,27 +79,262 @@ class PlayerLike extends Generic<{
             perp: 0.75
         }
     };
+    /**
+     * Information about this player's hand positions
+     */
     get hands() { return this.#hands; }
 
     /**
-     * Information about the speed players travel at
+     * The player's current health
      */
-    readonly #speed = {
-        default: 12
-    };
+    #health = 100;
     /**
-     * Information about the speed players travel at
+     * The player's current health
+     *
+     * `get`: Returns the player's current health
+     *
+     * `set`: Sets the player's current health, except if the value is `NaN` (the setter serves to prevent accidentally corrupting the health with a `NaN`)
      */
-    get speed() { return this.#speed; }
+    get health() { return this.#health; }
 
     /**
-     * The point in the game world this player is aiming at
+     * This player's inventory object
      */
-    #aimPoint: srvsdbx_Geometry.Point2D;
+    readonly #inventory = new Inventory(this);
     /**
-     * The point in the game world this player is aiming at
+     * This player's inventory object
      */
-    get aimPoint() { return this.#aimPoint; }
+    get inventory() { return this.#inventory; }
+
+    /**
+     * The maximum amount of health this player may have
+     */
+    #maxHealth = 100;
+    /**
+     * The maximum amount of health this player may have
+     *
+     * `get`: Returns the player's maximum health
+     *
+     * `set`: Sets the player's maximum health, except if the value is `NaN` (the setter serves to prevent accidentally corrupting the health with a `NaN`)
+     */
+    get maxHealth() { return this.#maxHealth; }
+    set maxHealth(v) {
+        !Number.isNaN(v) && (this.#maxHealth = v);
+    }
+
+    /**
+     * A collections of `Map`s whose role is to modify the intensity of actions
+     * performed by this player, such as dealing damage, speed, etc
+     *
+     * **When adding or otherwise operating on modifiers, be sure not to interfere with any other
+     * names currently in the map; usually, prefixing your desired name with a namespace specifier
+     * (`fire_effect` -> `srvsdbx::fire_effect`) should do the trick**
+     */
+    #modifiers = {
+        /**
+         * A `Map` whose values will modify outgoing damage by multiplying it and whose keys are their respectives sources
+         *
+         * **Names likely to be used:**
+         *
+         * _These names correspond to sources included in the standard `srvsdbx` namespace; they are therefore quite likely
+         * to be used_
+         * - `srvsdbx::frenemy`
+        */
+        damage: new ReducibleMap<string, number>((acc, cur) => acc * cur, 1),
+        /**
+          * A `Map` whose values will modify incoming damage by multiplying it and whose keys are their respectives sources
+          *
+          * **Reserved names (do not use):**
+          *
+          * _These names are almost guaranteed to be used by the game; thus, they should not be used to avoid overriding them_
+          * - `vest`
+          * - `helmet`
+          * - `backpack`
+         */
+        protection: new ReducibleMap<string, number>((acc, cur) => acc * cur, 1),
+        /**
+         * A `Map` whose values are speed multipliers and whose keys are their respectives sources
+         *
+         * Note that additive modifiers have precedence over multiplicative ones; the formula
+         * for the final speed is therefore `(s + a) * m`, where `s` is the base speed, `m` is
+         * the product of all the multiplicative speed modifiers and `a` is the sum of all the
+         * additive modifiers
+         *
+         * **Names likely to be used:**
+         *
+         * _These names correspond to sources included in the standard `srvsdbx` namespace; they are therefore quite likely
+         * to be used_
+         * - `srvsdbx::wet`
+         * - `srvsdbx::potatoSmg`
+         */
+        speedMultipliers: new ReducibleMap<string, number>((acc, cur) => acc * cur, 1),
+        /**
+         * A `Map` whose values are speed additions and whose keys are their respectives sources
+         *
+         * Note that additive modifiers have precedence over multiplicative ones; the formula
+         * for the final speed is therefore `(s + a) * m`, where `s` is the base speed, `m` is
+         * the product of all the multiplicative speed modifiers and `a` is the sum of all the
+         * additive modifiers
+         *
+         * _These names correspond to sources included in the standard `srvsdbx` namespace; they are therefore quite likely
+         * to be used_
+         * - `srvsdbx::inspire`
+         */
+        speedAdd: new ReducibleMap<string, number>((acc, cur) => acc + cur, 0),
+        /**
+         * A `Map` whose values will modify reload time and fire rate by multiplying it and whose keys are their respectives sources
+         *
+         *  _These names correspond to sources included in the standard `srvsdbx` namespace; they are therefore quite likely
+         * to be used_
+         * - `srvsdbx::wet`
+         */
+        ergonomics: new ReducibleMap<string, number>((acc, cur) => acc * cur, 1),
+    } as const;
+    /**
+     * A collections of `Map`s whose role is to modify the intensity of actions
+     * performed by this player, such as dealing damage, speed, etc
+     */
+    get modifiers() { return this.#modifiers; }
+
+    /**
+     * The index of the last active item
+     */
+    #previousActiveIndex = 1;
+    /**
+     * The index of the last active item
+     */
+    get previousActiveIndex() { return this.#previousActiveIndex; }
+
+    /**
+     * The radius of this player **in pixels**
+     */
+    #radius = gamespace.PLAYER_SIZE;
+    /**
+     * The radius of this player **in pixels**
+     *
+     * - `get`: Returns this player's radius
+     * - `set`: Sets this player's radius if it is not `NaN`
+     */
+    get radius() { return this.#radius; }
+    set radius(r) {
+        if (Number.isNaN(r)) return;
+
+        this.body.scale(r);
+    }
+
+    /**
+     * Holds information about the current state of this player
+     */
+    readonly #state: {
+        /**
+         * Whether or not this player is currently attempting to attack
+         */
+        attacking: boolean,
+        /**
+         * The amount of time a user will have to wait before using their item, taking free switches into account
+         */
+        effectiveSwitchDelay: number,
+        /**
+         * Whether or not this player is currently firing their weapon
+         */
+        firing: boolean,
+        /**
+         * The time this user will have to wait before firing their weapon
+         */
+        firingDelay: number,
+        /**
+         * The timestamp of the last time the user swapped items
+         */
+        lastSwitch: number,
+        /**
+         * The timestamp of the last "free" switch the user has performed
+         *
+         * A "free switch" is defined as an item switch that bypasses an item's usual switch delay: "quickswitching"
+         */
+        lastFreeSwitch: number,
+        /**
+         * Whether firing speed penalties should apply
+         */
+        noSlow: boolean;
+        /**
+         * Whether or not this player is currently reloading their weapon
+         */
+        reloading: false | number;
+    } = {
+            attacking: false,
+            effectiveSwitchDelay: 0,
+            firingDelay: 0,
+            firing: false,
+            lastSwitch: 0,
+            lastFreeSwitch: 0,
+            noSlow: false,
+            reloading: false
+        };
+    /**
+     * Holds information about the current state of this player
+     */
+    get state() { return this.#state; }
+
+    /**
+     * A `Set` of status effects currently affecting this player
+     *
+     * **Implementation note:** Calling this object's `.clear` method will call each status effect's
+     * `.destroy` method before clearing the set
+     */
+    readonly #statusEffects = (() => {
+        const set = new Set<StatusEffect<{}>>(),
+            nativeClear = set.clear.bind(set),
+            nativeAdd = set.add.bind(set);
+
+        set.clear = () => {
+            for (const effect of set)
+                effect.destroy();
+
+            nativeClear();
+        };
+
+        set.add = (effect) => {
+            /*
+                This serves to prevent two instances of the same status effect from being applied at once.
+
+                Sets disallow duplicate entries, but since two constructor calls yield two different instances,
+                we need to compare them by prototype instead (the prototype field and not the result of `Object.getPrototypeOf`)
+            */
+
+            const residing = [...set.values()].find(fx => fx.prototype == effect.prototype);
+
+            if (residing) residing.renew();
+            else nativeAdd(effect);
+
+            return set;
+        };
+
+        return set;
+    })();
+    /**
+     * A `Set` of status effects currently affecting this player
+     */
+    get statusEffects() { return this.#statusEffects; }
+
+    /**
+     * Stores any timers on this player. Timers are used to delay actions, like reloads.
+     *
+     * **When assigning these timers, take care to clear any timer that might be stored there!**
+     */
+    readonly #timers: {
+        /**
+         * The timer responsible for firing the user's current weapon
+        */
+        firing: false | number;
+    } = {
+            firing: false
+        };
+    /**
+     * Stores any timers on this player. Timers are used to delay actions, like reloads.
+     *
+     * **When assigning these timers, take care to clear any timer that might be stored there!**
+     */
+    get timers() { return this.#timers; }
 
     /**
      * A rough measure of this player's "scope" level
@@ -226,114 +350,54 @@ class PlayerLike extends Generic<{
     get view() { return this.#view; }
 
     /**
-     * A collections of `Map`s whose role is to modify the intensity of actions
-     * performed by this player, such as dealing damage, speed, etc
+     * Used internally to keep track of intersections with obstacles
      */
-    #modifiers = {
-        /**
-         * A `Map` whose values will modify outgoing damage by multiplying it and whose keys are their respectives sources
-        */
-        damage: new ReducibleMap<string, number>((acc, cur) => acc * cur, 1),
-        /**
-          * A `Map` whose values will modify incoming damage by multiplying it and whose keys are their respectives sources
-         */
-        protection: new ReducibleMap<string, number>((acc, cur) => acc * cur, 1),
-        /**
-         * A `Map` whose values are speed multipliers and whose keys are their respectives sources
-         *
-         * Note that additive modifiers have precedence over multiplicative ones; the formula
-         * for the final speed is therefore `(s + a) * m`, where `s` is the base speed, `m` is
-         * the product of all the multiplicative speed modifiers and `a` is the sum of all the
-         * additive modifiers
-         */
-        speedMult: new ReducibleMap<string, number>((acc, cur) => acc * cur, 1),
-        /**
-         * A `Map` whose values are speed additions and whose keys are their respectives sources
-         *
-         * Note that additive modifiers have precedence over multiplicative ones; the formula
-         * for the final speed is therefore `(s + a) * m`, where `s` is the base speed, `m` is
-         * the product of all the multiplicative speed modifiers and `a` is the sum of all the
-         * additive modifiers
-         */
-        speedAdd: new ReducibleMap<string, number>((acc, cur) => acc + cur, 0),
-        /**
-         * A `Map` whose values will modify reload time and fire rate by multiplying it and whose keys are their respectives sources
-         */
-        ergonomics: new ReducibleMap<string, number>((acc, cur) => acc * cur, 1),
-    } as const;
+    readonly #intersections = new ReducibleMap<number, srvsdbx_Geometry.Vector2D>(
+        (acc, cur) => acc.plus(cur),
+        srvsdbx_Geometry.Vector2D.zeroVector()
+    );
     /**
-     * A collections of `Map`s whose role is to modify the intensity of actions
-     * performed by this player, such as dealing damage, speed, etc
-     */
-    get modifiers() { return this.#modifiers; }
-
-    /**
-     * A `Set` of status effects currently affecting this player
+     * Moves this player to ensure it isn't intersecting any other game object
      *
-     * **Implementation note:** Calling this object's `.clear` method will call each status effect's
-     * `.destroy` method before clearing the set
+     * **Don't call this!**
      */
-    readonly #statusEffects = (() => {
-        const s = new Set<StatusEffect<{}>>();
+    // This is kinda hacky, but I can't think of another way
+    unintersect() {
+        if (this.#intersections.size) {
+            const intersection = this.#intersections.reduced,
+                restrictions = this.#restrictions.reduced;
 
-        const nativeClear = s.clear.bind(s);
-        const nativeAdd = s.add.bind(s);
+            intersection.x *= restrictions[intersection.x < 0 ? "left" : "right"];
+            intersection.y *= restrictions[intersection.y < 0 ? "up" : "down"];
 
-        s.clear = () => {
-            for (const effect of s)
-                effect.destroy();
-
-            nativeClear();
-        };
-
-        s.add = (effect) => {
-            /*
-                This serves to prevent two instances of the same status effect from being applied at once.
-
-                Sets disallow duplicate entries, but since two constructor calls yield two different instances,
-                we need to compare them by prototype instead (the prototype field and not the result of `Object.getPrototypeOf`)
-            */
-
-            const residing = [...s.values()].find(fx => fx.prototype == effect.prototype);
-
-            if (residing) residing.renew();
-            else nativeAdd(effect);
-
-            return s;
-        };
-
-        return s;
-    })();
-    /**
-     * A `Set` of status effects currently affecting this player
-     */
-    get statusEffects() { return this.#statusEffects; }
-
-    /**
-     * The radius of this player
-     */
-    #radius = gamespace.PLAYER_SIZE;
-    /**
-     * The radius of this player
-     *
-     * - `get`: Returns this player's radius
-     * - `set`: Sets this player's radius if it is not `NaN`
-     */
-    get radius() { return this.#radius; }
-    set radius(r) {
-        if (!Number.isNaN(r)) {
-            const pos = {
-                x: this.position.x,
-                y: this.position.y
-            };
-
-            Matter.Body.setPosition(
-                this.body = Matter.Bodies.circle(0, 0, this.#radius = r),
-                pos
-            );
-            Matter.Body.setAngle(this.body, this.angle);
+            this.setPosition(intersection.plus(this.position));
+            this.#intersections.clear();
         }
     }
+
+    /**
+     * Restrictions on movement imposed by collisions with obstacles
+     */
+    readonly #restrictions = new ReducibleMap<number, {
+        left: number,
+        up: number,
+        right: number,
+        down: number;
+    }>(
+        (acc, cur) => ({
+            left: acc.left * cur.left,
+            up: acc.up * cur.up,
+            right: acc.right * cur.right,
+            down: acc.down * cur.down
+        }),
+        {
+            left: 1,
+            up: 1,
+            right: 1,
+            down: 1
+        }
+    );
+    get restrictions() { return this.#restrictions; }
 
     /**
      * `* It's a constructor. It constructs.`
@@ -341,14 +405,18 @@ class PlayerLike extends Generic<{
      */
     constructor(position: srvsdbx_Geometry.Point2D) {
         super(
-            Matter.Bodies.circle(0, 0, 50),
+            new srvsdbx_Geometry.Circle(
+                srvsdbx_Geometry.Vector2D.zeroPoint(),
+                gamespace.PLAYER_SIZE
+            ),
             (p5: import("p5")) => {
                 const T = this,
                     body = T.body,
                     currentSize = this.#radius,
                     defaultSize = gamespace.PLAYER_SIZE,
                     activeItem = T.activeItem,
-                    itemPrototype = activeItem?.prototype as (InventoryItemPrototype & SimpleEquipableItem) | undefined;
+                    itemPrototype = activeItem?.prototype,
+                    itemReference = activeItem?.getItemReference();
 
                 p5.push();
 
@@ -357,23 +425,69 @@ class PlayerLike extends Generic<{
 
                 p5.noStroke();
 
+                function drawEquipment(key: EquipmentTypes) {
+                    const object = T.#inventory.containers.equipment.get(key);
+                    if (object?.prototype?.images?.world && object.prototype.worldObject) {
+                        p5.push();
+
+                        const proto = object.prototype,
+                            image = proto.images.world!,
+                            worldObject = proto.worldObject!,
+                            dimensions = {
+                                width: worldObject.dimensions.width * currentSize,
+                                height: worldObject.dimensions.height * currentSize,
+                            },
+                            offset = {
+                                parr: worldObject.offset.parr * currentSize,
+                                perp: worldObject.offset.perp * currentSize,
+                                angle: worldObject.offset.angle
+                            };
+
+                        p5.rectMode(p5.CENTER);
+                        p5.imageMode(p5.CENTER);
+
+                        p5.tint(worldObject.tint);
+                        p5.translate(offset.perp, -offset.parr);
+                        p5.rotate(offset.angle);
+
+                        p5.image(
+                            image.asset,
+                            0, 0,
+                            dimensions.width,
+                            dimensions.height
+                        );
+
+                        gamespace.drawHitboxIfEnabled(p5, "DEFAULT", () => {
+                            p5.rect(
+                                0, 0,
+                                dimensions.width,
+                                dimensions.height
+                            );
+                        });
+
+                        p5.pop();
+                    }
+                }
+
                 function drawBody() {
                     p5.push();
 
                     p5.fill("#F8C574");
                     p5.circle(0, 0, 2 * currentSize);
 
+                    p5.pop();
+
+                    p5.push();
                     gamespace.drawDebug(
                         p5,
-                        T.collidable ? "COLLIDABLE" : "DEFAULT",
+                        T.collidable.getHitboxName(),
                         () => p5.circle(0, 0, 2 * currentSize),
                         () => {
                             p5.rotate(-T.angle);
-                            p5.translate(-body.position.x, -body.position.y);
+                            p5.translate(-body.origin.x, -body.origin.y);
                         },
-                        T as Generic
+                        T
                     );
-
                     p5.pop();
                 }
 
@@ -394,15 +508,14 @@ class PlayerLike extends Generic<{
                                     handSize * defaultSize
                                 );
 
-                                if (!layer) {
-                                    gamespace.drawHitboxIfEnabled(p5, "DEFAULT", p5 => {
+                                if (!layer)
+                                    gamespace.drawHitboxIfEnabled(p5, "DEFAULT", p5 =>
                                         p5.circle(
                                             hand.perp * currentSize,
                                             -hand.parr * currentSize,
                                             handSize * defaultSize
-                                        );
-                                    });
-                                }
+                                        )
+                                    );
                             }
 
                             p5.pop();
@@ -457,13 +570,15 @@ class PlayerLike extends Generic<{
                     if (activeItem && itemPrototype) {
                         const useChargedImage = activeItem instanceof Gun
                             && itemPrototype instanceof GunPrototype
-                            && itemPrototype!.fireMode.includes("charge") && activeItem.charged,
+                            && itemPrototype.fireMode.includes("charge") && activeItem.charged,
 
                             chargeProps = (itemPrototype as unknown as GunPrototype)?.chargeProps,
 
-                            itemReference = T.activeItem.getItemReference(),
+                            image = (useChargedImage ? chargeProps?.chargeImage?.image?.asset : void 0)
+                                ?? (itemReference?.image
+                                    ? itemPrototype.imageMap.get(itemReference.image!)?.asset
+                                    : itemPrototype!.images.world?.asset),
 
-                            image = (useChargedImage ? chargeProps?.chargeImage?.image?.asset : void 0) ?? itemPrototype!.images.world?.asset,
                             dimensions = (() => {
                                 const dim = (useChargedImage ? activeItem.chargedDimensions : void 0)
                                     ?? itemReference?.dimensions
@@ -481,12 +596,12 @@ class PlayerLike extends Generic<{
                             fallbackOffset = (itemPrototype as unknown as GunPrototype)?.imageOffset ?? { parr: 0, perp: 0, angle: 0 },
 
                             offset = (() => {
-                                const o = (useChargedImage ? chargeProps?.chargeImage?.imageOffset : void 0) ?? itemReference?.offset ?? fallbackOffset;
+                                const offset = (useChargedImage ? chargeProps?.chargeImage?.imageOffset : void 0) ?? itemReference?.offset ?? fallbackOffset;
 
                                 return {
-                                    parr: o.parr,
-                                    perp: o.perp,
-                                    angle: "angle" in o ? o.angle : void 0
+                                    parr: offset.parr,
+                                    perp: offset.perp,
+                                    angle: "angle" in offset ? offset.angle : void 0
                                 };
                             })(),
 
@@ -503,8 +618,8 @@ class PlayerLike extends Generic<{
                             for (const addon of addons ?? []) {
                                 if (extractValue(addon.show, activeItem as Gun & Melee) === false || (dual && addon.dual !== true)) continue;
 
-                                const img = pickRandomInArray(addon.images).asset,
-                                    dimensions = srvsdbx_AssetManagement.determineImageDimensions(img, {
+                                const image = pickRandomInArray(addon.images).asset,
+                                    dimensions = srvsdbx_AssetManagement.determineImageDimensions(image, {
                                         width: extractValue(addon.dimensions.width, activeItem as Gun & Melee),
                                         height: extractValue(addon.dimensions.height, activeItem as Gun & Melee)
                                     }),
@@ -512,10 +627,10 @@ class PlayerLike extends Generic<{
                                         parr: extractValue(addon.position.parr, activeItem as Gun & Melee),
                                         perp: extractValue(addon.position.perp, activeItem as Gun & Melee)
                                     },
-                                    recImpPar = dual ? -1 : 1,
+                                    recoilImpulseParity = dual ? -1 : 1,
                                     finalPosition = {
-                                        parr: (position.parr + +(recoilImpulseParity == recImpPar && addon.recoil !== false) * recoilParr) * currentSize,
-                                        perp: (position.perp + +(recoilImpulseParity == recImpPar && addon.recoil !== false) * recoilPerp) * currentSize
+                                        parr: (position.parr + +(recoilImpulseParity == recoilImpulseParity && addon.recoil !== false) * recoilParr) * currentSize,
+                                        perp: (position.perp + +(recoilImpulseParity == recoilImpulseParity && addon.recoil !== false) * recoilPerp) * currentSize
                                     };
 
                                 p5.push();
@@ -525,19 +640,17 @@ class PlayerLike extends Generic<{
                                 p5.translate(finalPosition.perp, -finalPosition.parr);
                                 p5.rotate(offset.angle ?? 0);
                                 p5.image(
-                                    img,
-                                    0,
-                                    0,
-                                    dimensions.width,
-                                    dimensions.height
+                                    image,
+                                    0, 0,
+                                    dimensions.width, dimensions.height
                                 );
 
-                                gamespace.drawHitboxIfEnabled(p5, "DEFAULT", p5 => {
+                                gamespace.drawHitboxIfEnabled(p5, "DEFAULT", p5 =>
                                     p5.rect(
                                         0, 0,
                                         dimensions.width, dimensions.height
-                                    );
-                                });
+                                    )
+                                );
 
                                 p5.pop();
 
@@ -574,7 +687,7 @@ class PlayerLike extends Generic<{
                             if (activeItem instanceof Melee && itemPrototype instanceof MeleePrototype) {
                                 const collider = activeItem.getCollider();
 
-                                if (collider && (itemPrototype.canReflectWhileAttacking || !T.#state.attacking)) {
+                                if (collider && (itemPrototype.canReflectWhileAttacking || T.canAttack())) {
                                     p5.push();
 
                                     // random component switch is random
@@ -583,13 +696,17 @@ class PlayerLike extends Generic<{
                                         (itemPrototype.worldObject?.collider?.offsetPerp ?? 0) * defaultSize
                                     );
 
-                                    const vertices = collider.vertices;
-
                                     gamespace.drawHitboxIfEnabled(p5, "REFLECTIVE", () => {
                                         p5.beginShape();
-                                        for (let i = 0, l = vertices.length; i < l; i++) {
-                                            p5.vertex(vertices[i].x, vertices[i].y);
-                                        }
+
+                                        if (collider instanceof srvsdbx_Geometry.Rectangle) {
+                                            const vertices = collider.vertices;
+
+                                            for (let i = 0, l = vertices.length; i < l; i++)
+                                                p5.vertex(vertices[i].x, vertices[i].y);
+
+                                        } else p5.circle(0, 0, 2 * collider.radius);
+
                                         p5.endShape("close");
                                     });
 
@@ -604,24 +721,22 @@ class PlayerLike extends Generic<{
                             activeItem instanceof Melee
                             && itemPrototype instanceof MeleePrototype
                         ) {
-                            // Show the damage closest to the current time, ±100ms
+                            // Show any damage that has occured in the last 100ms
                             const damages = itemPrototype.damages.filter(
-                                d => 100 >= Math.abs(gamespace.currentUpdate - activeItem.lastUse - d.time)
+                                d => srvsdbx_Math.checkBounds(gamespace.currentUpdate - activeItem.lastUse - d.time, 0, 100)
                             ).map(d => d.areaOfEffect);
 
                             if (damages.length)
-                                for (let i = 0, l = damages.length; i < l; i++) {
-                                    const damage = damages[i];
-
+                                for (const damage of damages) {
                                     p5.push();
                                     p5.translate(
                                         damage.offset.perp * defaultSize,
                                         -damage.offset.parr * defaultSize
                                     );
 
-                                    gamespace.drawHitboxIfEnabled(p5, "AREA_OF_EFFECT", () => {
-                                        p5.circle(0, 0, 2 * damage.radius * defaultSize);
-                                    });
+                                    gamespace.drawHitboxIfEnabled(p5, "AREA_OF_EFFECT", () =>
+                                        p5.circle(0, 0, 2 * damage.radius * defaultSize)
+                                    );
 
                                     p5.pop();
                                 }
@@ -633,11 +748,11 @@ class PlayerLike extends Generic<{
                             && itemPrototype.effectsOnFire
                         )
                             for (const query of itemPrototype.effectsOnFire)
-                                gamespace.drawHitboxIfEnabled(p5, "AREA_OF_EFFECT", () => {
+                                gamespace.drawHitboxIfEnabled(p5, "AREA_OF_EFFECT", () =>
                                     // This AoE tends to be big enough that the default level of detail
                                     // isn't enough
-                                    p5.ellipse(0, 0, 2 * query.radius, 2 * query.radius, 50);
-                                });
+                                    p5.ellipse(0, 0, 2 * query.radius, 2 * query.radius, 50)
+                                );
 
                         drawAddons((itemPrototype as unknown as GunPrototype | MeleePrototype).addonsAbove, false);
 
@@ -678,9 +793,9 @@ class PlayerLike extends Generic<{
                 }
 
                 function drawHolsteredItems(layer: 0 | 1 | 2) {
-                    for (const [_, i] of T.#inventory.items) {
-                        if (i instanceof Melee && T.activeItem != i) {
-                            const holster = i.prototype.holstered;
+                    for (const [, item] of T.#inventory.containers.main) {
+                        if (item instanceof Melee && T.activeItem != item) {
+                            const holster = item.prototype.holstered;
 
                             if (holster?.dimensions.layer != layer) return;
 
@@ -706,24 +821,28 @@ class PlayerLike extends Generic<{
                                 );
                             });
 
-                            const collider = i.getCollider();
+                            const collider = item.getCollider();
 
                             if (collider) {
                                 p5.push();
 
-                                // random component switch is random
                                 p5.translate(
                                     -holster.collider.offsetParr * defaultSize,
                                     holster.collider.offsetPerp * defaultSize
                                 );
 
-                                const vertices = collider.vertices;
-
                                 gamespace.drawHitboxIfEnabled(p5, "REFLECTIVE", () => {
                                     p5.beginShape();
-                                    for (let i = 0, l = vertices.length; i < l; i++) {
-                                        p5.vertex(vertices[i].x, vertices[i].y);
+
+                                    if (collider instanceof srvsdbx_Geometry.Rectangle) {
+                                        const vertices = collider.vertices;
+                                        for (let i = 0, l = vertices.length; i < l; i++) {
+                                            p5.vertex(vertices[i].x, vertices[i].y);
+                                        }
+                                    } else {
+                                        p5.circle(0, 0, 2 * collider.radius);
                                     }
+
                                     p5.endShape("close");
                                 });
 
@@ -768,38 +887,57 @@ class PlayerLike extends Generic<{
 
                 let functions,
                     layer = (
-                        (itemPrototype as unknown as srvsdbx_ErrorHandling.Maybe<GunPrototype>)?.fireMode?.includes?.("charge")
-                            && (activeItem as srvsdbx_ErrorHandling.Maybe<Gun>)?.charged
+                        (itemPrototype as unknown as GunPrototype | undefined)?.fireMode?.includes?.("charge")
+                            && (activeItem as Gun | undefined)?.charged
 
-                            ? (itemPrototype as unknown as srvsdbx_ErrorHandling.Maybe<GunPrototype>)?.chargeProps?.chargeImage?.dimensions?.layer
+                            ? (itemPrototype as unknown as GunPrototype | undefined)?.chargeProps?.chargeImage?.dimensions?.layer
                             : void 0
                     )
-                        ?? (itemPrototype as unknown as srvsdbx_ErrorHandling.Maybe<GunPrototype>)?.dimensions?.layer
-                        ?? (itemPrototype as unknown as srvsdbx_ErrorHandling.Maybe<MeleePrototype>)?.worldObject?.dimensions.layer
+                        ?? itemReference?.dimensions?.layer
+                        ?? (itemPrototype as unknown as GunPrototype | undefined)?.dimensions?.layer
+                        ?? (itemPrototype as unknown as MeleePrototype | undefined)?.worldObject?.dimensions.layer
                         ?? 0;
 
                 switch (layer) {
                     case 0: {
                         functions = [
-                            drawHolsteredItems.bind(void 0, 0), drawItemAndHands, // layer 0
-                            drawHolsteredItems.bind(void 0, 1), drawBody, // layer 1
-                            drawRemainingHands, drawHolsteredItems.bind(void 0, 2) // layer 2
+                            drawEquipment.bind(void 0, "backpack"),
+                            drawHolsteredItems.bind(void 0, 0),
+                            drawItemAndHands,
+                            drawHolsteredItems.bind(void 0, 1),
+                            drawBody,
+                            drawEquipment.bind(void 0, "vest"),
+                            drawRemainingHands,
+                            drawHolsteredItems.bind(void 0, 2),
+                            drawEquipment.bind(void 0, "helmet"),
                         ] as const;
                         break;
                     }
                     case 1: {
                         functions = [
-                            drawHolsteredItems.bind(void 0, 0), // layer 0
-                            drawHolsteredItems.bind(void 0, 1), drawBody, drawItemAndHands, // layer 1
-                            drawRemainingHands, drawHolsteredItems.bind(void 0, 2) // layer 2
+                            drawEquipment.bind(void 0, "backpack"),
+                            drawHolsteredItems.bind(void 0, 0),
+                            drawHolsteredItems.bind(void 0, 1),
+                            drawBody,
+                            drawEquipment.bind(void 0, "vest"),
+                            drawItemAndHands,
+                            drawRemainingHands,
+                            drawHolsteredItems.bind(void 0, 2),
+                            drawEquipment.bind(void 0, "helmet"),
                         ] as const;
                         break;
                     }
                     case 2: {
                         functions = [
-                            drawHolsteredItems.bind(void 0, 0), drawBody, // layer 0
-                            drawHolsteredItems.bind(void 0, 1), drawRemainingHands, // layer 1
-                            drawHolsteredItems.bind(void 0, 2), drawItemAndHands // layer 2
+                            drawEquipment.bind(void 0, "backpack"),
+                            drawHolsteredItems.bind(void 0, 0),
+                            drawBody,
+                            drawEquipment.bind(void 0, "vest"),
+                            drawHolsteredItems.bind(void 0, 1),
+                            drawRemainingHands,
+                            drawItemAndHands,
+                            drawHolsteredItems.bind(void 0, 2),
+                            drawEquipment.bind(void 0, "helmet"),
                         ] as const;
                         break;
                     }
@@ -812,9 +950,216 @@ class PlayerLike extends Generic<{
             position
         );
 
-        this.#aimPoint = srvsdbx_Geometry.Vector2D.zeroPt();
+        this.#aimPoint = srvsdbx_Geometry.Vector2D.zeroPoint();
+
+        const modifyConstraints = (() => {
+            const generateAddToMap =
+                <V>(map: Map<number, V>) =>
+                    (value: V) =>
+                        void map.set(
+                            map.size - 1,
+                            value
+                        ),
+                addToIntersections = generateAddToMap(this.#intersections),
+                addToRestrictions = (() => {
+                    const add = generateAddToMap(this.#restrictions);
+
+                    return (diff: srvsdbx_Geometry.Vector2D) => {
+                        add({
+                            left: diff.x != 0 ?
+                                diff.x > 0 ? Math.abs(Math.sin(diff.direction)) : 1
+                                : 1,
+                            up: diff.y != 0 ?
+                                diff.y > 0 ? Math.abs(Math.cos(diff.direction)) : 1
+                                : 1,
+                            right: diff.x != 0 ?
+                                diff.x > 0 ? 1 : Math.abs(Math.sin(diff.direction))
+                                : 1,
+                            down: diff.y != 0 ?
+                                diff.y > 0 ? 1 : Math.abs(Math.cos(diff.direction))
+                                : 1
+                        });
+                    };
+                })();
+
+            return (diff: srvsdbx_Geometry.Vector2D) => {
+                addToIntersections(diff);
+                addToRestrictions(diff);
+            };
+        })();
+
+        this.events.addEventListener("collision", (_, target) => {
+            if (target.collidable != CollisionLevels.ALL) return;
+
+            if (target instanceof Obstacle) {
+                const hitbox = (target as Obstacle<ObstacleTypes>).prototype.hitbox;
+
+                if (hitbox.type == "circle") {
+                    const diff = srvsdbx_Geometry.Vector2D.fromPoint2D(this.position)
+                        .minus(target.position);
+
+                    diff.length = (this.#radius + (target as Obstacle<"circle">).radius * target.scale) - diff.length;
+
+                    modifyConstraints(diff);
+                } else {
+                    const vertices = (target as Obstacle<"rectangle">).body.vertices,
+                        squaredRadius = this.#radius ** 2,
+                        verticesByDistance = vertices
+                            .map(vertex => [vertex, srvsdbx_Geometry.Vector2D.squaredDistanceBetweenPts(vertex, this.position)] as [srvsdbx_Geometry.Point2D, number])
+                            .sort(([, a], [, b]) => a - b),
+                        collidedVertices = verticesByDistance
+                            .filter(([, distance]) => distance < squaredRadius)
+                            .map(([vertex]) => vertex),
+                        solveVertex = (vertex: srvsdbx_Geometry.Point2D) => {
+                            const diff = srvsdbx_Geometry.Vector2D.fromPoint2D(this.position)
+                                .minus(vertex);
+
+                            /*
+                                The behavior here is to make the circle "slide" off
+                                the vertex, but we have to sure it doesn't slide into
+                                the box. In other words, we ensure the displacement doesn't
+                                slide the circle into one of the box's edges.
+
+                                Using the signs of the circle's velocity, we figure out which
+                                side to limit.
+                            */
+
+                            const currentVelocity = this.velocityMap.reduced,
+                                halfDimensions = {
+                                    width: (target as Obstacle<"rectangle">).dimensions.width * target.scale / 2,
+                                    height: (target as Obstacle<"rectangle">).dimensions.height * target.scale / 2
+                                };
+
+                            if (
+                                currentVelocity.x != 0 &&
+                                srvsdbx_Math.checkBounds(
+                                    this.position.y - target.position.y,
+                                    -halfDimensions.height,
+                                    halfDimensions.height
+                                )
+                            ) {
+                                diff.y = 0;
+                            } else if (
+                                currentVelocity.y != 0 &&
+                                srvsdbx_Math.checkBounds(
+                                    this.position.x - target.position.x,
+                                    -halfDimensions.width,
+                                    halfDimensions.width
+                                )
+                            ) {
+                                diff.x = 0;
+                            }
+
+                            diff.length = this.#radius - diff.length;
+
+                            modifyConstraints(diff);
+                        },
+                        solveEdge = (collidedEdge: srvsdbx_Geometry.LineSegment) => {
+                            /*
+                                There's a cheeky optimization we can do here: since surviv only has axis-aligned
+                                boxes, then it's guaranteed that one of the components of both start and end will
+                                be the same: either both x components will be the same, or both y components will be
+
+                                The repeated component lets us know whether the segment is vertical or horizontal, and so
+                                from there, it's almost trivial to calculate the displacement; no vector math needed
+                            */
+
+                            // Vertical segment
+                            if (collidedEdge.start.x == collidedEdge.end.x) {
+                                const dx = this.position.x - collidedEdge.start.x;
+
+                                modifyConstraints(
+                                    new srvsdbx_Geometry.Vector2D(
+                                        /*
+                                            Inherit sign and "magnitude"
+
+                                            Think of the abs as ensuring that the displacement's
+                                            size is the same regardless of what side the collision
+                                            comes from, and the sign ensures that the player is
+                                            pushed out in the right direction
+                                        */
+                                        Math.sign(dx) * (this.#radius - Math.abs(dx)),
+                                        0
+                                    )
+                                );
+                            } else {
+                                // Horizontal segment
+                                const dy = this.position.y - collidedEdge.start.y;
+
+                                modifyConstraints(
+                                    new srvsdbx_Geometry.Vector2D(
+                                        0,
+                                        Math.sign(dy) * (this.#radius - Math.abs(dy))
+                                    )
+                                );
+                            }
+                        };
+
+                    switch (collidedVertices.length) {
+                        case 1: { // Colliding with one corner, easy enough
+                            solveVertex(collidedVertices[0]);
+                            break;
+                        }
+                        case 2: { // Two corners
+                            solveEdge({
+                                start: collidedVertices[0],
+                                end: collidedVertices[1]
+                            });
+                            break;
+                        }
+                        case 3: {
+                            solveVertex(verticesByDistance[0][0]);
+                            break;
+                        }
+                        case 4: {
+                            solveVertex(target.position);
+                            break;
+                        }
+                        default: { // Colliding with edge
+                            solveEdge({
+                                // The edge that'll be colliding will be the one
+                                // bound by the two closest vertices
+                                start: verticesByDistance[0][0],
+                                end: verticesByDistance[1][0]
+                            });
+                            break;
+                        }
+                    }
+                }
+            }
+        });
 
         gamespace.objects.players.set(this.id, this);
+    }
+
+    /**
+     * Identical to the method it overrides, but modified to take
+     * restrictions into account
+     */
+    override update() {
+        if (this.destroyed || this.parent) return;
+
+        const body = this.body,
+            deltaTime = gamespace.currentUpdate - gamespace.lastUpdate,
+            velocity = this.compileVelocities(),
+            restriction = this.#restrictions.reduced,
+            finalVelocity = {
+                x: deltaTime * velocity.x * (velocity.x > 0 ? restriction.right : restriction.left),
+                y: deltaTime * velocity.y * (velocity.y > 0 ? restriction.up : restriction.down)
+            };
+
+        this.setPosition({
+            x: body.origin.x + finalVelocity.x,
+            y: body.origin.y + finalVelocity.y
+        });
+
+        this.#restrictions.clear();
+
+        this.angle += srvsdbx_Math.normalizeAngle(deltaTime * this.compileAngularVelocities() / 1000, "radians");
+
+        this.layer += velocity.z * deltaTime;
+
+        super.updateFollowers();
     }
 
     /**
@@ -822,35 +1167,30 @@ class PlayerLike extends Generic<{
      *
      * A player can use their active item if:
      * - There is an active item
-     * - It is equippable
+     * - It is equipable
      * - The elapsed time since its last use is greater than the item's use delay
      * @returns Whether or not the item can be used
      */
     canAttack() {
         const item = this.activeItem;
 
-        if (!item || !(typeof (item.prototype as InventoryItemPrototype & SimpleEquipableItem).useDelay != "number")) return false;
+        if (!item || (typeof item.prototype.useDelay != "number"))
+            return false;
 
-        return item.lastUse - gamespace.currentUpdate >= (item.prototype as InventoryItemPrototype & SimpleEquipableItem).useDelay;
+        return gamespace.currentUpdate - item.lastUse >= this.#state.firingDelay;
     }
 
     /**
      * Inverses the weapon slots, putting the first weapon in the second and vice versa
      */
     swapWeapons() {
-        const primary = this.inventory.getItem(0, "Main"),
-            secondary = this.inventory.getItem(1, "Main");
+        this.#inventory.containers.main.swap(0, 1, true);
 
-        secondary && this.inventory.setItem(0, "Main", secondary, false);
-        primary && this.inventory.setItem(1, "Main", primary, false);
-
-        if (this.#previousActiveIndex == 0 || this.#previousActiveIndex == 1) {
+        if (this.#previousActiveIndex == 0 || this.#previousActiveIndex == 1)
             this.#previousActiveIndex = 1 - this.#previousActiveIndex;
-        }
 
-        if (this.#activeItemIndex == 0 || this.#activeItemIndex == 1) {
+        if (this.#activeItemIndex == 0 || this.#activeItemIndex == 1)
             this.#activeItemIndex = 1 - this.#activeItemIndex;
-        }
     }
 
     /**
@@ -858,63 +1198,90 @@ class PlayerLike extends Generic<{
      * @param slotId The slot in the inventory to switch to
      */
     setActiveItemIndex(slotId: number) {
-        if (this.#inventory.getItem(slotId, "Main")) {
+        if (this.#inventory.containers.main.has(slotId)) {
             const oldIndex = this.#activeItemIndex,
-                oldItem = this.activeItem,
-                activeItemIsGun = () => this.activeItem instanceof Gun;
-
-            if (oldItem instanceof Gun) {
-                oldItem.stopCharging();
-            }
-
-            oldItem?.stopAnimations?.();
-
-            this.#activeItemIndex = slotId;
+                oldItem = this.activeItem;
 
             if (slotId != oldIndex) {
+                this.#activeItemIndex = slotId;
+
                 const proto = this.activeItem?.prototype,
                     oldProto = oldItem?.prototype,
+                    canFreeSwitch = gamespace.currentUpdate - this.#state.lastFreeSwitch >= 1000;
 
-                    freeSwitchExpired = gamespace.currentUpdate - this.#state.lastFreeSwitch >= 1000;
+                if (oldItem instanceof Gun) {
+                    oldItem.stopCharging();
+                    oldItem.reloadTimer.clear();
+                }
+                oldItem?.stopAnimations?.();
 
-                if (freeSwitchExpired) this.#state.lastFreeSwitch = gamespace.currentUpdate;
-
-                this.#state.effectiveSwitchDelay = (proto as srvsdbx_ErrorHandling.Maybe<GunPrototype>)?.switchDelay ?? 0;
-                this.#state.noSlow = true;
+                this.applySwitchPenalties();
 
                 this.#previousActiveIndex = oldIndex;
                 if (
-                    // last free switch happened over a second ago
-                    freeSwitchExpired &&
+                    // Last free switch happened over a second ago
+                    canFreeSwitch &&
 
-                    // the switch is occurring before the weapon can fire
-                    gamespace.currentUpdate - (oldItem?.lastUse ?? 0) < (
+                    // The switch is occurring before the current weapon can fire
+                    !(gamespace.currentUpdate - (oldItem?.lastUse ?? 0) >= (
                         ((
                             !!(oldProto as GunPrototype)?.fireMode?.match?.(/^(auto-)?burst/) && (oldProto as GunPrototype)?.burstProps
                                 ? (oldProto as GunPrototype)?.burstProps?.burstDelay
-                                : (oldProto as InventoryItemPrototype & SimpleEquipableItem)?.useDelay
+                                : oldProto?.useDelay
                         ) ?? Infinity)
                     ) &&
 
-                    // Different non-zero deployGroups (0 / 0 gives NaN, and NaN != 1)
-                    ((oldProto as srvsdbx_ErrorHandling.Maybe<GunPrototype>)?.deployGroup ?? 0) / ((proto as srvsdbx_ErrorHandling.Maybe<GunPrototype>)?.deployGroup ?? 0) != 1
-                ) this.#state.effectiveSwitchDelay = 250;
+                        // Different non-zero deployGroups (0 / 0 gives NaN, and NaN != 1)
+                        ((oldProto as GunPrototype | undefined)?.deployGroup ?? 0)
+                        / ((proto as GunPrototype | undefined)?.deployGroup ?? 0)
+                        == 1
+                    )
+                ) this.#state.effectiveSwitchDelay = proto instanceof GunPrototype ? 250 : 0;
 
-                this.#state.lastSwitch = gamespace.currentUpdate;
+                this.#state.firingDelay = this.#state.effectiveSwitchDelay;
 
-                clearTimerIfPresent(this.#timers.firing);
-                clearTimerIfPresent(this.#timers.reload);
-                this.#state.attacking = this.#state.reloading = this.#timers.firing = this.#timers.reload = false;
+                if (this.activeItem instanceof Gun) {
+                    const item = this.activeItem;
 
-                if (activeItemIsGun()) {
-                    const item = this.activeItem as Gun;
-
-                    if (!item.ammo) {
-                        item.scheduleReload(this.#state.effectiveSwitchDelay);
-                    }
+                    if (!item.ammo) item.scheduleReload(this.#state.effectiveSwitchDelay);
                 }
             }
         }
+    }
+
+    /**
+     * Simulates the user switching to another item and back to this one, without
+     * actually switching anything
+     *
+     * Used to apply penalties when swapping out items
+     */
+    applySwitchPenalties() {
+        if (!this.activeItem) return;
+
+        const proto = this.activeItem!.prototype,
+            canFreeSwitch = gamespace.currentUpdate - this.#state.lastFreeSwitch >= 1000,
+            isGun = proto instanceof GunPrototype;
+
+        this.#state.effectiveSwitchDelay = isGun ? proto.switchDelay : 0;
+
+        if (canFreeSwitch) {
+            this.#state.lastFreeSwitch = gamespace.currentUpdate;
+            if (isGun) {
+                this.#state.effectiveSwitchDelay = 250;
+            }
+        }
+
+        this.#state.noSlow = true;
+
+        this.#state.lastSwitch = gamespace.currentUpdate;
+
+        if (this.activeItem instanceof Gun) {
+            this.activeItem.stopCharging();
+            this.activeItem.reloadTimer.clear();
+        }
+
+        clearTimerIfPresent(this.#timers.firing);
+        this.#state.attacking = this.#state.reloading = this.#timers.firing = false;
     }
 
     /**
@@ -923,6 +1290,7 @@ class PlayerLike extends Generic<{
      * whose magnitude is set to a certain amount corresponding to the player's speed.
      *
      * Other velocities are treated normally.
+     * @returns This player's velocity
      */
     override compileVelocities() {
         const keys = [
@@ -933,15 +1301,15 @@ class PlayerLike extends Generic<{
         ],
             keyboardRaw = srvsdbx_Geometry.Vector3D.fromPoint3D(
                 keys.reduce(
-                    (p, c) => srvsdbx_Geometry.Vector3D.plus(p, this.velocityMap.get(c) ?? srvsdbx_Geometry.Vector3D.zeroPt(), true),
-                    srvsdbx_Geometry.Vector3D.zeroPt()
+                    (p, c) => srvsdbx_Geometry.Vector3D.plus(p, this.velocityMap.get(c) ?? srvsdbx_Geometry.Vector3D.zeroPoint(), true),
+                    srvsdbx_Geometry.Vector3D.zeroPoint()
                 )
             ),
             keyboard = keyboardRaw.scale(this.determineMoveSpeed() * 0.05 / keyboardRaw.length, true);
 
         return [...this.velocityMap.entries()]
             .filter(([key, _]) => !keys.includes(key))
-            .reduce((accumulator, [_, current]) => accumulator.plus(current), srvsdbx_Geometry.Vector3D.zeroVec())
+            .reduce((accumulator, [_, current]) => accumulator.plus(current), srvsdbx_Geometry.Vector3D.zeroVector())
             .plus(keyboard);
     }
 
@@ -958,24 +1326,38 @@ class PlayerLike extends Generic<{
             prototype = activeItem?.prototype,
 
             isGun = prototype instanceof GunPrototype,
-            isCharging = isGun && (activeItem! instanceof Gun) && (prototype as GunPrototype).fireMode.includes("charge") && (activeItem!.isCharging || activeItem!.charged),
-            applyFiringPenalty = isGun ?
-                !this.#state.noSlow && // Not currently noslow'ing
+            isCharging = isGun && (activeItem! instanceof Gun) && prototype.fireMode.includes("charge") && (activeItem!.isCharging || activeItem!.charged),
+            applyFiringPenalty = activeItem ?
+                !this.#state.noSlow && // Not currently doing noslow
                 (
                     this.#state.firing || // Currently firing
-                    gamespace.currentUpdate - (this.activeItem?.lastUse ?? 0) < ((!!prototype.fireMode.match(/^(auto-)?burst/) && prototype.burstProps ? prototype.burstProps.burstDelay : prototype.useDelay) ?? Infinity)
+                    gamespace.currentUpdate - (activeItem.lastUse ?? 0) < (
+                        (
+                            isGun && !!prototype!.fireMode?.match?.(/^(auto-)?burst/) && prototype!.burstProps
+                                ? prototype!.burstProps!.burstDelay
+                                : prototype!.useDelay
+                        ) ?? Infinity
+                    )
                     // Or the delay between now and the last shot is less than the weapon's firing delay
-                    + (this.#state.attacking && prototype.fireMode != "semi" ? 50 : 1)
+                    + (this.#state.attacking && isGun && prototype!.fireMode != "semi" ? 50 : 1)
                     // If firing in full auto, we add padding to the movement penalty to prevent the speed from viscously vibrating
-                ) : false;
+                )
+                : false;
 
-        const speed = this.#speed.default // Base speed
-            + passive //  Passive speed penalties
-            + ((prototype?.moveSpeedPenalties as { active?: number; })?.active ?? 0)  //   Active speed penalty
-            + (applyFiringPenalty ? (prototype as GunPrototype).moveSpeedPenalties.using : 0) //   Firing speed penalty
-            + (isCharging ? prototype.chargeProps?.speedPenalty ?? 0 : 0);// Charging speed penalty
+        const baseSpeed = PlayerLike.#DEFAULT_SPEED                                                           //  Default speed
+            + passive                                                                                         //  Passive speed penalties
+            + (
+                applyFiringPenalty
+                    ? (prototype as GunPrototype).moveSpeedPenalties.using                                    //   Active speed penalty
+                    : prototype?.moveSpeedPenalties?.active ?? 0                                              //   Firing speed penalty
+            )
+            + (isCharging ? prototype.chargeProps?.speedPenalty ?? 0 : 0),                                    // Charging speed penalty
 
-        return ((applyFiringPenalty ? speed / 2 : speed - 1) + this.#modifiers.speedAdd.reduced) * this.#modifiers.speedMult.reduced;
+            //    __|> base penalty
+            add = -1 + this.#modifiers.speedAdd.reduced,                                                      //       Additive modifiers
+            multipliers = this.#modifiers.speedMultipliers.reduced * (applyFiringPenalty && isGun ? 0.5 : 1); // Multiplicative modifiers
+
+        return (baseSpeed + add) * multipliers;
     }
 
     /**
@@ -1010,20 +1392,67 @@ class PlayerLike extends Generic<{
     }
 
     /**
+     * A specialized method for applying damage via bullets
+     * @param bullet The bullet for which damage will be calculated
+     */
+    applyBulletDamage(bullet: Bullet) {
+        const isHeadshot = bullet.isHeadshot,
+            damage = (isHeadshot ? bullet.damage : bullet.damage * bullet.multipliers.headshot)
+                * [...this.#modifiers.protection.entries()].reduce((acc, cur) => {
+                    switch (cur[0]) {
+                        case "vest": return acc * (isHeadshot ? 1 : cur[1]);
+                        case "helmet": return acc * (isHeadshot ? cur[1] : 0.7 + cur[1] * 0.3);
+                        /*
+                            Helmets have a protection value which is multiplied by 0.3 for body shots
+                            The formula for bodyshot protection is therefore `p * 0.3` for some protection value `p`.
+                            Converting from protection value to protection modifier can be done by subtracting the value `v` from 1 (`m = 1 - v`)
+                            Therefore, the formula for determining the bodyshot protection given a protection value `p` is
+                            the result of the following steps:
+                            - Convert to a protection value
+                            - Multiply by 0.3
+                            - Convert back to a protection modifier
+
+                            Assembling the three steps yields
+                            1 - (1 - p) * 0.3
+
+                            And then simplifying
+                            1 - (1 * 0.3 - p * 0.3)
+                            1 - 0.3 + p * 0.3
+                            0.7 + p * 0.3
+                        */
+                        default: return acc * cur[1];
+                    }
+                }, 1);
+
+        this.setHealth(this.#health - damage);
+    }
+
+    /**
      * Applies the specified amount of damage to a player
      * @param amount The amount of damage to deal. Negative numbers heal
-     */
+     * @param source The player dealing the damage, if applicable
+    */
     applyDamage(amount: number, source?: PlayerLike): srvsdbx_ErrorHandling.Result<undefined, string> {
-        return this.applyHealing(-amount, source);
+        if (!Number.isNaN(amount)) {
+            this.#health -= amount * this.#modifiers.protection.reduced;
+
+            if (this.#health < 0) {
+                this.events.dispatchEvent("death", source);
+                source && source.events.dispatchEvent("kill", this);
+            }
+
+            return srvsdbx_ErrorHandling.emptyResult();
+        } else return { err: "Received NaN" };
     }
 
     /**
      * Heals the players by the specified amount
      * @param amount The amount of health to heal by. Negative numbers harm
+     * @param source The player dealing the damage, if applicable
     */
     applyHealing(amount: number, source?: PlayerLike): srvsdbx_ErrorHandling.Result<undefined, string> {
         if (!Number.isNaN(amount)) {
-            this.#health += amount * this.#modifiers.protection.reduced;
+            this.#health += amount;
 
             if (this.#health < 0) {
                 this.events.dispatchEvent("death", source);
@@ -1037,10 +1466,16 @@ class PlayerLike extends Generic<{
     /**
      * Directly set the player's health
      * @param amount The amount to set the player's health at
+     * @param source The player dealing the damage, if applicable
      */
-    setHealth(amount: number): srvsdbx_ErrorHandling.Result<undefined, string> {
+    setHealth(amount: number, source?: PlayerLike): srvsdbx_ErrorHandling.Result<undefined, string> {
         if (!Number.isNaN(amount)) {
             this.#health = amount;
+
+            if (this.#health < 0) {
+                this.events.dispatchEvent("death", source);
+                source && source.events.dispatchEvent("kill", this);
+            }
 
             return srvsdbx_ErrorHandling.emptyResult();
         } else return { err: "Received NaN" };
@@ -1050,19 +1485,20 @@ class PlayerLike extends Generic<{
      * Identical to the method it overrides, but clears `PlayerLike`-specific fields
      */
     override destroy() {
+        if (this.destroyed) return;
         super.destroy();
 
         this.#inventory.destroy();
 
         //@ts-expect-error
-        this.#modifiers = this.#hands = this.#inventory = this.#speed = this.#state = this.#statusEffects = this.#timers = void 0;
+        this.#modifiers = this.#hands = this.#inventory = this.#state = this.#statusEffects = this.#timers = void 0;
     }
 }
 
 /**
  * A singleton class representing the player
  */
-const Player = createSingleton(class Player extends PlayerLike implements Destroyable {
+const Player = srvsdbx_OOP.createSingleton(class Player extends PlayerLike implements Destroyable {
     /**
      * A `Map` whose values are shake intensities and whose keys are the intensities' corresponding sources
      */
@@ -1095,7 +1531,6 @@ const Player = createSingleton(class Player extends PlayerLike implements Destro
 
         if (!shakeIntensity) this.removeShake(source);
         else this.#shakeIntensities.set(source, shakeIntensity);
-
     }
 
     /**
@@ -1112,13 +1547,14 @@ const Player = createSingleton(class Player extends PlayerLike implements Destro
      * @param strength The strength of the shake
      */
     #determineShakeIntensity(origin: { x: number, y: number; }, strength: number) {
-        return Math.clamp((2000 - srvsdbx_Geometry.Vector2D.distBetweenPts(this.body.position, origin)) / 1500, 0, 1) * strength;
+        return Math.clamp((2000 - srvsdbx_Geometry.Vector2D.distanceBetweenPts(this.body.origin, origin)) / 1500, 0, 1) * strength;
     }
 
     /**
      * Identical to the method it overrides, but clears `Player`-specific fields
      */
     destroy() {
+        if (this.destroyed) return;
         super.destroy();
 
         //@ts-expect-error
@@ -1142,22 +1578,166 @@ class Inventory implements Destroyable {
     get owner() { return this.#owner; }
 
     /**
-     * A map whose keys are the slot names and whose values are the items stocked there
+     * The amount of equipable items this inventory possess
      */
-    readonly #items: Map<string, InventoryItem | (InventoryItem & EquipableItem)> = new Map;
+    static readonly #MAIN_SLOTS = 4;
     /**
-     * A map whose keys are the slot names and whose values are the items stocked there
+     * The amount of equipable items this inventory possess
+     */
+    static get MAIN_SLOTS() { return this.#MAIN_SLOTS; }
+
+    /**
+     * An aggregation of the `main` and `equipment` containers
+    */
+    readonly #items = new Map<string, InventoryItem>();
+    /**
+     * An aggregation of the `main` and `equipment` containers
      */
     get items() { return this.#items; }
 
     /**
-     * Whether or not an object has been destroyed
+     * Whether or not this object has been destroyed
      */
     #destroyed = false;
     /**
-     * Whether or not an object has been destroyed
+     * Whether or not this object has been destroyed
      */
     get destroyed() { return this.#destroyed; }
+
+    /**
+     * The inventory is divided into four containers to house different types
+     * of items
+     */
+    readonly #containers = (() => {
+        // This weird-ass magic is needed to keep typescript happy; without it, it whines about supertypes of ItemAnimation not being assignable to it
+        const generateItemMap = <T extends InventoryItem, E extends boolean = false, K = number>(mapName: string) => {
+            type U = T & IfThenElse<E, EquipableItem, {}>;
+
+            type NewMap<W> = Omit<AugmentedMap<K, W>, "set"> & {
+                /**
+                 * Adds a new item to this collection at a certain key, replacing any item already there
+                 * @param key The key at which to insert the item
+                 * @param item The item to insert there
+                 * @param destroyCurrent If set to `true` (`true` by default), then the item already occupying
+                 * the slot designated by `key` will be destroyed
+                 */
+                set
+                    <V extends ItemAnimation = ItemAnimation>
+                    (
+                        key: K,
+                        item: IfThenElse<E, T & EquipableItem<V, string>, U> | IfThenElse<E, T & EquipableItem<V, string>, U>["prototype"],
+                        destroyCurrent?: boolean
+                    ): boolean;
+            };
+
+            const map = new AugmentedMap<K, U>() as NewMap<U>;
+
+            const destroyAtKey = (key: K) => {
+                this.#items.get(`${mapName}${key}`)?.destroy?.();
+            };
+
+            map.set = <V extends ItemAnimation = ItemAnimation>
+                (
+                    key: K,
+                    item: IfThenElse<E, T & EquipableItem<V, string>, U> | IfThenElse<E, T & EquipableItem<V, string>, U>["prototype"],
+                    destroyCurrent = true
+                ) => {
+                destroyCurrent && destroyAtKey(key);
+
+                const instance = item instanceof InventoryItemPrototype
+                    ? item.create(this.#owner)
+                    : item;
+
+                this.#items.set(`${mapName}${key}`, instance);
+
+                return AugmentedMap.prototype.set.call(map, key, instance);
+            };
+
+            map.delete = (key: K) => {
+                destroyAtKey(key);
+                this.#items.delete(`${mapName}${key}`);
+                return AugmentedMap.prototype.delete.call(map, key);
+            };
+
+            map.clear = () => {
+                for (const [k] of this.#items)
+                    if (k.startsWith(mapName)) {
+                        this.#items.get(k)?.destroy?.();
+                        this.#items.delete(k);
+                    }
+
+                AugmentedMap.prototype.clear.call(map);
+            };
+
+            return map;
+        };
+
+        return {
+            /**
+             * The main container represents items that can be equipped by the user,
+             * such as firearms, melees and grenades
+             */
+            main: (() => {
+                const map = generateItemMap<InventoryItem<InventoryItemPrototype & EquipableItemPrototype> & EquipableItem, true>("Main"),
+                    set = map.set.bind(map);
+
+                map.set = (key, item, destroyCurrent, applySwitchPenalties = true) => {
+                    const owner = this.#owner;
+
+                    if (key == owner.activeItemIndex && applySwitchPenalties)
+                        /*
+                            When switching out the active item for another, we need to
+                            impose all the delays that would be imposed for switching to
+                            another slot.
+                        */
+                        this.#owner.applySwitchPenalties();
+
+                    const returnVal = set(key, item, destroyCurrent);
+
+                    if (!owner.activeItem)
+                        owner.setActiveItemIndex(key);
+
+                    return returnVal;
+                };
+
+                return map as typeof map & {
+                    /**
+                     * Adds a new item to this collection at a certain key, replacing any item already there
+                     * @param key The key at which to insert the item
+                     * @param item The item to insert there
+                     * @param destroyCurrent If set to `true` (`true` by default), then the item already occupying
+                     * the slot designated by `key` will be destroyed
+                     * @param applySwitchPenalties If set to `true` (`true` by default), the active
+                     * item will be incumbered as if it had just been switched to
+                     */
+                    set(
+                        key: number,
+                        item: InventoryItem & EquipableItem,
+                        destroyCurrent?: boolean,
+                        applySwitchPenalties?: boolean
+                    ): typeof map;
+                };
+            })(),
+            /**
+             * The equipment container holds `Equipment` objects, equipped by the user
+             */
+            equipment: generateItemMap<Equipment, false, EquipmentTypes>("Equipment"),
+            /**
+             * The consumable container holds a quantity of items of a certain type, rather
+             * than holding a certain item in a certain slot; consumables are items that, when
+             * consumed, do something to the player or their environment.
+             */
+            consumables: new Map<string, number>(),
+            /**
+             * The ammo container holds a quantity of items of a certain type, rather
+             * than holding a certain item in a certain slot; ammos are objects needed for
+             * firing weapons
+             */
+            ammo: new Map<string, number>()
+            //todo: perks
+        };
+    })();
+    get containers() { return this.#containers; }
 
     /**
      * `* It's a constructor. It constructs.`
@@ -1168,71 +1748,21 @@ class Inventory implements Destroyable {
     }
 
     /**
-     * Fetches an item in a given slot corresponding to some category
-     * @param slot The slot number
-     * @param category The category this item belongs to. (ex: `Main` for firearms, `Medical` for consumables, `Ammo` for ammunition)
-     * @template T The category type. `Main` returns `EquipableItem`s, while others just return `InventoryItem`s
-     * @template U The type of animations this item has, if applicable
-     * @returns The item at the specified location, if it exists
-     */
-    getItem<
-        T extends "Main" | string,
-        U extends ItemAnimation = ItemAnimation
-    >(
-        slot: number,
-        category: T
-    ): InventoryItem & (T extends "Main" ? (EquipableItem<U>) : {}) | undefined {
-        return this.#items.get(`${category}${slot}`) as any;
-    }
-
-    /**
-     * Checks to see if an item exists in a slot
-     * @param slot The slot number
-     * @param category The category this item belongs to. (ex: `Main` for firearms, `Medical` for consumables, `Ammo` for ammunition)
-     * @returns Whether or not there exists an item there
-     */
-    hasItem(slot: number, category: string) {
-        return this.#items.has(`${category}${slot}`);
-    }
-
-    /**
-     * Sets an item in a given slot corresponding to some category
-     * @param slot The slot number
-     * @param category The category this item belongs to. (ex: `Main` for firearms, `Medical` for consumables, `Ammo` for ammunition)
-     * @param item The item to store at that slot
-     * @param reset Whether or not to reset the item that was just passed in
-     * @template T The category type. `Main` returns `EquipableItem`s, while others just return `InventoryItem`s
-     * @template U The type of animations this item has, if applicable
-     */
-    setItem<
-        T extends "Main" | string,
-        U extends ItemAnimation = ItemAnimation
-    >(
-        slot: number,
-        category: T,
-        item: InventoryItem & (T extends "Main" ? (EquipableItem<U, string>) : {}),
-        reset?: boolean
-    ) {
-        const key = `${category}${slot}`;
-
-        this.#items.set(key, item);
-        reset && category == "Main" && (item as InventoryItem & EquipableItem<U>).reset();
-
-        this.#owner.activeItem ?? this.#owner.setActiveItemIndex(slot);
-    }
-
-    /**
      * Clears object attributes from this instance
      *
      * **Warning: Any and all items that are in this inventory when this method is called
      * will also be destroyed. If this is undesirable, drop them into the game world beforehand**
      */
     destroy() {
-        for (const [_, i] of this.#items)
-            i.destroy();
+        if (this.#destroyed) return;
+        this.#destroyed = true;
+
+        for (const name in this.#containers)
+            for (const [, item] of this.#containers[name as keyof Inventory["containers"]])
+                if (typeof item == "object") item.destroy();
 
         // @ts-expect-error
-        this.#items = this.#owner = void 0;
+        this.#containers = this.#items = this.#owner = void 0;
     }
 }
 
@@ -1277,74 +1807,97 @@ interface SimpleInventoryItem extends SimpleImport {
  *
  * This class is a template for in-world items to base themselves off of.
  */
-class InventoryItemPrototype extends ImportedObject {
-    /**
-     * References to this item's associated images
-     */
-    readonly #images: {
+const InventoryItemPrototype = (() => {
+    abstract class InventoryItemPrototype extends ImportedObject {
         /**
-         * The image used to represent this item in the inventory, or as a dropped item
+         * References to this item's associated images
          */
-        readonly loot: srvsdbx_AssetManagement.ImageSrcPair;
+        readonly #images: {
+            /**
+             * The image used to represent this item in the inventory, or as a dropped item
+             */
+            readonly loot: srvsdbx_AssetManagement.ImageSrcPair;
+            /**
+             * The image used to represent this item in the game world
+             */
+            readonly world?: srvsdbx_AssetManagement.ImageSrcPair;
+        };
         /**
-         * The image used to represent this item in the game worlf
+         * References to this item's associated images
          */
-        readonly world?: srvsdbx_AssetManagement.ImageSrcPair;
-    };
-    /**
-     * References to this item's associated images
-     */
-    get images() { return this.#images; }
+        get images() { return this.#images; }
 
-    /**
-     * Information about the movement speed penalties incurred by the use of this item
-     */
-    readonly #moveSpeedPenalties: {
         /**
-         * The movement penalty incurred when this item is in a player's inventory
+         * Information about the movement speed penalties incurred by the use of this item
          */
-        readonly passive: number;
-    };
-    /**
-     * Information about the movement speed penalties incurred by the use of this item
-     */
-    get moveSpeedPenalties() { return this.#moveSpeedPenalties; }
+        readonly #moveSpeedPenalties: {
+            /**
+             * The movement penalty incurred when this item is in a player's inventory
+             */
+            readonly passive: number;
+        };
+        /**
+         * Information about the movement speed penalties incurred by the use of this item
+         */
+        get moveSpeedPenalties() { return this.#moveSpeedPenalties; }
 
-    /**
-     * `* It's a constructor. It constructs.`
-     * @param name The name of the item
-     * @param displayName Optionally specify a prettier name for this object
-     * @param objectType The type of object this is
-     * @param targetVersion The version of the sandbox this object targets
-     * @param namespace The namespace this object belongs to
-     * @param includePath The path this object was imported this
-     * @param images Images associated with this item
-     * @param moveSpeedPenalties Movement penalties associated with this item
-     */
-    constructor(
-        name: typeof ImportedObject.prototype.name,
-        displayName: typeof ImportedObject.prototype.displayName,
-        objectType: typeof ImportedObject.prototype.objectType,
-        targetVersion: typeof ImportedObject.prototype.targetVersion,
-        namespace: typeof ImportedObject.prototype.namespace,
-        includePath: typeof ImportedObject.prototype.includePath,
-        images: typeof InventoryItemPrototype.prototype.images,
-        moveSpeedPenalties: typeof InventoryItemPrototype.prototype.moveSpeedPenalties,
-    ) {
-        super(name, displayName, objectType, targetVersion, namespace, includePath);
-        this.#images = images;
-        this.#moveSpeedPenalties = moveSpeedPenalties;
+        /**
+         * `* It's a constructor. It constructs.`
+         * @param name The name of the item
+         * @param displayName Optionally specify a prettier name for this object
+         * @param objectType The type of object this is
+         * @param targetVersion The version of the sandbox this object targets
+         * @param namespace The namespace this object belongs to
+         * @param includePath The path this object was imported this
+         * @param images Images associated with this item
+         * @param moveSpeedPenalties Movement penalties associated with this item
+         */
+        constructor(
+            name: ImportedObject["name"],
+            displayName: ImportedObject["displayName"],
+            objectType: ImportedObject["objectType"],
+            targetVersion: ImportedObject["targetVersion"],
+            namespace: ImportedObject["namespace"],
+            includePath: ImportedObject["includePath"],
+            images: InventoryItemPrototype["images"],
+            moveSpeedPenalties: InventoryItemPrototype["moveSpeedPenalties"],
+        ) {
+            super(name, displayName, objectType, targetVersion, namespace, includePath);
+
+            this.#images = images;
+            this.#moveSpeedPenalties = moveSpeedPenalties;
+        }
+
+        /**
+         * Creates a new instance of this item
+         * @param owner The player the created item will belong to
+         */
+        abstract create(owner: PlayerLike): InventoryItem<InventoryItemPrototype>;
     }
-}
+
+    return srvsdbx_OOP.makeAbstract(InventoryItemPrototype);
+})();
+type InventoryItemPrototype = InstanceType<typeof InventoryItemPrototype>;
 
 /**
  * A simplified representation of an item that can be equipped by the user
  */
 interface SimpleEquipableItem extends SimpleInventoryItem {
     /**
+     * All images are loaded at startup. This array is used to declare all of the images this item will use
+     * Attempts to use an image not on this list will result in an error
+     *
+     * The exception to this are the images declared in `images`; they are always loaded, and are therefore
+     * always available. Thus, if your item doesn't use any image other than its loot/world image, you can
+     * safely omit this attribute
+     *
+     * The strings in this array should reference the image's paths
+     */
+    readonly imageDeclaration?: string[],
+    /**
      * The minimum amount of time that the user must wait before two uses of an item
      */
-    readonly useDelay: number;
+    readonly useDelay: number,
     /**
      * Specify default positions for the user's hands when holding this weapon when no animations are playing
      */
@@ -1412,7 +1965,16 @@ type ItemAnimation = {
      */
     readonly item?: {
         /**
+         * Optionally specify a new image to use
+         *
+         * This is applied at the beginning of the keyframe and is not subject
+         * to interpolation
+         */
+        readonly image?: string;
+        /**
          * The image's dimensions
+         *
+         * Omitted components are substituted with `"auto"`
          */
         readonly dimensions?: {
             /**
@@ -1422,7 +1984,14 @@ type ItemAnimation = {
             /**
              * The image's height in surviv units
              */
-            readonly height?: number;
+            readonly height?: number,
+            /**
+             * A new layer to use
+             *
+             * This is applied at the beginning of the keyframe and is not subject
+             * to interpolation
+             */
+            readonly layer?: 0 | 1 | 2;
         },
         /**
          * At what offset to draw this image, with (0, 0) being the player's center
@@ -1443,6 +2012,41 @@ type ItemAnimation = {
         };
     };
 };
+
+/**
+ * Represents an equipable item's prototype; item prototypes bridge the gap between
+ * simple items and concrete in-game items
+ */
+interface EquipableItemPrototype {
+    /**
+     * A map that contains images that have been declared by this object, and whose keys
+     * are the paths to those images, *which are a concatenation of the object's include path
+     * and the image's path as specified in the object file*.
+     *
+     * For example, an image declared as being at `./my-image.svg` in an object that's located
+     * at `assets/foo/melees` can be accessed by using the key `assets/foo/melees/./my-image.svg`
+     *
+     * This map's `get` method is guaranteed not to return `undefined`: if an invalid key
+     * is used, an error is thrown
+     */
+    readonly imageMap: Map<string, srvsdbx_AssetManagement.ImageSrcPair>;
+    /**
+     * The minimum amount of time that the user must wait before two uses of an item
+     */
+    readonly useDelay: SimpleEquipableItem["useDelay"],
+    /**
+     * Specify default positions for the user's hands when holding this weapon when no animations are playing
+     */
+    readonly handPositions: SimpleEquipableItem["handPositions"];
+    /**
+     * Information about the images associated with this item
+     */
+    readonly images: { [K in keyof SimpleInventoryItem["images"]]: srvsdbx_AssetManagement.ImageSrcPair },
+    /**
+     * By how much this item slows down its user, all in surviv units / second
+     */
+    readonly moveSpeedPenalties: SimpleInventoryItem["moveSpeedPenalties"];
+}
 
 /**
  * Represents an item that can be equipped by the user, such as guns, melees and grenades
@@ -1469,11 +2073,11 @@ interface EquipableItem<T extends ItemAnimation = ItemAnimation, K extends strin
     /**
      * Calculates this item's dimensions and offsets, taking into account any animations currently active
      */
-    getItemReference(): ItemAnimation["item"];
+    getItemReference(): T["item"];
     /**
      * Calculates this item's hand rigging, taking into account any animations currently active
      */
-    getHandReference(): ItemAnimation["hands"];
+    getHandReference(): T["hands"];
     /**
      * Serves to stop any animation related to this item that are currently playing
      */
@@ -1486,49 +2090,61 @@ interface EquipableItem<T extends ItemAnimation = ItemAnimation, K extends strin
 
 /**
  * Represents an instance of an item in a user's inventory
+ * @template T The type of prototype this item has
  */
-class InventoryItem<T extends InventoryItemPrototype = InventoryItemPrototype> implements Destroyable {
-    /**
-     * A reference to the PlayerLike that owns this item
-     */
-    readonly #owner: PlayerLike;
-    /**
-     * A reference to the PlayerLike that owns this item
-     */
-    get owner() { return this.#owner; }
+const InventoryItem = (() => {
+    abstract class InventoryItem<T extends InventoryItemPrototype = InventoryItemPrototype> implements Destroyable {
+        /**
+         * A reference to the PlayerLike that owns this item
+         */
+        readonly #owner: PlayerLike;
+        /**
+         * A reference to the PlayerLike that owns this item
+         */
+        get owner() { return this.#owner; }
 
-    /**
-     * A reference to the prototype this item is based on
-     */
-    readonly #prototype: T;
-    /**
-     * A reference to the prototype this item is based on
-     */
-    get prototype() { return this.#prototype; }
+        /**
+         * A reference to the prototype this item is based on
+         */
+        readonly #prototype: T;
+        /**
+         * A reference to the prototype this item is based on
+         */
+        get prototype() { return this.#prototype; }
 
-    /**
-     * Whether or not this item has been destroyed
-     */
-    #destroyed = false;
-    /**
-     * Whether or not this item has been destroyed
-     */
-    get destroyed() { return this.#destroyed; }
+        /**
+         * Whether or not this item has been destroyed
+         */
+        #destroyed = false;
+        /**
+         * Whether or not this item has been destroyed
+         */
+        get destroyed() { return this.#destroyed; }
 
-    /**
-     * `* It's a constructor. It constructs.`
-     * @param owner The owner of this item
-     */
-    constructor(owner: PlayerLike, prototype: T) {
-        this.#owner = owner;
-        this.#prototype = prototype;
+        /**
+         * `* It's a constructor. It constructs.`
+         * @param prototype The `ItemPrototype` this item is based on
+         * @param owner The owner of this item
+         */
+        constructor(prototype: T, owner: PlayerLike) {
+            this.#prototype = prototype;
+            this.#owner = owner;
+        }
+
+        /**
+         * Destroys this item, clearing its references to other objects
+         *
+         * **It is the caller's responsibility to ensure that destroyed items are removed from the game world (i.e., inventories)**
+         */
+        destroy() {
+            if (this.#destroyed) return;
+            this.#destroyed = true;
+
+            // @ts-expect-error
+            this.#owner = this.#prototype = void 0;
+        }
     }
 
-    /**
-     * Destroys this item, clearing its references to other objects
-     */
-    destroy() {
-        // @ts-expect-error
-        this.#owner = this.#prototype = void 0;
-    }
-}
+    return srvsdbx_OOP.makeAbstract(InventoryItem);
+})();
+type InventoryItem<T extends InventoryItemPrototype = InventoryItemPrototype> = InstanceType<typeof InventoryItem<T>>;

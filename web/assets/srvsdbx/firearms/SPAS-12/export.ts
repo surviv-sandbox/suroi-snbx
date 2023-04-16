@@ -15,8 +15,8 @@ export default {
             width: 0.1,
             height: 9
         },
-        obstacleMult: 1,
-        headshotMult: 1.5,
+        obstacleMultiplier: 1,
+        headshotMultiplier: 1.5,
         firstShotAccuracy: {
             enabled: false,
             rechargeTime: 1e10
@@ -25,7 +25,7 @@ export default {
         projectiles: 9
     },
     suppressed: false,
-    caliber: "srvsdbx::12 gauge (flechette)",
+    caliber: "srvsdbx::12gaugeFlechette",
     useDelay: 750,
     deployGroup: 1,
     accuracy: {

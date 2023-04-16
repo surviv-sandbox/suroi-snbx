@@ -21,7 +21,7 @@ declare const _default: {
         images: string[];
         spinVel: number;
         explodeOnContact: true;
-        heightPeak: number;
+        scale(t: number): number;
     };
     casing: string;
 };

@@ -14,6 +14,8 @@ declare const _default: {
         tracer: {
             width: "auto";
             height: number;
+            forceMaximumLength: true;
+            noShrink: true;
             trail: {
                 image: string;
                 width: number;
@@ -26,8 +28,8 @@ declare const _default: {
             };
         };
         effectsOnHit: string[];
-        obstacleMult: number;
-        headshotMult: number;
+        obstacleMultiplier: number;
+        headshotMultiplier: number;
         firstShotAccuracy: {
             enabled: false;
             rechargeTime: number;

@@ -23,6 +23,10 @@
         border: 1px solid #444;
     }
 
+    tr:hover {
+        background-color: hsl(0, 0%, 80%);
+    }
+
     span.yes {
         color: #0C0;
     }
@@ -37,12 +41,12 @@
     }
 
     td.minor-up {
-        background-color: hsl(120, 20%, 88%);
-        color: #0A0;
+        background-color: hsl(120, 40%, 88%);
+        color: #0C0;
     }
 
     td.patch-up {
-        color: #262;
+        color: #1A1;
     }
 
     td.major-down {
@@ -51,12 +55,12 @@
     }
 
     td.minor-down {
-        background-color: hsl(0, 20%, 88%);
-        color: #A00;
+        background-color: hsl(0, 40%, 88%);
+        color: #C00;
     }
 
     td.patch-down {
-        color: #622;
+        color: #A11;
     }
 }
 
@@ -85,6 +89,11 @@
         border: 1px solid #888;
     }
 
+
+    tr:hover {
+        background-color: hsl(0, 0%, 20%);
+    }
+
     span.yes {
         color: #8F8;
     }
@@ -99,7 +108,7 @@
     }
 
     td.minor-up {
-        background-color: hsl(120, 20%, 12%);
+        background-color: hsl(120, 40%, 15%);
         color: #4F4;
     }
 

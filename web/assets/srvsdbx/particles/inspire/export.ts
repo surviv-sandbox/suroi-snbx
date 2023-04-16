@@ -4,14 +4,14 @@ export default {
     images: ["./part-note-01.svg"],
     lifetime: () => srvsdbx_Math.toMS(srvsdbx_Math.bounds_random(4, 5), "s"),
     drag: 1,
-    rotVel: () => srvsdbx_Math.toRad(srvsdbx_Math.bounds_random(0.125, 0.25), "turns"),
+    angularVelocity: () => srvsdbx_Math.toRad(srvsdbx_Math.bounds_random(0.125, 0.25), "turns"),
     baseSize: {
         width: 1.2,
         height: "auto"
     },
     scale: {
-        start: srvsdbx_Math.bounds_random(0.6, 0.7),
-        end: srvsdbx_Math.bounds_random(0.3, 0.4)
+        start: () => srvsdbx_Math.bounds_random(0.6, 0.7),
+        end: () => srvsdbx_Math.bounds_random(0.3, 0.4)
     },
     alpha: part => {
         const dt = (gamespace.currentUpdate - part.created) / part.lifetime;

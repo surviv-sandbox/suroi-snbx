@@ -1,20 +1,12 @@
 type BurnInfoMap = {
-    /**
-     * The last time damage was applied
-     */
     lastDamageTick: number;
-    /**
-     * The last time a particle was spawned
-     */
     lastParticleTick: number;
-    /**
-     * When the next particle will be spawned
-     */
     nextParticleSpawn: number;
 };
 declare const _default: {
     name: string;
     targetVersion: string;
+    healthBarDecoration: string;
     init(): {
         lastDamageTick: number;
         lastParticleTick: number;

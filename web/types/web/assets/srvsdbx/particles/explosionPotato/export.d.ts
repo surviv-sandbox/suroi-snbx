@@ -4,7 +4,7 @@ declare const _default: {
     images: string[];
     lifetime: number;
     drag: number;
-    rotVel: number;
+    angularVelocity: number;
     baseSize: {
         width: number;
         height: "auto";

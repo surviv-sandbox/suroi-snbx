@@ -15,8 +15,8 @@ export default {
             width: 0.15,
             height: 160 / 9
         },
-        obstacleMult: 1,
-        headshotMult: 1.5,
+        obstacleMultiplier: 1,
+        headshotMultiplier: 1.5,
         firstShotAccuracy: {
             enabled: false,
             rechargeTime: 1e10
@@ -25,7 +25,7 @@ export default {
         projectiles: 9
     },
     suppressed: false,
-    caliber: "srvsdbx::12 gauge (buckshot)",
+    caliber: "srvsdbx::12gaugeBuckshot",
     useDelay: 200,
     deployGroup: 0,
     accuracy: {
@@ -55,7 +55,7 @@ export default {
         normal: 2,
         firepower: 2
     },
-    switchDelay: 900,
+    switchDelay: 300,
     handPositions: {
         leftHand: {
             parr: 0.85,

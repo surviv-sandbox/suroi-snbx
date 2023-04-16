@@ -4,14 +4,14 @@ declare const _default: {
     images: string[];
     lifetime: number;
     drag: number;
-    rotVel: number;
+    angularVelocity: number;
     baseSize: {
         width: "auto";
         height: number;
     };
     scale: {
-        start: number;
-        end: number;
+        start: () => number;
+        end: () => number;
     };
     alpha: {
         start: number;

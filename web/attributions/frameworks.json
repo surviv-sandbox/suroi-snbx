@@ -153,6 +153,13 @@
                 "decimaljs": "10.4.0",
                 "electron": "23.1.0"
             }
+        },
+        {
+            "version": "v0.10.0 b3",
+            "frameworks": {
+                "p5": "1.6.0",
+                "electron": "23.2.3"
+            }
         }
     ]
 }

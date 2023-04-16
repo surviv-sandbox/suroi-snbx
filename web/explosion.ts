@@ -9,7 +9,7 @@ interface SimpleExplosion extends SimpleImport {
     /**
      * By how much this explosion's damage should be multiplied when affecting an obstacle
      */
-    readonly obstacleMult: number,
+    readonly obstacleMultiplier: number,
     /**
      * The blast radii for this explosion. Unrelated to shrapnel
      */
@@ -120,11 +120,11 @@ class ExplosionPrototype extends ImportedObject {
     /**
      * By how much this explosion's damage should be multiplied when affecting an obstacle
      */
-    #obstacleMult: number;
+    #obstacleMultiplier: number;
     /**
      * By how much this explosion's damage should be multiplied when affecting an obstacle
      */
-    get obstacleMult() { return this.#obstacleMult; }
+    get obstacleMultiplier() { return this.#obstacleMultiplier; }
 
     /**
      * The blast radii for this explosion. Unrelated to shrapnel
@@ -194,8 +194,8 @@ class ExplosionPrototype extends ImportedObject {
      * @param obj The `SimpleParticle` object to parse
      * @returns A new `ParticlePrototype`
      */
-    static async from(obj: SimpleExplosion): Promise<srvsdbx_ErrorHandling.Result<ExplosionPrototype, SandboxError[]>> {
-        const errors: SandboxError[] = [],
+    static async from(obj: SimpleExplosion): Promise<srvsdbx_ErrorHandling.Result<ExplosionPrototype, srvsdbx_Errors.SandboxError[]>> {
+        const errors: srvsdbx_Errors.SandboxError[] = [],
             shrapnelImage = obj.shrapnel ? srvsdbx_ErrorHandling.handleResult(
                 await srvsdbx_AssetManagement.loadingFunctions.loadImageAsync(`${obj.includePath}/${obj.shrapnel?.tracer?.image}`),
                 srvsdbx_ErrorHandling.identity,
@@ -214,7 +214,7 @@ class ExplosionPrototype extends ImportedObject {
                     obj.namespace,
                     obj.targetVersion,
                     obj.damage,
-                    obj.obstacleMult,
+                    obj.obstacleMultiplier,
                     obj.radii,
                     obj.particle,
                     obj.shakeStrength !== void 0 ? () => extractValue(obj.shakeStrength!) * s : void 0,
@@ -245,21 +245,21 @@ class ExplosionPrototype extends ImportedObject {
      * `* It's a constructor. It constructs.`
      */
     constructor(
-        name: typeof ImportedObject.prototype.name,
-        displayName: typeof ImportedObject.prototype.displayName,
-        objectType: typeof ImportedObject.prototype.objectType,
-        includePath: typeof ImportedObject.prototype.includePath,
-        namespace: typeof ImportedObject.prototype.namespace,
-        targetVersion: typeof ImportedObject.prototype.targetVersion,
-        damage: typeof ExplosionPrototype.prototype.damage,
-        obstacleMult: typeof ExplosionPrototype.prototype.obstacleMult,
-        radii: typeof ExplosionPrototype.prototype.radii,
-        particle: typeof ExplosionPrototype.prototype.particle,
-        shakeStrength: typeof ExplosionPrototype.prototype.shakeStrength,
-        shakeDuration: typeof ExplosionPrototype.prototype.shakeDuration,
-        decal: typeof ExplosionPrototype.prototype.decal,
-        shrapnel: typeof ExplosionPrototype.prototype.shrapnel,
-        scatter: typeof ExplosionPrototype.prototype.scatter
+        name: ImportedObject["name"],
+        displayName: ImportedObject["displayName"],
+        objectType: ImportedObject["objectType"],
+        includePath: ImportedObject["includePath"],
+        namespace: ImportedObject["namespace"],
+        targetVersion: ImportedObject["targetVersion"],
+        damage: ExplosionPrototype["damage"],
+        obstacleMultiplier: ExplosionPrototype["obstacleMultiplier"],
+        radii: ExplosionPrototype["radii"],
+        particle: ExplosionPrototype["particle"],
+        shakeStrength: ExplosionPrototype["shakeStrength"],
+        shakeDuration: ExplosionPrototype["shakeDuration"],
+        decal: ExplosionPrototype["decal"],
+        shrapnel: ExplosionPrototype["shrapnel"],
+        scatter: ExplosionPrototype["scatter"]
     ) {
         super(name, displayName, objectType, targetVersion, namespace, includePath);
 
@@ -270,7 +270,7 @@ class ExplosionPrototype extends ImportedObject {
         }
 
         this.#damage = damage;
-        this.#obstacleMult = obstacleMult;
+        this.#obstacleMultiplier = obstacleMultiplier;
         this.#radii = {
             min: radii.min * size,
             max: radii.max * size
@@ -297,6 +297,25 @@ class ExplosionPrototype extends ImportedObject {
             particleType: scatter.particleType,
             velocity: () => extractValue(scatter.velocity) * 0.05
         } : void 0;
+    }
+
+    /**
+     * Creates a new `Explosion` based on this prototype
+     * @param position The position to spawn the explosion at
+     * @param emitter The `Gun` that created this explosion
+     * @param effectsOnHit An array of `StatusEffectPrototype`s that will be inflicted
+     * onto targets this explosion affects
+     * @returns A new `Explosion` object
+     */
+    create(
+        position: srvsdbx_Geometry.Point3D,
+        effectsOnHit?: PrototypeReference<"statusEffects">[]
+    ) {
+        return new Explosion(
+            this,
+            position,
+            effectsOnHit
+        );
     }
 }
 
@@ -373,38 +392,43 @@ class Explosion implements Destroyable {
 
     /**
      * `* It's a constructor. It constructs.`
-     * @param proto The prototype to base this object is on
+     * @param prototype The prototype to base this object is on
      * @param position The position this explosion occurs at
-     * @param emitter The `Gun` that created this explosion
+     * @param effectsOnHit An array of `StatusEffectPrototype`s that will be inflicted
+     * onto targets this explosion affects
      */
-    constructor(proto: ExplosionPrototype, position: srvsdbx_Geometry.Point3D, emitter: Gun, effectsOnHit?: PrototypeReference<"statusEffects">[]) {
-        this.#prototype = proto;
+    constructor(
+        prototype: ExplosionPrototype,
+        position: srvsdbx_Geometry.Point3D,
+        effectsOnHit?: PrototypeReference<"statusEffects">[]
+    ) {
+        this.#prototype = prototype;
         this.#position = srvsdbx_Geometry.Vector3D.clone(position);
 
         this.#created = gamespace.currentUpdate;
-        this.#strength = extractValue(proto.shakeStrength) ?? 0;
-        this.#duration = extractValue(proto.shakeDuration) ?? 0;
+        this.#strength = extractValue(prototype.shakeStrength) ?? 0;
+        this.#duration = extractValue(prototype.shakeDuration) ?? 0;
 
         if (this.#prototype.decal)
-            new Decal(
-                gamespace.prototypes.decals.get(this.#prototype.decal)!,
-                this.#position,
-                srvsdbx_Math.randomAngle()
-            );
+            gamespace.prototypes.decals.get(this.#prototype.decal)
+                .create(
+                    this.#position,
+                    srvsdbx_Math.randomAngle()
+                );
 
         if (this.#prototype.particle)
-            new Particle(
-                gamespace.prototypes.particles.get(this.#prototype.particle)!,
-                this.#position,
-                srvsdbx_Math.randomAngle()
-            );
+            gamespace.prototypes.particles.get(this.#prototype.particle)
+                .create(
+                    this.#position,
+                    srvsdbx_Math.randomAngle()
+                );
 
-        const shrapnel = proto.shrapnel;
+        const shrapnel = prototype.shrapnel;
         if (shrapnel)
             for (let i = 0, count = extractValue(shrapnel.count); i < count; i++)
-                Bullet.makeShrapnel(this.#position, shrapnel, emitter);
+                Bullet.makeShrapnel(this.#position, shrapnel);
 
-        const scatter = proto.scatter;
+        const scatter = prototype.scatter;
         if (scatter)
             for (let i = 0; i < scatter.count; i++) {
                 const particle = new Particle(
@@ -421,30 +445,39 @@ class Explosion implements Destroyable {
                 );
             }
 
-        gamespace.objects.players.forEach(player => {
-            const dist = srvsdbx_Geometry.Vector2D.distBetweenPts(player.position, position) - player.radius /* distance from edge of player */,
-                radii = proto.radii;
+        const applyDamage = (object: PlayerLike | Obstacle) => {
+            const dist = srvsdbx_Geometry.Vector2D.distanceBetweenPts(object.position, position)
+                - (
+                    typeof object.radius == "number"
+                        ? object.radius
+                        : Math.sqrt((object as Obstacle<"rectangle">).dimensions.width ** 2 + (object as Obstacle<"rectangle">).dimensions.height ** 2)
+                ),
+                // distance from the edge of the object
+                radii = prototype.radii;
 
             if (dist >= radii.max) return;
 
-            const damage = proto.damage * (
+            const damage = prototype.damage * (
                 dist <= radii.min
                     ? 1
                     : (1 - ((dist - radii.min) / (radii.max - radii.min)) ** 2)
             );
 
-            player.applyDamage(damage);
+            if (
+                object instanceof PlayerLike
+                || !(object.prototype.armorPlated || object.prototype.stonePlated)
+            ) object.applyDamage(damage * (object instanceof Obstacle ? this.#prototype.obstacleMultiplier : 1));
 
-            if (effectsOnHit?.length) {
-                for (let i = 0, l = effectsOnHit.length; i < l; i++) {
-                    const effect = gamespace.prototypes.statusEffects.get(effectsOnHit[i])!,
-                        effectAlreadyApplied = [...player.statusEffects.values()].find(s => s.prototype == effect);
+            if (object instanceof PlayerLike && effectsOnHit?.length)
+                for (let i = 0, l = effectsOnHit.length; i < l; i++)
+                    object.statusEffects.add(
+                        gamespace.prototypes.statusEffects.get(effectsOnHit[i])
+                            .create(object)
+                    );
+        };
 
-                    if (effectAlreadyApplied) effectAlreadyApplied.renew();
-                    else player.statusEffects.add(new StatusEffect(effect, player));
-                }
-            }
-        });
+        for (const [, player] of gamespace.objects.players) applyDamage(player);
+        for (const [, obstacle] of gamespace.objects.obstacles) applyDamage(obstacle);
 
         gamespace.objects.explosions.set(this.#id, this);
     }
@@ -458,9 +491,9 @@ class Explosion implements Destroyable {
         if (interpolation <= 0) return this.destroy();
 
         if (this.#strength)
-            gamespace.player?.addShake?.(
+            gamespace.player?.addShake(
                 `explosion${this.#id}`,
-                this.#strength * +Decimal.clamp(interpolation, 0, 1),
+                this.#strength * +Math.clamp(interpolation, 0, 1),
                 this.#position
             );
     }
@@ -488,6 +521,8 @@ class Explosion implements Destroyable {
      * Similar in spirit to `Generic.destroy`, this method clears any object attributes from this object to encourage the GC to clean up
      */
     destroy() {
+        if (this.#destroyed) return;
+
         this.#destroyed = true;
         gamespace.objects.explosions.delete(this.#id);
         gamespace.player?.removeShake?.(`explosion${this.#id}`);

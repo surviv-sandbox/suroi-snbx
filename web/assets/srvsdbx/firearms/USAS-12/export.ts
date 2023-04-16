@@ -11,15 +11,15 @@ export default {
         damage: 12,
         velocity: 72,
         range: (gun, shooter) => Math.min(24, (() => {
-            try { return Math.max(0, srvsdbx_Geometry.Vector2D.distBetweenPts(shooter.aimPoint, shooter.body.position) / gamespace.PLAYER_SIZE - 3.15); }
+            try { return Math.max(0, srvsdbx_Geometry.Vector2D.distanceBetweenPts(shooter.aimPoint, shooter.body.origin) / gamespace.PLAYER_SIZE - 3.15); }
             catch { return 24; }
         })()),
         tracer: {
             width: 0.15,
             height: 160 / 9
         },
-        obstacleMult: 1,
-        headshotMult: 1.5,
+        obstacleMultiplier: 1,
+        headshotMultiplier: 1.5,
         firstShotAccuracy: {
             enabled: false,
             rechargeTime: 1e10
@@ -28,7 +28,7 @@ export default {
         projectiles: 1
     },
     suppressed: false,
-    caliber: "srvsdbx::FRAG-12",
+    caliber: "srvsdbx::frag12",
     useDelay: 500,
     deployGroup: 0,
     accuracy: {

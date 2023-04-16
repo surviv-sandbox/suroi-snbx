@@ -1,19 +1,19 @@
 {
   "name": "surviv_sandbox",
-  "version": "0.10.0 beta 2",
+  "version": "0.10.0-beta.3",
   "author": "eiπ",
   "description": "A tool conceptors can use to create their concepts in a surviv-like environment",
   "license": "MIT",
   "main": "setup.js",
   "private": true,
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "test": "jest"
   },
   "dependencies": {
     "electron": "^23.1.0"
   },
   "devDependencies": {
-    "@types/matter-js": "^0.18.2",
     "@types/p5": "^1.5.0",
     "typescript": "^4.9.5"
   }

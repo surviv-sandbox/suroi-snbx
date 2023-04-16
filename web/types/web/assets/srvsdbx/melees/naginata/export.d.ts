@@ -46,7 +46,9 @@ declare const _default: {
         };
     };
     maxTargets: number;
-    obstacleMult: number;
+    obstacleMultiplier: number;
+    stonePiercing: false;
+    armorPiercing: true;
     useDelay: number;
     animations: {
         idle: "none";

@@ -36,11 +36,14 @@ canvas {
     left: 0;
 }
 
-p.debug {
+.debug {
     margin: 0;
     color: #C7C770;
-    text-shadow: calc(-5vw / 72) calc(-1vh / 9) 0 #000, calc(5vw / 72) calc(-1vh / 9) 0 #000, calc(-5vw / 72) calc(1vh / 9) 0 #000, calc(5vw / 72) calc(1vh / 9) 0 #000;
-    font: 14px monospace;
+    text-shadow: calc(-5vw / 72) calc(-1vh / 9) 0 #000,
+        calc(5vw / 72) calc(-1vh / 9) 0 #000,
+        calc(-5vw / 72) calc(1vh / 9) 0 #000,
+        calc(5vw / 72) calc(1vh / 9) 0 #000;
+    font: calc(14vh / 9) monospace;
 }
 
 /* LOADING SCREEN STYLES */
@@ -135,7 +138,7 @@ div.loading-indicator.unknown:hover {
 div.loading-indicator.unknown:hover::after {
     background-color: #AAAD;
     border-color: #BBBD;
-    content: attr(data-name) "\00000astatus: not loaded";
+    content: attr(data-name) "\00000a status: not loaded";
 }
 
 div.loading-indicator.success {
@@ -151,7 +154,7 @@ div.loading-indicator.success:hover {
 div.loading-indicator.success:hover::after {
     background-color: #484D;
     border-color: #6B6D;
-    content: attr(data-name) "\00000astatus: loaded";
+    content: attr(data-name) "\00000a status: loaded";
 }
 
 div.loading-indicator.failure {
@@ -167,7 +170,7 @@ div.loading-indicator.failure:hover {
 div.loading-indicator.failure:hover::after {
     background-color: #844D;
     border-color: #B66D;
-    content: attr(data-name) "\00000astatus: ERROR";
+    content: attr(data-name) "\00000a status: ERROR";
 }
 
 div#errors-container {
@@ -255,13 +258,16 @@ p#version-text {
     margin: calc(16vh / 9) calc(80vw / 72);
 }
 
-div#main-menu-buttons button:first-of-type,
+div#main-menu-buttons button:first-of-type {
+    margin-top: 0;
+}
+
 div#main-menu-buttons button:last-of-type {
-    margin: 0;
+    margin-bottom: 0;
 }
 
 div#main-menu-buttons button {
-    margin: calc(30vh / 9) 0;
+    margin: calc(15vh / 9) 0;
 }
 
 .surviv-button {
@@ -412,7 +418,7 @@ div#ui-hp-cont {
     align-items: center;
     background-color: #0006;
     left: 50%;
-    bottom: 1.5%;
+    bottom: calc(12vh / 9);
     width: 28.6%;
     height: 4.9%;
     transform: translate(-50%, 0);
@@ -518,7 +524,8 @@ div.inv-main-slot * {
     z-index: 1;
 }
 
-div.inv-main-slot:hover {
+div.inv-main-slot:hover,
+div.equip-slot:hover {
     transition: outline 100ms ease-out;
     border-color: #0F0;
     cursor: pointer;
@@ -564,6 +571,51 @@ img.inv-main-slot-bg {
     pointer-events: none;
     border-radius: calc(25vw / 72);
     z-index: 0;
+}
+
+div#ui-equip-cont {
+    position: absolute;
+    display: flex;
+    left: 65%;
+    bottom: calc(12vh / 9);
+    height: calc(20% / 3);
+}
+
+div.equip-slot {
+    position: relative;
+    background-color: #0006;
+    border: calc(2vh / 9) solid transparent;
+    margin: 0 calc(20vw / 72);
+    border-radius: calc(25vw / 72);
+    width: calc(240vw / 72);
+    height: 100%;
+    box-sizing: border-box;
+    pointer-events: all;
+}
+
+img.equip-img {
+    position: absolute;
+    margin: auto;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+
+p.equip-txt {
+    position: relative;
+    color: white;
+    font-size: calc(16vh / 9);
+    text-align: center;
+    font-family: "roboto bold", Arial, sans-serif;
+    bottom: calc(24vh / 9);
+    margin: 0;
+    text-shadow: calc(5vw / 36) calc(2vh / 9) 0 #000;
+}
+
+p.fps-count-text {
+    width: fit-content;
+    display: inline;
 }
 
 /* FONTS */

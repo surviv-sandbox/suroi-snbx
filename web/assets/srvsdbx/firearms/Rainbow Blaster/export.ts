@@ -18,8 +18,8 @@ export default {
             drawAbovePlayer: true,
             forceMaximumLength: true
         },
-        obstacleMult: 1000,
-        headshotMult: 1,
+        obstacleMultiplier: 1000,
+        headshotMultiplier: 1,
         firstShotAccuracy: {
             enabled: true,
             rechargeTime: 500
@@ -28,7 +28,7 @@ export default {
         projectiles: 1
     },
     suppressed: false,
-    caliber: "srvsdbx::Rainbow Ammo",
+    caliber: "srvsdbx::rainbow",
     useDelay: 160,
     deployGroup: 0,
     accuracy: {
@@ -105,7 +105,7 @@ export default {
             growStyle: "clip"
         },
         chargeParticle: {
-            particle: "srvsdbx::rainbow_ball",
+            particle: "srvsdbx::rainbowBall",
             offset: {
                 parr: 4.5,
                 perp: 0

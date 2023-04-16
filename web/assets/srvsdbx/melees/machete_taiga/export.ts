@@ -54,7 +54,9 @@ export default {
         }
     },
     maxTargets: Infinity,
-    obstacleMult: 1,
+    obstacleMultiplier: 1,
+    stonePiercing: false,
+    armorPiercing: false,
     useDelay: 300,
     animations: {
         idle: "none",

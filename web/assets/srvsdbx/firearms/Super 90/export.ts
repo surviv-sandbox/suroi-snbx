@@ -15,8 +15,8 @@ export default {
             width: 0.32,
             height: 200 / 9
         },
-        obstacleMult: 1,
-        headshotMult: 1.5,
+        obstacleMultiplier: 1,
+        headshotMultiplier: 1.5,
         firstShotAccuracy: {
             enabled: true,
             rechargeTime: 500
@@ -25,7 +25,7 @@ export default {
         projectiles: 1
     },
     suppressed: false,
-    caliber: "srvsdbx::12 gauge (slug)",
+    caliber: "srvsdbx::12gaugeSlug",
     useDelay: 400,
     deployGroup: 0,
     accuracy: {

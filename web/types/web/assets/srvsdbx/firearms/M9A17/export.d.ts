@@ -16,10 +16,11 @@ declare const _default: {
             width: "auto";
             height: number;
             forceMaximumLength: true;
+            noShrink: true;
         };
         effectsOnHit: string[];
-        obstacleMult: number;
-        headshotMult: number;
+        obstacleMultiplier: number;
+        headshotMultiplier: number;
         firstShotAccuracy: {
             enabled: true;
             rechargeTime: number;

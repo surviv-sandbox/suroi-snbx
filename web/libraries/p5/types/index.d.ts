@@ -1,11 +1,8 @@
-// Type definitions for p5 1.4
+// Type definitions for p5 1.6
 // Project: https://github.com/processing/p5.js
 // Definitions by: p5-types <https://github.com/p5-types>
-//                 Pierre Krafft <https://github.com/Zalastax>
-//                 Rahul V <https://github.com/rahulv4667>
-//                 Gareth Williams <https://github.com/gaweph>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 2.9
+// TypeScript Version: 4.9
 
 // This file was auto-generated. Please do not edit it.
 /// <reference path="./src/accessibility/describe.d.ts" />
@@ -88,7 +85,7 @@ declare class p5 {
      *   @param [node] element to attach canvas to
      *   @return a p5 instance
      */
-    constructor(sketch: (...args: any[]) => any, node?: HTMLElement);
+    constructor(sketch: (p5: p5) => void, node?: HTMLElement);
 
     /**
      *   Called directly before setup(), the preload()
@@ -180,21 +177,21 @@ declare class p5 {
      *   disable the parts of the FES that cause
      *   performance slowdown (like argument checking).
      *   Friendly errors that have no performance cost
-     *   (like giving an descriptive error if a file load
+     *   (like giving a descriptive error if a file load
      *   fails, or warning you if you try to override p5.js
      *   functions in the global space), will remain in
      *   place.
      *
-     *   See  disabling the friendly error system.
+     *   See disabling the friendly error system.
      */
     disableFriendlyErrors: boolean;
 }
 
 // tslint:disable-next-line:no-empty-interface
-interface p5 extends p5.p5InstanceExtensions {}
+interface p5 extends p5.p5InstanceExtensions { }
 
 declare namespace p5 {
     type UNKNOWN_P5_CONSTANT = any;
     // tslint:disable-next-line:no-empty-interface
-    interface p5InstanceExtensions {}
+    interface p5InstanceExtensions { }
 }

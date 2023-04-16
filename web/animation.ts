@@ -124,11 +124,7 @@ namespace srvsdbx_Animation {
          * `t = 0` is guaranteed to return `a`, and `t = 1` is guaranteed to return `b`.
          */
         linterp: addBindings((a: number, b: number, t: number) => {
-            switch (t) {
-                case 0: return a;
-                case 1: return b;
-                default: return a + (b - a) * t;
-            }
+            return a + (b - a) * t;
         }),
         /**
          * Interpolates between two numbers with a slow start tending towards a super-linear progression that in turn decelerates\
@@ -138,11 +134,7 @@ namespace srvsdbx_Animation {
          * @param t The interpolation factor
          */
         easeInSine: addBindings((a: number, b: number, t: number) => {
-            switch (t) {
-                case 0: return a;
-                case 1: return b;
-                default: return a + (b - a) * (1 - Math.cos((t * Math.PI) / 2));
-            }
+            return a + (b - a) * (1 - Math.cos((t * Math.PI) / 2));
         }),
         /**
          * Interpolates between two numbers with a fast start tending towards a sub-linear progression that in turn decelerates\
@@ -152,11 +144,7 @@ namespace srvsdbx_Animation {
          * @param t The interpolation factor
          */
         easeOutSine: addBindings((a: number, b: number, t: number) => {
-            switch (t) {
-                case 0: return a;
-                case 1: return b;
-                default: return a + (b - a) * Math.sin((t * Math.PI) / 2);
-            }
+            return a + (b - a) * Math.sin((t * Math.PI) / 2);
         }),
         /**
          * Interpolates between two numbers with a slow start and slow end that accelerates in the middle\
@@ -166,11 +154,7 @@ namespace srvsdbx_Animation {
          * @param t The interpolation factor
          */
         easeInOutSine: addBindings((a: number, b: number, t: number) => {
-            switch (t) {
-                case 0: return a;
-                case 1: return b;
-                default: return a + (b - a) * (-(Math.cos(Math.PI * t) - 1) / 2);
-            }
+            return a + (b - a) * (-(Math.cos(Math.PI * t) - 1) / 2);
         }),
         /**
          * Interpolates between two numbers with a quite slow start and inversely fast end\
@@ -180,11 +164,7 @@ namespace srvsdbx_Animation {
          * @param t The interpolation factor
          */
         easeInCubic: addBindings((a: number, b: number, t: number) => {
-            switch (t) {
-                case 0: return a;
-                case 1: return b;
-                default: return a + (b - a) * (t * t * t);
-            }
+            return a + (b - a) * (t * t * t);
         }),
         /**
          * Interpolates between two numbers with a quite fast start and inversely slow end\
@@ -194,11 +174,7 @@ namespace srvsdbx_Animation {
          * @param t The interpolation factor
          */
         easeOutCubic: addBindings((a: number, b: number, t: number) => {
-            switch (t) {
-                case 0: return a;
-                case 1: return b;
-                default: return a + (b - a) * (1 - (1 - t) ** 3);
-            }
+            return a + (b - a) * (1 - (1 - t) ** 3);
         }),
         /**
          * Interpolates between two numbers with a slow start and end but very fast middle\
@@ -208,11 +184,7 @@ namespace srvsdbx_Animation {
          * @param t The interpolation factor
          */
         easeInOutCubic: addBindings((a: number, b: number, t: number) => {
-            switch (t) {
-                case 0: return a;
-                case 1: return b;
-                default: return a + (b - a) * (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * (1 - t), 3) / 2);
-            }
+            return a + (b - a) * (t < 0.5 ? 4 * t ** 3 : 1 - 4 * (1 - t) ** 3);
         }),
         /**
          * Interpolates between two numbers with a very slow start and inversely fast end\
@@ -222,11 +194,7 @@ namespace srvsdbx_Animation {
          * @param t The interpolation factor
          */
         easeInQuintic: addBindings((a: number, b: number, t: number) => {
-            switch (t) {
-                case 0: return a;
-                case 1: return b;
-                default: return a + (b - a) * (t * t * t * t * t);
-            }
+            return a + (b - a) * (t ** 5);
         }),
         /**
          * Interpolates between two numbers with a very fast start and inversely slow end\
@@ -236,11 +204,7 @@ namespace srvsdbx_Animation {
          * @param t The interpolation factor
          */
         easeOutQuintic: addBindings((a: number, b: number, t: number) => {
-            switch (t) {
-                case 0: return a;
-                case 1: return b;
-                default: return a + (b - a) * (1 - (1 - t) ** 3);
-            }
+            return a + (b - a) * (1 - (1 - t) ** 5);
         }),
         /**
          * Interpolates between two numbers with a slow start and end but extremely fast middle\
@@ -250,11 +214,7 @@ namespace srvsdbx_Animation {
          * @param t The interpolation factor
          */
         easeInOutQuintic: addBindings((a: number, b: number, t: number) => {
-            switch (t) {
-                case 0: return a;
-                case 1: return b;
-                default: return a + (b - a) * (t < 0.5 ? 16 * t * t * t : 1 - Math.pow(-2 * (1 - t), 5) / 2);
-            }
+            return a + (b - a) * (t < 0.5 ? 16 * t ** 5 : 1 - 16 * (1 - t) ** 5);
         }),
         /**
          * Interpolates between two numbers with a sluggish start and almost instant end\
@@ -264,11 +224,7 @@ namespace srvsdbx_Animation {
          * @param t The interpolation factor
          */
         easeInCirc: addBindings((a: number, b: number, t: number) => {
-            switch (t) {
-                case 0: return a;
-                case 1: return b;
-                default: return a + (b - a) * (1 - Math.sqrt(1 - (t * t)));
-            }
+            return a + (b - a) * (1 - Math.sqrt(1 - (t * t)));
         }),
         /**
          * Interpolates between two numbers with an almost instant start but sluggish end\
@@ -278,11 +234,7 @@ namespace srvsdbx_Animation {
          * @param t The interpolation factor
          */
         easeOutCirc: addBindings((a: number, b: number, t: number) => {
-            switch (t) {
-                case 0: return a;
-                case 1: return b;
-                default: return a + (b - a) * Math.sqrt(1 - (t - 1) ** 2);
-            }
+            return a + (b - a) * Math.sqrt(1 - (t - 1) ** 2);
         }),
         /**
          * Interpolates between two numbers with a slow start and end but discontinuous middle\
@@ -292,13 +244,9 @@ namespace srvsdbx_Animation {
          * @param t The interpolation factor
          */
         easeInOutCirc: addBindings((a: number, b: number, t: number) => {
-            switch (t) {
-                case 0: return a;
-                case 1: return b;
-                default: return a + (b - a) * (t < 0.5
-                    ? (1 - Math.sqrt(1 - (2 * t) ** 2)) / 2
-                    : (Math.sqrt(1 - (-2 * (1 - t)) ** 2) + 1) / 2);
-            }
+            return a + (b - a) * (t < 0.5
+                ? (1 - Math.sqrt(1 - (2 * t) ** 2)) / 2
+                : (Math.sqrt(1 - (-2 * (1 - t)) ** 2) + 1) / 2);
         }),
         /**
          * Interpolates between two numbers with a wave of increasing amplitude that overshoots\
@@ -311,7 +259,7 @@ namespace srvsdbx_Animation {
             switch (t) {
                 case 0: return a;
                 case 1: return b;
-                default: return a + (b - a) * ((-2) ** (10 * (t - 1)) * Math.sin(20 * Math.PI * (t - 1.075) / 3));
+                default: return a + (b - a) * -(2 ** (10 * (t - 1)) * Math.sin(20 * Math.PI * (t - 1.075) / 3));
             }
         }),
         /**
@@ -352,11 +300,7 @@ namespace srvsdbx_Animation {
          * @param t The interpolation factor
          */
         easeInQuad: addBindings((a: number, b: number, t: number) => {
-            switch (t) {
-                case 0: return a;
-                case 1: return b;
-                default: return a + (b - a) * (t * t);
-            }
+            return a + (b - a) * (t * t);
         }),
         /**
          * Interpolates between two numbers with a fast start but slow end\
@@ -366,11 +310,7 @@ namespace srvsdbx_Animation {
          * @param t The interpolation factor
          */
         easeOutQuad: addBindings((a: number, b: number, t: number) => {
-            switch (t) {
-                case 0: return a;
-                case 1: return b;
-                default: return a + (b - a) * (1 - (1 - t) ** 2);
-            }
+            return a + (b - a) * (1 - (1 - t) ** 2);
         }),
         /**
          * Interpolates between two numbers with a slightly slow start and end, and a slightly fast middle
@@ -380,13 +320,9 @@ namespace srvsdbx_Animation {
          * @param t The interpolation factor
          */
         easeInOutQuad: addBindings((a: number, b: number, t: number) => {
-            switch (t) {
-                case 0: return a;
-                case 1: return b;
-                default: return a + (b - a) * (t < 0.5
-                    ? 2 * t * t
-                    : 1 - 2 * (1 - t) ** 2);
-            }
+            return a + (b - a) * (t < 0.5
+                ? 2 * t * t
+                : 1 - 2 * (1 - t) ** 2);
         }),
         /**
          * Interpolates between two numbers with a quite slow start and quite fast end\
@@ -399,7 +335,7 @@ namespace srvsdbx_Animation {
             switch (t) {
                 case 0: return a;
                 case 1: return b;
-                default: return a + (b - a) * (t * t * t * t);
+                default: return a + (b - a) * (t ** 4);
             }
         }),
         /**
@@ -410,11 +346,7 @@ namespace srvsdbx_Animation {
          * @param t The interpolation factor
          */
         easeOutQuart: addBindings((a: number, b: number, t: number) => {
-            switch (t) {
-                case 0: return a;
-                case 1: return b;
-                default: return a + (b - a) * (1 - (1 - t) ** 4);
-            }
+            return a + (b - a) * (1 - (1 - t) ** 4);
         }),
         /**
          * Interpolates between two numbers with a quite slow start and end, and a very fast middle
@@ -424,27 +356,19 @@ namespace srvsdbx_Animation {
          * @param t The interpolation factor
          */
         easeInOutQuart: addBindings((a: number, b: number, t: number) => {
-            switch (t) {
-                case 0: return a;
-                case 1: return b;
-                default: return a + (b - a) * (t < 0.5
-                    ? 8 * t * t * t * t
-                    : 1 - 8 * (1 - t) ** 4);
-            }
+            return a + (b - a) * (t < 0.5
+                ? 8 * t * t * t * t
+                : 1 - 8 * (1 - t) ** 4);
         }),
         /**
          * Interpolates between two numbers with a quite slow start and quite fast end\
-         * [Reference](https://easings.net/#https://easings.net/#easeInExpo)
+         * [Reference](https://easings.net/#easeInExpo)
          * @param a The start value
          * @param b The end value
          * @param t The interpolation factor
          */
         easeInExpo: addBindings((a: number, b: number, t: number) => {
-            switch (t) {
-                case 0: return a;
-                case 1: return b;
-                default: return a + (b - a) * (2 ** (-10 * (1 - t)));
-            }
+            return a + (b - a) * (2 ** (-10 * (1 - t)));
         }),
         /**
          * Interpolates between two numbers with a fast start but slow end\
@@ -454,11 +378,7 @@ namespace srvsdbx_Animation {
          * @param t The interpolation factor
          */
         easeOutExpo: addBindings((a: number, b: number, t: number) => {
-            switch (t) {
-                case 0: return a;
-                case 1: return b;
-                default: return a + (b - a) * (1 - 2 ** (10 * (1 - t)));
-            }
+            return a + (b - a) * (1 - 2 ** -(10 * t));
         }),
         /**
          * Interpolates between two numbers with a quite slow start and end, and a very fast middle
@@ -468,13 +388,9 @@ namespace srvsdbx_Animation {
          * @param t The interpolation factor
          */
         easeInOutExpo: addBindings((a: number, b: number, t: number) => {
-            switch (t) {
-                case 0: return a;
-                case 1: return b;
-                default: return a + (b - a) * (t < 0.5
-                    ? 2 ** (10 * (2 * t - 1) - 1)
-                    : 1 - 2 ** (-10 * (2 * t - 1) - 1));
-            }
+            return a + (b - a) * (t < 0.5
+                ? 2 ** (10 * (2 * t - 1) - 1)
+                : 1 - 2 ** (-10 * (2 * t - 1) - 1));
         }),
         /**
          * Interpolates between two numbers with a slow start, overshoot and fast end\
@@ -484,11 +400,7 @@ namespace srvsdbx_Animation {
          * @param t The interpolation factor
          */
         easeInBack: addBindings((a: number, b: number, t: number) => {
-            switch (t) {
-                case 0: return a;
-                case 1: return b;
-                default: return a + (b - a) * ((Math.sqrt(3) * (t - 1) + t) * t * t);
-            }
+            return a + (b - a) * ((Math.sqrt(3) * (t - 1) + t) * t ** 2);
         }),
         /**
          * Interpolates between two numbers with a fast start, overshoot and slow end\
@@ -498,11 +410,7 @@ namespace srvsdbx_Animation {
          * @param t The interpolation factor
          */
         easeOutBack: addBindings((a: number, b: number, t: number) => {
-            switch (t) {
-                case 0: return a;
-                case 1: return b;
-                default: return a + (b - a) * (1 + ((Math.sqrt(3) + 1) * t - 1) * (t - 1) ** 2);
-            }
+            return a + (b - a) * (1 + ((Math.sqrt(3) + 1) * t - 1) * (t - 1) ** 2);
         }),
         /**
          * Interpolates between two numbers with overshoots at the start and end and a very fast middle
@@ -541,7 +449,7 @@ namespace srvsdbx_Animation {
                 switch (t) {
                     case 0: return a;
                     case 1: return b;
-                    default: return p1.lerp(p2, t).scale(3 * (1 - t), true).plus({ x: t * t, y: t * t }, true).scale(t, true).y;
+                    default: return p1.linterp(p2, t).scale(3 * (1 - t), true).plus({ x: t * t, y: t * t }, true).scale(t, true).y;
                     /*
                         (((1 - t)P1 + t * P2) * 3(1 - t) + P3 * t^2) * t
                          ^^^^^^^^^^^^^^^^^^^^ lerp
@@ -569,7 +477,7 @@ namespace srvsdbx_Animation {
 
                     if (invalidPoints.length)
                         throw new RangeError(
-                            "Invalid control points for bézier curve; all control points must have x components within [0, 1], but the following points did not:" +
+                            "Invalid control points for Bézier curve; all control points must have x components within [0, 1], but the following points did not:" +
                             `\n  ${invalidPoints.map(([p, i]) => `${srvsdbx_Geometry.Vector2D.prototype.toString.call(p)} (index: ${i})`).join("\n  ")}`
                         );
 
@@ -587,9 +495,9 @@ namespace srvsdbx_Animation {
                             case 1: return b;
                             // Based on https://en.wikipedia.org/wiki/Bézier_curve#Explicit_definition
                             default: return controlPoints.reduce(
-                                (acc, point, index) => acc.plus(point.scale(Number(coefficients[++index]) * (1 - t) ** (controlPoints.length - (index)) * t ** (index)), true),
+                                (acc, point, index) => acc.plus(point.scale(Number(coefficients[++index]) * (1 - t) ** (controlPoints.length - index) * t ** index), true),
                                 //                                                              ^^ see the comment about omitting (0, 0)
-                                srvsdbx_Geometry.Vector2D.zeroVec()
+                                srvsdbx_Geometry.Vector2D.zeroVector()
                             ).y;
 
                         };
@@ -682,7 +590,8 @@ namespace srvsdbx_Animation {
             const keyframes = animationSkeleton.keyframes,
                 fractions = keyframes.filter(k => k.fraction !== void 0).length;
 
-            if (fractions && fractions != keyframes.length) throw new Error("Cannot mix fractional keyframes with other types; an animation must either be entirely composed of fractional keyframes or have none.");
+            if (fractions && fractions != keyframes.length) throw new srvsdbx_Errors.IllegalOperation("Cannot mix fractional keyframes with other types; an animation must either be entirely composed of fractional keyframes or have none.");
+            if (!keyframes.length) throw new srvsdbx_Errors.IllegalOperation("Cannot have an animation with no keyframes");
 
             // If none of the keyframes are specified as fractions, then we can re-calculate the animation's overall duration
             this.#duration = this.#animationSkeleton.duration = fractions
@@ -750,7 +659,7 @@ namespace srvsdbx_Animation {
         >;
 
         /**
-         * `It's a constructor. It constructs.`
+         * `* It's a constructor. It constructs.`
          */
         constructor(animations: Record<K, Animation<T> | BoundIndeterminateAnimation<T>>) {
             this.#animations = { ...animations };
@@ -804,10 +713,12 @@ namespace srvsdbx_Animation {
              * @param overflowReturnsLastFrame Whether or not to return the last keyframe if a time beyond the animation's duration is passed
              * @returns The state of the animated object at the specified time, or `null` if the time is beyond the animation's duration
              */
-            function evaluate<B extends boolean>(time: number, overflowReturnsLastFrame: B): B extends true ? T | undefined : srvsdbx_ErrorHandling.Maybe<T> {
+            function evaluate<B extends boolean>(time: number, overflowReturnsLastFrame: B): B extends true ? T : srvsdbx_ErrorHandling.Maybe<T> {
+                type Return = B extends true ? T : srvsdbx_ErrorHandling.Maybe<T>;
+
                 const keyframes = animation.animationSkeleton.keyframes,
-                    l = keyframes.length,
-                    last = keyframes.at(-1);
+                    keyframeLength = keyframes.length,
+                    last = keyframes.at(-1)!;
 
                 // Modify the time value based on repetition
                 const repetition = animation.animationSkeleton.repetition,
@@ -827,9 +738,9 @@ namespace srvsdbx_Animation {
                     time %= iterationLength; // take the remainder of dividing the given time by a repetition's duration
                 }
 
-                if (time >= animation.duration) return overflowReturnsLastFrame ? last?.data : srvsdbx_ErrorHandling.Nothing as any;
+                if (time >= animation.duration) return srvsdbx_ErrorHandling.createIf(overflowReturnsLastFrame, last?.data) as Return;
 
-                for (let i = 0; i < l; i++) {
+                for (let i = 0; i < keyframeLength; i++) {
                     const current = {
                         time: keyframes[i].time,
                         easing: keyframes[i].easing,
@@ -848,11 +759,11 @@ namespace srvsdbx_Animation {
                                 current.data,
                                 (current.easing ??= srvsdbx_ErrorHandling.identity)((time - prev.time) / (current.time - prev.time))
                             )
-                            : current.data;
+                            : current.data as Return;
                     }
                 }
 
-                return overflowReturnsLastFrame ? last?.data : srvsdbx_ErrorHandling.Nothing as any;
+                return srvsdbx_ErrorHandling.createIf(overflowReturnsLastFrame, last?.data) as Return;
             };
 
             this.#activeAnimations.set(name, [animation, evaluate]);

@@ -1,0 +1,28 @@
+<svg width="271" height="1319" viewBox="0 0 271 1319" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path fill-rule="evenodd" clip-rule="evenodd"
+        d="M250 613H21L0 693V739V745V828C0 840.15 9.84974 850 22 850H249C261.15 850 271 840.15 271 828V745V739V693L250 613Z"
+        fill="black" />
+    <path fill-rule="evenodd" clip-rule="evenodd"
+        d="M221 1003H49V1052.56V1210.92V1289C49 1305.57 62.4315 1319 79 1319H191C207.569 1319 221 1305.57 221 1289V1210.92V1052.56V1003Z"
+        fill="black" />
+    <rect x="120" y="1031" width="31" height="217" fill="#BB4130" />
+    <path fill-rule="evenodd" clip-rule="evenodd"
+        d="M209 312H62L44 370V622H40V962.5V963H40.0008C40.0972 995.078 49.4619 1021 61 1021H210C221.538 1021 230.903 995.078 230.999 963H231V962.5V622H227V370L209 312Z"
+        fill="black" />
+    <path fill-rule="evenodd" clip-rule="evenodd"
+        d="M113 429H157V449H113V429ZM113 468H157V488H113V468ZM157 507H113V527H157V507ZM113 546H157V566H113V546ZM157 585H113V605H157V585ZM113 624H157V644H113V624ZM157 663H113V683H157V663Z"
+        fill="#454545" />
+    <path fill-rule="evenodd" clip-rule="evenodd"
+        d="M110 705H160V725H110V705ZM110 744H160V764H110V744ZM160 783H110V803H160V783ZM110 822H160V842H110V822ZM160 861H110V881H160V861ZM110 900H160V920H110V900ZM160 939H110V959H160V939Z"
+        fill="#2F2F2F" />
+    <path d="M243 967L230 968V876.5L243 967Z" fill="black" />
+    <rect x="110" y="872" width="50" height="74" fill="black" />
+    <rect x="114" y="344" width="42" height="48" fill="#3E3E3E" />
+    <rect x="81" y="248" width="108" height="64" fill="black" />
+    <rect x="71" width="128" height="285" rx="20" fill="black" />
+    <rect x="110" y="39" width="50" height="206" fill="#2B2B2B" />
+    <rect x="114" y="925" width="42" height="16" fill="#4E4E4E" />
+    <rect x="114" y="392" width="42" height="16" fill="#4E4E4E" />
+    <rect x="122" y="285" width="26" height="27" fill="#222222" />
+    <rect x="114" y="877" width="42" height="48" fill="#3E3E3E" />
+</svg>

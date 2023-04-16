@@ -15,11 +15,12 @@ export default {
         tracer: {
             width: "auto",
             height: 1.6,
-            forceMaximumLength: true
+            forceMaximumLength: true,
+            noShrink: true
         },
         effectsOnHit: ["srvsdbx::burn"],
-        obstacleMult: 1.25,
-        headshotMult: 1,
+        obstacleMultiplier: 1.25,
+        headshotMultiplier: 1,
         firstShotAccuracy: {
             enabled: true,
             rechargeTime: 500
@@ -28,7 +29,7 @@ export default {
         projectiles: 1
     },
     suppressed: false,
-    caliber: "srvsdbx::Fire Shot",
+    caliber: "srvsdbx::fire",
     useDelay: 15,
     deployGroup: 0,
     accuracy: {

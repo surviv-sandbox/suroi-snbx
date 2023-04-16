@@ -61,7 +61,9 @@ export default {
             perp: 0
         }
     },
-    obstacleMult: 1.5,
+    obstacleMultiplier: 1.5,
+    stonePiercing: true,
+    armorPiercing: true,
     useDelay: 600,
     animations: {
         idle: "none",

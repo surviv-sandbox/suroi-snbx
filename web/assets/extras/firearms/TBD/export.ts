@@ -3,7 +3,7 @@ export default {
     targetVersion: "0.10.0",
     images: {
         loot: "./loot-weapon-tbd.png",
-        world: "./tbd.png"
+        world: "./tbd.svg"
     },
     dual: false,
     tint: "#FFFFFF",
@@ -15,8 +15,8 @@ export default {
             width: 0.15,
             height: 20
         },
-        obstacleMult: 1,
-        headshotMult: 2,
+        obstacleMultiplier: 1,
+        headshotMultiplier: 2,
         firstShotAccuracy: {
             enabled: false,
             rechargeTime: 1e10

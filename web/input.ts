@@ -7,7 +7,7 @@ type InputCallback = (parity: "start" | "stop") => void;
 /**
  * A singleton for managing user input
  */
-const InputManager = new (createSingleton(class InputManager {
+const InputManager = new (srvsdbx_OOP.createSingleton(class InputManager {
     /**
      * A map whose keys are the names of the bound keys and whose values are arrays of callbacks to be invoked when the key is pressed
      */
@@ -18,27 +18,69 @@ const InputManager = new (createSingleton(class InputManager {
     get keybinds() { return this.#keybinds; }
 
     /**
-     * Adds a callback to the designated key
-     * @param key The key name
+     * Adds a callback to the designated input
+     * @param key The input name
      * - For keys, identical to the one returned by `KeyboardEvent.code` (`KeyW`, `KeyF`)
      * - For mouse buttons, according to the format "Mouse + `MouseEvent.button`" (`Mouse0`, `Mouse3`)
-     * @param callback The callback to be invoked when the key is pressed
+     * @param callback The callback to be invoked when the input is pressed or released
      */
-    register(
-        key: KeyboardEvent["code"]
-            | `Mouse${MouseEvent["button"]}`
-            | `MWheel${"Right" | "Left" | "Down" | "Up" | "Forwards" | "Backwards"}`,
-        callback: InputCallback
-    ) {
-        (
-            this.#keybinds.get(key) ?? (() => {
-                const array: InputCallback[] = [];
-                this.#keybinds.set(key, array);
+    readonly register = (() => {
+        type Base = (
+            key: KeyboardEvent["code"]
+                | `Mouse${MouseEvent["button"]}`
+                | `MWheel${"Right" | "Left" | "Down" | "Up" | "Forwards" | "Backwards"}`,
+            callback: InputCallback
+        ) => void;
 
-                return array;
-            })()
-        ).push(callback);
-    }
+        type Extended = Base & {
+            /**
+             * A version of this function whose callback will only be invoked
+             * when the corresponding input is started and not when it is released
+             */
+            onlyOnStart?: Base;
+            /**
+             * A version of this function whose callback will only be invoked
+             * when the corresponding input is stopped (released) and not when it is started
+             */
+            onlyOnStop?: Base;
+        };
+
+        const fn: Extended = ((
+            key: KeyboardEvent["code"]
+                | `Mouse${MouseEvent["button"]}`
+                | `MWheel${"Right" | "Left" | "Down" | "Up" | "Forwards" | "Backwards"}`,
+            callback: InputCallback
+        ) => {
+            (
+                this.#keybinds.get(key) ?? (() => {
+                    const array: InputCallback[] = [];
+                    this.#keybinds.set(key, array);
+
+                    return array;
+                })()
+            ).push(callback);
+        }).bind(this);
+
+        fn.onlyOnStart = function(
+            key: KeyboardEvent["code"]
+                | `Mouse${MouseEvent["button"]}`
+                | `MWheel${"Right" | "Left" | "Down" | "Up" | "Forwards" | "Backwards"}`,
+            callback: InputCallback
+        ) {
+            fn(key, (parity: "start" | "stop") => parity == "start" && callback(parity));
+        };
+
+        fn.onlyOnStop = function(
+            key: KeyboardEvent["code"]
+                | `Mouse${MouseEvent["button"]}`
+                | `MWheel${"Right" | "Left" | "Down" | "Up" | "Forwards" | "Backwards"}`,
+            callback: InputCallback
+        ) {
+            fn(key, (parity: "start" | "stop") => parity == "stop" && callback(parity));
+        };
+
+        return fn as Base & Required<Extended>;
+    })();
 
     /**
      * `* It's a constructor. It constructs.`
@@ -98,11 +140,7 @@ const InputManager = new (createSingleton(class InputManager {
 }));
 
 {
-    function onlyOnStart(cb: InputCallback) {
-        return (parity: "start" | "stop") => parity == "start" && cb(parity);
-    }
-
-    const zero = srvsdbx_Geometry.Vector3D.zeroPt(),
+    const zero = srvsdbx_Geometry.Vector3D.zeroPoint(),
         movements: {
             [key: string]: [string, srvsdbx_Geometry.Point2D];
         } = {
@@ -114,21 +152,19 @@ const InputManager = new (createSingleton(class InputManager {
 
     function generateMovementCallback(velocityMapKey: string, velocity: srvsdbx_Geometry.Point2D) {
         return (parity: "start" | "stop") => {
-            let player: srvsdbx_ErrorHandling.Maybe<Player>;
-
-            if (player = gamespace.player) {
-                player.velocityMap.set(
-                    velocityMapKey,
-                    parity == "start" ? { x: velocity.x, y: velocity.y, z: 0 } : zero
-                );
-            }
+            gamespace.player?.velocityMap.set(
+                velocityMapKey,
+                parity == "start" ? { x: velocity.x, y: velocity.y, z: 0 } : zero
+            );
         };
     }
 
     Object.entries(movements)
-        .forEach(([k, v]) => {
-            InputManager.register(k, generateMovementCallback(v[0], v[1]));
+        .forEach(([key, velocity]) => {
+            InputManager.register(key, generateMovementCallback(velocity[0], velocity[1]));
         });
+
+    const slots = Inventory.MAIN_SLOTS;
 
     function absMod(a: number, b: number) {
         return a >= 0 ? a % b : (a % b + b) % b;
@@ -136,61 +172,55 @@ const InputManager = new (createSingleton(class InputManager {
 
     function cycleItems(dir: 1 | -1) {
         const player = gamespace.player;
+        if (player) {
+            if (player.inventory.containers.main.size > 1) {
+                let target = player.activeItemIndex;
 
-        if (player && player.inventory.items.size > 1) {
-            let target = player.activeItemIndex;
+                while (!player.inventory.containers.main.has(absMod(target += dir, slots)));
 
-            while (!player.inventory.hasItem(absMod(target += dir, 4), "Main"));
-
-            player.setActiveItemIndex(absMod(target, 4));
+                player.setActiveItemIndex(absMod(target, slots));
+            }
         }
     }
 
-    InputManager.register("MWheelUp", onlyOnStart(cycleItems.bind(null, 1)));
+    InputManager.register.onlyOnStart("MWheelUp", cycleItems.bind(null, -1));
 
-    InputManager.register("MWheelDown", onlyOnStart(cycleItems.bind(null, -1)));
+    InputManager.register.onlyOnStart("MWheelDown", cycleItems.bind(null, 1));
 
     InputManager.register("Mouse0", parity => {
         const player = gamespace.player;
-
         if (player) {
             player.state.attacking = parity == "start";
-
-            player?.activeItem?.usePrimary?.();
+            player.activeItem?.usePrimary?.();
         }
     });
 
-    InputManager.register("KeyR", onlyOnStart(() => {
+    InputManager.register.onlyOnStart("KeyR", () => {
         const player = gamespace.player;
-
         if (player) {
             const activeItem = player?.activeItem;
 
             if (activeItem instanceof Gun) activeItem.standardReload();
         }
-    }));
+    });
 
-    InputManager.register("KeyQ", onlyOnStart(() => {
-        const player = gamespace.player;
+    InputManager.register.onlyOnStart("KeyQ", () => {
+        gamespace.player?.setActiveItemIndex(gamespace.player.previousActiveIndex);
+    });
 
-        player?.setActiveItemIndex?.(player.previousActiveIndex);
-    }));
-
-    for (let i = 0; i < 4; i++) {
-        InputManager.register(`Digit${i + 1}`, onlyOnStart(() => {
-            const player = gamespace.player;
-
-            player?.setActiveItemIndex?.(i);
-        }));
+    for (let i = 0; i < slots; i++) {
+        InputManager.register.onlyOnStart(`Digit${i + 1}`, () => {
+            gamespace.player?.setActiveItemIndex(i);
+        });
     }
 
-    InputManager.register("KeyT", onlyOnStart(() => {
-        const player = gamespace.player;
+    InputManager.register.onlyOnStart("KeyT", () => {
+        gamespace.player?.swapWeapons();
+    });
 
-        player?.swapWeapons?.();
-    }));
+    InputManager.register.onlyOnStart("KeyH", () => (gamespace.settings.drawHitboxes = !gamespace.settings.drawHitboxes));
 
-    InputManager.register("KeyH", onlyOnStart(() => (gamespace.settings.drawHitboxes = !gamespace.settings.drawHitboxes)));
+    InputManager.register.onlyOnStart("KeyJ", () => (gamespace.settings.drawVelocities = !gamespace.settings.drawVelocities));
 
-    InputManager.register("KeyJ", onlyOnStart(() => (gamespace.settings.drawVelocities = !gamespace.settings.drawVelocities)));
+    InputManager.register.onlyOnStart("KeyP", () => UIManager.toggle());
 }

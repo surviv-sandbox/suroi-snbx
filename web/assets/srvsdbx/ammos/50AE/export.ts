@@ -19,5 +19,5 @@ export default {
         type: "bullet",
         images: ["./tracer.svg"]
     },
-    casing: "srvsdbx::casing_50AE"
+    casing: "srvsdbx::casing9mm"
 } satisfies ExportInterface<SimpleAmmo>;

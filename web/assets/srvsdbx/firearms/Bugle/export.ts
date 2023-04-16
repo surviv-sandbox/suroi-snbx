@@ -15,8 +15,8 @@ export default {
             width: 0.15,
             height: 20
         },
-        obstacleMult: 1,
-        headshotMult: 1,
+        obstacleMultiplier: 1,
+        headshotMultiplier: 1,
         firstShotAccuracy: {
             enabled: false,
             rechargeTime: 1e10
@@ -31,7 +31,7 @@ export default {
         }
     ],
     suppressed: false,
-    caliber: "srvsdbx::Bugle",
+    caliber: "srvsdbx::bugle",
     useDelay: srvsdbx_Math.toMS(1, "s"),
     deployGroup: 0,
     accuracy: {

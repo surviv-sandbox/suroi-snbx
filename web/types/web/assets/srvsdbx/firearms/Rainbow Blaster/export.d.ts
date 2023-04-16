@@ -18,8 +18,8 @@ declare const _default: {
             drawAbovePlayer: true;
             forceMaximumLength: true;
         };
-        obstacleMult: number;
-        headshotMult: number;
+        obstacleMultiplier: number;
+        headshotMultiplier: number;
         firstShotAccuracy: {
             enabled: true;
             rechargeTime: number;

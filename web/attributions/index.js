@@ -87,10 +87,10 @@
                                             /**
                                              * @type {string}
                                              */
-                                            const prev = a[i - 1].frameworks[f] ?? "0.0.0",
+                                            const prev = a[i - 1].frameworks[f] ?? "-Infinity.-Infinity.-Infinity",
 
                                                 b = prev.split(/\./g),
-                                                c = (v.frameworks[f] ?? "0.0.0").split(/\./g),
+                                                c = (v.frameworks[f] ?? "-Infinity.-Infinity.-Infinity").split(/\./g),
                                                 j = b.findIndex((v, i) => v != c[i]);
 
                                             return { index: j, dir: Math.sign(c[j] - b[j]) };

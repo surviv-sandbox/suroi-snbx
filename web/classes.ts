@@ -5,426 +5,427 @@ type BaseGenericEvents = {
     /**
      * Represents a collision
      */
-    collision: {
-        /**
-         * The actual `CollisionEvent` instance
-         */
-        event: CollisionEvent,
-        /**
-         * The `Generic` this object has collided with
-         */
-        args: [Generic];
-    };
+    collision: [Generic, srvsdbx_Geometry.Point2D[]];
 };
+
+/**
+ * Represents different collision levels
+ */
+const CollisionLevels = (() => {
+    type CollisionLevel = {
+        /**
+         * Returns the name of the hitbox color associated with this level
+         */
+        getHitboxName(): keyof Gamespace["settings"]["debugColors"],
+        /**
+         * Returns the hitbox color associated with this level
+         */
+        getHitboxColor(): Gamespace["settings"]["debugColors"][ReturnType<CollisionLevel["getHitboxName"]>];
+    };
+
+    type Levels = "NONE" | "NO_PLAYER" | "ALL";
+
+    return {
+        NONE: {
+            getHitboxName() { return "DEFAULT"; },
+            getHitboxColor() { return gamespace.settings.debugColors[this.getHitboxName()]; },
+        },
+        NO_PLAYER: {
+            getHitboxName() { return "SEMI_COLLIDABLE"; },
+            getHitboxColor() { return gamespace.settings.debugColors[this.getHitboxName()]; },
+        },
+        ALL: {
+            getHitboxName() { return "COLLIDABLE"; },
+            getHitboxColor() { return gamespace.settings.debugColors[this.getHitboxName()]; },
+        }
+    } satisfies Record<Levels, CollisionLevel> as {
+        /**
+         * Absolutely no collisions will be registered for this object
+         */
+        readonly NONE: CollisionLevel,
+        /**
+         * No collisions with players will be registered
+         */
+        readonly NO_PLAYER: CollisionLevel,
+        /**
+         * All collisions will be processed
+         */
+        readonly ALL: CollisionLevel;
+    };
+})();
+/**
+ * Represents different collision levels
+ */
+type CollisionLevel = typeof CollisionLevels[keyof typeof CollisionLevels];
+
 
 /**
  * Represents a basic game object
  * @abstract This class cannot exist alone
  * @template E The types of events this generic receives
  */
-abstract class Generic<E extends BaseGenericEvents = BaseGenericEvents> implements Destroyable {
-    /**
-     * A reference to the matter.js body this object contains
-     */
-    #body: Matter.Body;
-    /**
-     * A reference to the matter.js body this object contains
-     */
-    get body() { return this.#body; }
-    protected set body(b) {
-        this.#body = b;
-    }
+const Generic = (() => {
+    abstract class Generic<E extends BaseGenericEvents = BaseGenericEvents> implements Destroyable {
+        /**
+         * A shape representing this object's hitbox
+         */
+        readonly #body: srvsdbx_Geometry.Shape;
+        /**
+         * A shape representing this object's hitbox
+         */
+        get body() { return this.#body; }
 
-    /**
-     * Whether or not this object can currently be collided with
-     */
-    collidable = true;
+        /**
+         * What kind of objects this object can collide with
+         */
+        collidable: CollisionLevel = CollisionLevels.ALL;
 
-    /**
-     * A map to collect velocities acting upon this object; these are then compiled into one net velocity each physics tick
-     */
-    readonly #velocityMap = new ReducibleMap<string, srvsdbx_Geometry.Point3D, srvsdbx_Geometry.Vector3D>(
-        (acc, cur) => acc.plus(cur),
-        srvsdbx_Geometry.Vector3D.zeroVec()
-    );
-    /**
-     * A map to collect velocities acting upon this object; these are then compiled into one net velocity each physics tick
-     */
-    get velocityMap() { return this.#velocityMap; }
+        /**
+         * A map to collect velocities acting upon this object; these are then compiled into one net velocity
+         * each physics tick. Velocities are specified in pixels/ms
+         *
+         * There are no restrictions on keys, although it should be noted that most ingame objects that inherit
+         * from this class and use this system—such as particles—will use the key `intrinsic`; it is therefore
+         * not a good idea to use this key yourself
+         *
+         * Particles spawned by emitters will also use the key `emitter` for this purpose
+         */
+        readonly #velocityMap = new ReducibleMap<string, srvsdbx_Geometry.Point3D, srvsdbx_Geometry.Vector3D>(
+            (acc, cur) => acc.plus(cur),
+            srvsdbx_Geometry.Vector3D.zeroVector()
+        );
+        /**
+         * A map to collect velocities acting upon this object; these are then compiled into one net velocity
+         * each physics tick. Velocities are specified in pixels/ms
+         *
+         * There are no restrictions on keys, although it should be noted that most ingame objects that inherit
+         * from this class and use this system—such as particles—will use the key `intrinsic`; it is therefore
+         * not a good idea to use this key yourself
+         *
+         * Particles spawned by emitters will also use the key `emitter` for this purpose
+         */
+        get velocityMap() { return this.#velocityMap; }
 
-    /**
-     * A map to collect angular velocities acting upon this object; these are then compiled into one net angular velocity each physics tick
-     */
-    readonly #angularVelocityMap = new ReducibleMap<string, number>((acc, cur) => acc + cur, 0);
-    /**
-     * A map to collect angular velocities acting upon this object; these are then compiled into one net angular velocity each physics tick
-     */
-    get angularVelocityMap() { return this.#angularVelocityMap; }
+        /**
+         * A map to collect angular velocities acting upon this object; these are then compiled into one
+         * net angular velocity each physics tick. Angular velocities are specified in radians/second
+         *
+         * There are no restrictions on keys, although it should be noted that most ingame objects that inherit
+         * from this class and use this system—such as particles—will use the key `intrinsic`; it is therefore
+         * not a good idea to use this key yourself
+         *
+         * Particles spawned by emitters will also use the key `emitter` for this purpose
+         */
+        readonly #angularVelocityMap = new ReducibleMap<string, number>((acc, cur) => acc + cur, 0);
+        /**
+         * A map to collect angular velocities acting upon this object; these are then compiled into one
+         * net angular velocity each physics tick. Angular velocities are specified in radians/second
+         *
+         * There are no restrictions on keys, although it should be noted that most ingame objects that inherit
+         * from this class and use this system—such as particles—will use the key `intrinsic`; it is therefore
+         * not a good idea to use this key yourself
+         *
+         * Particles spawned by emitters will also use the key `emitter` for this purpose
+         */
+        get angularVelocityMap() { return this.#angularVelocityMap; }
 
-    /**
-     * This game object's orientation. **Does not affect its hitbox.**
-     */
-    #angle = 0;
-    /**
-     * This game object's orientation. **Does not affect its hitbox.**
-     *
-     * `get`: Gets this object's location
-     *
-     * `set`: Sets this object's angle to the provided value if it is not `NaN`
-     */
-    get angle() { return this.#angle; }
-    set angle(v) {
-        if (!Number.isNaN(v)) {
-            Matter.Body.setAngle(this.#body, this.#angle = v);
-        };
-    }
-
-    /**
-     * This object's z position
-     */
-    #layer = 0;
-    /**
-     * This object's z position
-     *
-     * `get`: This object's position
-     *
-     * `set`: If the provided value isn't `NaN`, changes this object's z position
-     */
-    get layer() { return this.#layer; }
-    set layer(v) { !Number.isNaN(v) && (this.#layer = v); }
-
-    /**
-     * This objet's position in 3D space
-     */
-    get position() { return { x: this.#body.position.x, y: this.#body.position.y, z: this.layer } as srvsdbx_Geometry.Point3D; }
-
-    /**
-     * The color to fill this object with
-     */
-    fillColor: string;
-    /**
-     * The color to stroke this shape with
-     */
-    strokeColor: string;
-
-    /**
-     * A user-defined function for drawing this object
-     */
-    readonly #draw: (p5: import("p5")) => void;
-
-    /**
-     * An event target on which listeners can be added
-     */
-    readonly #events = new SandboxEventTarget<E>;
-    /**
-     * An event target on which listeners can be added
-     */
-    get events() { return this.#events; }
-
-    /**
-     * Whether or not this Generic has been destroyed (and by extension, whether or not it's safe to call `.update` or `.draw` on it)
-     */
-    #destroyed = false;
-    /**
-     * Whether or not this Generic has been destroyed (and by extension, whether or not it's safe to call `.update` or `.draw` on it)
-     */
-    get destroyed() { return this.#destroyed; }
-
-    /**
-     * This generic's id
-     */
-    readonly #id = generateId();
-    /**
-     * This generic's id
-     */
-    get id() { return this.#id; }
-
-    /**
-     * The `Generic` to which this object is locked via `follow`
-     */
-    #parent: srvsdbx_ErrorHandling.Maybe<Generic> = srvsdbx_ErrorHandling.Nothing;
-    /**
-     * The `Generic` to which this object is locked via `follow`
-     */
-    get parent() { return this.#parent; }
-
-    /**
-     * The offset at which this object will follow its parent, relative to the parent's position
-     * - `x`: The offset to apply along the x-axis
-     * - `y`: The offset to apply along the y-axis
-     * - `z`: The offset to apply along the z-axis
-     * - `parr`: The offset to apply along the axis parallel to the parent's orientation
-     * - `perp`: The offset to apply along the axis perpendicular to the parent's orientation
-     */
-    #followOffset: { x: number, y: number, z: number, parr: number, perp: number; } = { x: 0, y: 0, z: 0, parr: 0, perp: 0 };
-    /**
-     * The offset at which this object will follow its parent, relative to the parent's position
-     * - `x`: The offset to apply along the x-axis
-     * - `y`: The offset to apply along the y-axis
-     * - `z`: The offset to apply along the z-axis
-     * - `parr`: The offset to apply along the axis parallel to the parent's orientation
-     * - `perp`: The offset to apply along the axis perpendicular to the parent's orientation
-     */
-    get followOffset() { return this.#followOffset; }
-
-    /**
-     * A Map whose values are `Generic`s following this object and whose keys are their corresponding `id`s
-     */
-    readonly #followers: Map<ObjectId, Generic> = new Map;
-    /**
-     * A Map whose values are `Generic`s following this object and whose keys are their corresponding `id`s
-     */
-    get followers() { return this.#followers; }
-
-    /**
-     * `* It's a constructor. It constructs.`
-     * @param body The matter.js body this object will use
-     * @param drawFunction A function that'll be invoked in order to draw this object
-     * @param position A `Point2D` object dictating this object's starting position
-     * @param fillColor Optionally specify this projectile's fill color
-     * @param strokeColor Optionally specify this projectile's stroke color
-     */
-    constructor(body: Matter.Body, drawFunction: (p5: import("p5")) => void, position: srvsdbx_Geometry.Point2D | srvsdbx_Geometry.Point3D, fillColor?: string, strokeColor?: string, angle = 0) {
-        if (new.target === Generic) throw new TypeError("Cannot instantiate abstract class 'Generic'.");
-
-        this.#body = body;
-        Matter.Body.setPosition(body, position);
-        Matter.Body.setAngle(body, angle);
-
-        if ("z" in position) this.layer = position.z;
-
-        this.#draw = drawFunction;
-
-        this.fillColor = fillColor ?? "";
-        this.strokeColor = strokeColor ?? "";
-
-        this.#angle = srvsdbx_Math.normalizeAngle(angle, "radians");
-    }
-
-    /**
-     * A generic method for drawing polygons. Uses `fillColor` and `strokeColor`.
-     * @param p5 The gamespace's p5 instance
-     */
-    static drawPolygon(this: Generic, p5: import("p5")) {
-        const bd = this.body;
-
-        p5.push();
-
-        this.strokeColor ? p5.stroke(this.strokeColor) : p5.noStroke();
-        this.fillColor ? p5.fill(this.fillColor) : p5.noFill();
-
-        function drawShape(mode?: "close") {
-            p5.beginShape();
-
-            for (let i = 0, vertices = bd.vertices, l = vertices.length; i < l; i++)
-                p5.vertex(vertices[i].x, vertices[i].y);
-
-            p5.endShape(mode);
+        /**
+         * This game object's orientation. **Does not affect its hitbox.**
+         */
+        #angle = 0;
+        /**
+         * This game object's orientation. **Does not affect its hitbox.**
+         *
+         * `get`: Gets this object's location
+         *
+         * `set`: Sets this object's angle to the provided value if it is not `NaN`
+         */
+        get angle() { return this.#angle; }
+        set angle(angle) {
+            if (!Number.isNaN(angle))
+                this.#angle = angle;
         }
 
-        drawShape();
+        /**
+         * This object's z position
+         */
+        #layer = 0;
+        /**
+         * This object's z position
+         *
+         * `get`: This object's position
+         *
+         * `set`: If the provided value isn't `NaN`, changes this object's z position
+         */
+        get layer() { return this.#layer; }
+        set layer(layer) {
+            if (!Number.isNaN(layer))
+                this.#layer = layer;
+        }
 
-        gamespace.drawDebug(
-            p5,
-            this.collidable ? "COLLIDABLE" : "DEFAULT",
-            () => drawShape("close"),
-            void 0,
-            this
-        );
+        /**
+         * This objet's position in 3D space
+         */
+        get position() { return { x: this.#body.origin.x, y: this.#body.origin.y, z: this.layer } as srvsdbx_Geometry.Point3D; }
 
-        p5.pop();
-    }
+        /**
+         * A user-defined function for drawing this object
+         */
+        readonly #draw: (p5: import("p5")) => void;
 
-    /**
-     * A generic method for drawing circles. Uses `fillColor` and `strokeColor`
-     * @param p5 The gamespace's p5 instance
-     */
-    static drawCircle(this: Generic, p5: import("p5")) {
-        const body = this.body,
-            radius = body.circleRadius!;
+        /**
+         * An event target on which listeners can be added
+         */
+        readonly #events = new SandboxEventTarget<E>;
+        /**
+         * An event target on which listeners can be added
+         */
+        get events() { return this.#events; }
 
-        p5.push();
+        /**
+         * Whether or not this Generic has been destroyed (and by extension, whether or not it's safe to call `.update` or `.draw` on it)
+         */
+        #destroyed = false;
+        /**
+         * Whether or not this Generic has been destroyed (and by extension, whether or not it's safe to call `.update` or `.draw` on it)
+         */
+        get destroyed() { return this.#destroyed; }
 
-        this.strokeColor ? p5.stroke(this.strokeColor) : p5.noStroke();
-        this.fillColor ? p5.fill(this.fillColor) : p5.noFill();
+        /**
+         * This generic's id
+         */
+        readonly #id = generateId();
+        /**
+         * This generic's id
+         */
+        get id() { return this.#id; }
 
-        p5.circle(0, 0, 2 * radius);
+        /**
+         * The `Generic` to which this object is locked via `follow`
+         */
+        #parent: srvsdbx_ErrorHandling.Maybe<Generic> = srvsdbx_ErrorHandling.Nothing;
+        /**
+         * The `Generic` to which this object is locked via `follow`
+         */
+        get parent() { return this.#parent; }
 
-        p5.pop();
+        /**
+         * The offset at which this object will follow its parent, relative to the parent's position
+         * - `x`: The offset to apply along the x-axis
+         * - `y`: The offset to apply along the y-axis
+         * - `z`: The offset to apply along the z-axis
+         * - `parr`: The offset to apply along the axis parallel to the parent's orientation
+         * - `perp`: The offset to apply along the axis perpendicular to the parent's orientation
+         */
+        #followOffset: { x: number, y: number, z: number, parr: number, perp: number; } = { x: 0, y: 0, z: 0, parr: 0, perp: 0 };
+        /**
+         * The offset at which this object will follow its parent, relative to the parent's position
+         * - `x`: The offset to apply along the x-axis
+         * - `y`: The offset to apply along the y-axis
+         * - `z`: The offset to apply along the z-axis
+         * - `parr`: The offset to apply along the axis parallel to the parent's orientation
+         * - `perp`: The offset to apply along the axis perpendicular to the parent's orientation
+         */
+        get followOffset() { return this.#followOffset; }
 
-        gamespace.drawDebug(
-            p5,
-            this.collidable ? "COLLIDABLE" : "DEFAULT",
-            () => p5.circle(0, 0, 2 * radius),
-            void 0,
-            this
-        );
-    }
+        /**
+         * A Map whose values are `Generic`s following this object and whose keys are their corresponding `id`s
+         */
+        readonly #followers: Map<ObjectId, Generic> = new Map;
+        /**
+         * A Map whose values are `Generic`s following this object and whose keys are their corresponding `id`s
+         */
+        get followers() { return this.#followers; }
 
-    /**
-     * Modifies this object's position in accordance to its velocities
-     */
-    update() {
-        if (this.#destroyed || this.#parent) return;
+        /**
+         * `* It's a constructor. It constructs.`
+         * @param body The matter.js body this object will use
+         * @param drawFunction A function that'll be invoked in order to draw this object
+         * @param position A `Point2D` object dictating this object's starting position
+         * @param fillColor Optionally specify this projectile's fill color
+         * @param strokeColor Optionally specify this projectile's stroke color
+         */
+        constructor(
+            body: srvsdbx_Geometry.Shape,
+            drawFunction: (p5: import("p5")) => void,
+            position: srvsdbx_Geometry.Point2D | srvsdbx_Geometry.Point3D,
+            angle = 0
+        ) {
+            this.#body = body;
+            body.moveTo(position);
 
-        const body = this.#body,
-            deltaTime = gamespace.currentUpdate - gamespace.lastUpdate,
-            velocity = this.compileVelocities();
+            if ("z" in position) this.layer = position.z;
 
-        this.setPosition({
-            x: body.position.x + velocity.x * deltaTime,
-            y: body.position.y + velocity.y * deltaTime
-        });
+            this.#draw = drawFunction;
 
-        this.angle += srvsdbx_Math.normalizeAngle(deltaTime * this.compileAngularVelocities() / 1000, "radians");
+            this.#angle = srvsdbx_Math.normalizeAngle(angle, "radians");
+        }
 
-        this.layer += velocity.z * deltaTime;
+        /**
+         * Modifies this object's position in accordance to its velocities
+         */
+        update() {
+            if (this.#destroyed || this.#parent) return;
 
-        this.#updateFollowers();
-    }
+            const body = this.#body,
+                deltaTime = gamespace.currentUpdate - gamespace.lastUpdate,
+                velocity = this.compileVelocities();
 
-    /**
-     * Sets this generic's position instantly
-     * @param position The position to place this object at
-     */
-    setPosition(position: srvsdbx_Geometry.Point2D) {
-        Matter.Body.setPosition(this.body, {
-            x: position.x,
-            y: position.y
-        });
+            this.setPosition({
+                x: body.origin.x + velocity.x * deltaTime,
+                y: body.origin.y + velocity.y * deltaTime
+            });
 
-        this.#updateFollowers();
-    }
+            this.angle += srvsdbx_Math.normalizeAngle(deltaTime * this.compileAngularVelocities() / 1000, "radians");
 
-    /**
-     * Updates the positions and angles of this generic's followers
-     */
-    #updateFollowers() {
-        for (const [_, follower] of this.#followers) {
-            if (follower.#destroyed) {
-                this.#followers.delete(_);
-                continue;
+            this.layer += velocity.z * deltaTime;
+
+            this.updateFollowers();
+        }
+
+        /**
+         * Sets this generic's position instantly
+         * @param position The position to place this object at
+         */
+        setPosition(position: srvsdbx_Geometry.Point2D) {
+            this.#body.moveTo({
+                x: position.x,
+                y: position.y
+            });
+
+            this.updateFollowers();
+        }
+
+        /**
+         * Updates the positions and angles of this generic's followers
+         */
+        updateFollowers() {
+            for (const [key, follower] of this.#followers) {
+                if (follower.#destroyed) {
+                    this.#followers.delete(key);
+                    continue;
+                }
+
+                const position = srvsdbx_Geometry.Vector3D.fromPoint3D({ x: this.position.x, y: this.position.y, z: this.#layer })
+                    .plus(follower.#followOffset, true)
+                    .plus(srvsdbx_Geometry.Vector2D.fromPolarToVec(this.#angle - Math.PI / 2, follower.#followOffset.parr).toPoint3D(), true)
+                    .plus(srvsdbx_Geometry.Vector2D.fromPolarToVec(this.#angle, follower.#followOffset.perp).toPoint3D(), true);
+
+                follower.setPosition(position);
+                follower.#layer = position.z;
             }
+        }
 
-            const pos = srvsdbx_Geometry.Vector3D.fromPoint3D({ x: this.position.x, y: this.position.y, z: this.#layer })
-                .plus(follower.#followOffset, true)
-                .plus(srvsdbx_Geometry.Vector2D.fromPolarToVec(this.#angle - Math.PI / 2, follower.#followOffset.parr).toPoint3D(), true)
-                .plus(srvsdbx_Geometry.Vector2D.fromPolarToVec(this.#angle, follower.#followOffset.perp).toPoint3D(), true);
+        /**
+         * Calls the user-defined drawing function in order to draw this object
+         * @param p5 The gamespace's p5 instance
+         */
+        draw(p5: import("p5")) {
+            if (this.#destroyed) return;
 
-            follower.setPosition(pos);
-            follower.#layer = pos.z;
+            this.#draw.call(this, p5);
+        }
+
+        /**
+         * Clears any object attributes from this instance to encourage the GC to clean up
+         *
+         * It also removes this body from the active `Matter.World` instance and from the appropriate `gamespace.objects` collection
+         */
+        destroy() {
+            if (this.#destroyed) return;
+            this.#destroyed = true;
+
+            for (const [, follower] of this.#followers)
+                follower.unfollow();
+
+            this.unfollow();
+            //@ts-expect-error
+            this.#draw = this.#body = this.#events = this.#velocityMap = this.#followOffset = this.#followers = this.#parent = void 0;
+        }
+
+        /**
+         * Uses the various velocities currently applied to this object (through `velocityMap`) to determine a net velocity
+         *
+         * Does not take the time since the last physics update into account.
+         */
+        compileVelocities() {
+            return this.#velocityMap.reduced;
+        }
+
+        /**
+         * Uses the various angular velocities currently applied to this object (through `angVelocityMap`) to determine a net angular velocity
+         *
+         * Does not take the time since the last physics update into account.
+         */
+        compileAngularVelocities() {
+            return this.#angularVelocityMap.reduced;
+        }
+
+        /**
+         * Locks this object's position to that of another's, plus an offset.
+         * If it is already following another object, that connection will be severed.
+         *
+         * While following an object, this object's velocity calculations will be suspended.
+         * However, angular calculations will not.
+         *
+         * Passing this object to itself (`generic.follow(generic)`) does nothing.
+         *
+         * @param object The object to which this object will be locked
+         * @param offset An offset to apply to the lock, relative to the parent
+         * - `x`: The offset to apply along the x-axis
+         * - `y`: The offset to apply along the y-axis
+         * - `z`: The offset to apply along the z-axis
+         * - `parr`: The offset to apply along the axis parallel to the parent's orientation
+         * - `perp`: The offset to apply along the axis perpendicular to the parent's orientation
+         */
+        follow(object: Generic, offset?: { x: number, y: number, z: number, parr: number, perp: number; }) {
+            if (object == this as unknown as Generic) return;
+
+            if (this.#parent != object) {
+                this.#parent?.followers.delete(this.#id);
+                object.#followers.set(this.#id, this as unknown as Generic);
+                this.#parent = object;
+            };
+
+            offset ??= { x: 0, y: 0, z: 0, parr: 0, perp: 0 };
+
+            this.#followOffset = {
+                x: offset.x,
+                y: offset.y,
+                z: offset.z,
+                parr: offset.parr,
+                perp: offset.perp
+            };
+        }
+
+        /**
+         * Removes this object's bondage to another
+         */
+        unfollow() {
+            if (this.#parent) {
+                this.#parent.#followers.delete(this.#id);
+                this.#parent = srvsdbx_ErrorHandling.Nothing;
+            };
         }
     }
 
-    /**
-     * Calls the user-defined drawing function in order to draw this object
-     * @param p5 The gamespace's p5 instance
-     */
-    draw(p5: import("p5")) {
-        if (this.#destroyed) return;
-
-        this.#draw.call(this, p5);
-    }
-
-    /**
-     * Clears any object attributes from this instance to encourage the GC to clean up
-     *
-     * It also removes this body from the active `Matter.World` instance and from the appropriate `gamespace.objects` collection
-     */
-    destroy() {
-        this.#destroyed = true;
-
-        // The body shouldn't be removed before this point
-        try {
-            Matter.World.remove(gamespace.world!, this.#body);
-        } catch (_) { }
-
-        for (const [_, follower] of this.#followers)
-            follower.unfollow();
-
-        this.unfollow();
-        gamespace.objects.obstacles.delete(this.#id);
-        //@ts-expect-error
-        this.#draw = this.#body = this.#events = this.#velocityMap = this.#followOffset = this.#followers = this.#parent = void 0;
-    }
-
-    /**
-     * Uses the various velocities currently applied to this object (through `velocityMap`) to determine a net velocity
-     *
-     * Does not take the time since the last physics update into account.
-     */
-    compileVelocities() {
-        return this.#velocityMap.reduced;
-    }
-
-    /**
-     * Uses the various angular velocities currently applied to this object (through `angVelocityMap`) to determine a net angular velocity
-     *
-     * Does not take the time since the last physics update into account.
-     */
-    compileAngularVelocities() {
-        return this.#angularVelocityMap.reduced;
-    }
-
-    /**
-     * Locks this object's position to that of another's, plus an offset.
-     * If it is already following another object, that connection will be severed.
-     *
-     * While following an object, this object's velocity calculations will be suspended.
-     * However, angular calculations will not.
-     *
-     * Passing this object to itself (`generic.follow(generic)`) does nothing.
-     *
-     * @param obj The object to which this object will be locked
-     * @param offset An offset to apply to the lock, relative to the parent
-     * - `x`: The offset to apply along the x-axis
-     * - `y`: The offset to apply along the y-axis
-     * - `z`: The offset to apply along the z-axis
-     * - `parr`: The offset to apply along the axis parallel to the parent's orientation
-     * - `perp`: The offset to apply along the axis perpendicular to the parent's orientation
-     */
-    follow(obj: Generic, offset?: { x: number, y: number, z: number, parr: number, perp: number; }) {
-        if (obj == this as unknown as Generic) return;
-
-        if (this.#parent != obj) {
-            this.#parent?.followers.delete(this.#id);
-            obj.#followers.set(this.#id, this as unknown as Generic);
-            this.#parent = obj;
-        }
-
-        offset ??= { x: 0, y: 0, z: 0, parr: 0, perp: 0 };
-
-        this.#followOffset = {
-            x: offset.x,
-            y: offset.y,
-            z: offset.z,
-            parr: offset.parr,
-            perp: offset.perp
-        };
-    }
-
-    /**
-     * Removes this object's bondage to another
-     */
-    unfollow() {
-        this.#parent?.followers?.delete?.(this.#id);
-        this.#parent = srvsdbx_ErrorHandling.Nothing;
-    }
-}
+    return srvsdbx_OOP.makeAbstract(Generic);
+})();
+type Generic<E extends BaseGenericEvents = BaseGenericEvents> = InstanceType<typeof Generic<E>>;
 
 /**
  * The most generalized expression of an object stored by the game
  */
-type GameObject = Generic | Decal | Explosion | Projectile;
+type GameObject = Generic | Decal | Explosion | Projectile | ParticleEmitter;
 
 /**
  * A central object consolidating classes and the game's global state
  */
-const gamespace = new (createSingleton(class Gamespace {
+const gamespace = new (srvsdbx_OOP.createSingleton(class Gamespace {
     /**
      * The game's version
      */
-    get VERSION() { return "0.10.0 beta 2"; }
+    get VERSION() { return "0.10.0 beta 3"; }
 
     /**
      * The default radius for a player, in pixels
@@ -434,7 +435,7 @@ const gamespace = new (createSingleton(class Gamespace {
     /**
      * The position of the camera
      */
-    #cameraPosition: srvsdbx_Geometry.Point2D = srvsdbx_Geometry.Vector2D.zeroPt();
+    readonly #cameraPosition: srvsdbx_Geometry.Point2D = srvsdbx_Geometry.Vector2D.zeroPoint();
     /**
      * A copy of the camera's position
      */
@@ -464,76 +465,58 @@ const gamespace = new (createSingleton(class Gamespace {
     get currentUpdate() { return this.#currentUpdate; }
 
     /**
-     * A reference to the Matter.js Engine object belonging to the current level
-     */
-    #engine: Matter.Engine | undefined;
-    /**
-     * A reference to the Matter.js Engine object belonging to the current level
-     */
-    get engine() { return this.#engine; }
-
-    /**
      * An event target on which listeners can be added
      */
     readonly #events = new SandboxEventTarget<{
         /**
          * Fired when the gamespace becomes ready to work with
          */
-        ready: {
-            /**
-             * The `Event` object
-             */
-            event: Event,
-            /**
-             * The time it took for the gamespace to become ready
-            */
-            args: [number];
-        },
+        ready: [number],
         /**
          * Fired when an item is registered by the game. No `fragmentLoaded`
          * event should be fired after the `ready` event
         */
-        fragmentLoaded: {
-            /**
-             * The `Event` object
-             */
-            event: Event,
-            /**
-             * The type of object that has just been loaded
-             */
-            args: [
-                srvsdbx_ErrorHandling.Result<
-                    MapValue<Gamespace["prototypes"][keyof Gamespace["prototypes"]]> | Level,
-                    {
-                        /**
-                         * The internal name of the object which just failed
-                         */
-                        readonly internalName: string,
-                        /**
-                         * The path the failed object was imported from
-                         */
-                        readonly includePath: string,
-                        /**
-                         * The namespace the failed object belongs to
-                         */
-                        readonly namespace: string,
-                        /**
-                         * The type of the failed object
-                         */
-                        readonly objectType: string,
-                        /**
-                         * An array of errors relating to this object's failure
-                         */
-                        readonly err: SandboxError[];
-                    }
-                >
-            ];
-        };
+        fragmentLoaded: [
+            srvsdbx_ErrorHandling.Result<
+                MapValue<Gamespace["prototypes"][keyof Gamespace["prototypes"]]> | Level,
+                {
+                    /**
+                     * The internal name of the object which just failed
+                     */
+                    readonly internalName: string,
+                    /**
+                     * The path the failed object was imported from
+                     */
+                    readonly includePath: string,
+                    /**
+                     * The namespace the failed object belongs to
+                     */
+                    readonly namespace: string,
+                    /**
+                     * The type of the failed object
+                     */
+                    readonly objectType: string,
+                    /**
+                     * An array of errors relating to this object's failure
+                     */
+                    readonly err: srvsdbx_Errors.SandboxError[];
+                }
+            >
+        ];
     }>;
     /**
      * An event target on which listeners can be added
      */
     get events() { return this.#events; }
+
+    /**
+     * Returns whether the game has finished loading all its assets and is ready to play
+     */
+    #isReady = false;
+    /**
+     * Returns whether the game has finished loading all its assets and is ready to play
+     */
+    get isReady() { return this.#isReady; }
 
     /**
      * The last timestamp that an update was performed on
@@ -554,49 +537,45 @@ const gamespace = new (createSingleton(class Gamespace {
     get levels() { return this.#levels; }
 
     /**
-     * Returns whether the game has finished loading all its assets and is ready to play
-     */
-    #isReady = false;
-    /**
-     * Returns whether the game has finished loading all its assets and is ready to play
-     */
-    get isReady() { return this.#isReady; }
-
-    /**
      * A reference to every game object currently in the game world
      */
     readonly #objects: {
         /**
-         * Every `decal` object currently in the game world
+         * Every `Decal` object currently in the game world
          */
-        readonly decals: EventMap<ObjectId, Decal>;
+        readonly decals: AugmentedEventMap<ObjectId, Decal>;
         /**
-         * Every `explosion` object currently in the game world
+         * Every `ParticleEmitter` object currently in the game world
          */
-        readonly explosions: EventMap<ObjectId, Explosion>;
+        readonly emitters: AugmentedEventMap<ObjectId, ParticleEmitter<any>>;
         /**
-         * Every 'plain' `generic` object currently in the game world (Other game objects inherit from `generic`, but those are not pushed)
+         * Every `Explosion` object currently in the game world
          */
-        readonly obstacles: EventMap<ObjectId, Generic>;
+        readonly explosions: AugmentedEventMap<ObjectId, Explosion>;
         /**
-         * Every `particle` object currently in the game world
+         * Every 'plain' `Generic` object currently in the game world (Other game objects inherit from `generic`, but those are not pushed)
          */
-        readonly particles: EventMap<ObjectId, Particle>;
+        readonly obstacles: AugmentedEventMap<ObjectId, Obstacle<ObstacleTypes, any>>;
         /**
-         * Every `playerLike` object currently in the game world
+         * Every `Particle` object currently in the game world
          */
-        readonly players: EventMap<ObjectId, PlayerLike>;
+        readonly particles: AugmentedEventMap<ObjectId, Particle>;
         /**
-         * Every `projectile` object currently in the game world
+         * Every `PlayerLike` object currently in the game world
          */
-        readonly projectiles: EventMap<ObjectId, Projectile>;
+        readonly players: AugmentedEventMap<ObjectId, PlayerLike>;
+        /**
+         * Every `Projectile` object currently in the game world
+         */
+        readonly projectiles: AugmentedEventMap<ObjectId, Projectile>;
     } = {
-            decals: new EventMap,
-            explosions: new EventMap,
-            obstacles: new EventMap,
-            particles: new EventMap,
-            players: new EventMap,
-            projectiles: new EventMap,
+            decals: new AugmentedEventMap,
+            emitters: new AugmentedEventMap,
+            explosions: new AugmentedEventMap,
+            obstacles: new AugmentedEventMap,
+            particles: new AugmentedEventMap,
+            players: new AugmentedEventMap,
+            projectiles: new AugmentedEventMap,
         };
     /**
      * A reference to every game object currently in the game world
@@ -607,62 +586,93 @@ const gamespace = new (createSingleton(class Gamespace {
      * Organizes the game objects by layer
      */
     readonly #layeredObjects = new Map<number, {
-        decals: Map<ObjectId, Decal>,
-        explosions: Map<ObjectId, Explosion>,
-        obstacles: Map<ObjectId, Generic>,
-        particlesOver: Map<ObjectId, Particle>,
-        particlesUnder: Map<ObjectId, Particle>,
-        players: Map<ObjectId, PlayerLike>,
-        projectilesUnder: Map<ObjectId, Projectile>;
-        projectilesOver: Map<ObjectId, Projectile>;
+        readonly decals: Map<ObjectId, Decal>,
+        readonly emitters: Map<ObjectId, ParticleEmitter<any>>;
+        readonly explosions: Map<ObjectId, Explosion>,
+        readonly obstaclesOver: Map<ObjectId, Obstacle>,
+        readonly obstaclesUnder: Map<ObjectId, Obstacle>,
+        readonly particlesOver: ReducibleMap<ObjectId, Particle, Array<Particle>>,
+        readonly particlesUnder: ReducibleMap<ObjectId, Particle, Array<Particle>>,
+        readonly players: Map<ObjectId, PlayerLike>,
+        readonly projectilesUnder: ReducibleMap<ObjectId, Projectile, Array<Projectile>>,
+        readonly projectilesOver: ReducibleMap<ObjectId, Projectile, Array<Projectile>>;
     }>;
 
     /**
      * Aggregates every game object
      */
-    readonly #objectPool = new Map<ObjectId, GameObject>();
+    readonly #objectPool = new AugmentedMap<ObjectId, GameObject>();
 
     /**
      * A collection of every object prototype registered with the game
      */
-    readonly #prototypes: {
-        /**
-         * A map whose values are ammo types and whose keys are their corresponding internal names
-         */
-        readonly ammoTypes: Map<string, Ammo>;
-        /**
-         * A map whose values are decals and whose keys are their corresponding internal names
-         */
-        readonly decals: Map<string, DecalPrototype>;
-        /**
-         * A map whose values are explosions and whose keys are their corresponding internal names
-         */
-        readonly explosions: Map<string, ExplosionPrototype>;
-        /**
-         * A map whose values are firearms and whose keys are their corresponding internal names
-         */
-        readonly firearms: Map<string, GunPrototype>;
-        /**
-         * A map whose values are firearms and whose keys are their corresponding internal names
-         */
-        readonly melees: Map<string, MeleePrototype>;
-        /**
-         * A map whose values are particles and whose keys are their corresponding internal names
-         */
-        readonly particles: Map<string, ParticlePrototype>;
-        /**
-         * A map whose values are particles and whose keys are their corresponding internal names
-         */
-        readonly statusEffects: Map<string, StatusEffectPrototype<{}>>;
-    } = {
-            ammoTypes: new Map,
-            decals: new Map,
-            explosions: new Map,
-            firearms: new Map,
-            melees: new Map,
-            particles: new Map,
-            statusEffects: new Map,
-        };
+    readonly #prototypes = (() => {
+        function generate<K, V>(collectionName: string) {
+            const map = new Map<K, V>(),
+                nativeGet = map.get.bind(map);
+
+            map.get = (key: K) => {
+                const value = nativeGet(key);
+
+                if (value === void 0)
+                    throw new srvsdbx_Errors.PrototypalReferenceError(`Attempted to fetch non-existant object '${key}' from collection '${collectionName}'`);
+
+                return value!;
+            };
+
+            return map as Omit<Map<K, V>, "get"> & {
+                /**
+                 * Returns the element located at a certain key.
+                 *
+                 * **If there is no item at the specified key, _an error is thrown!_**
+                 * @param key The key to fetch
+                 * @returns The item located there. If this method does not throw, this value is
+                 * guaranteed not to be `undefined`.
+                 * @throws {srvsdbx_Errors.PrototypalReferenceError} If there is no item at the given key
+                 */
+                get(key: K): NonNullable<V>;
+            };
+        }
+
+        return {
+            /**
+             * A map whose values are ammo types and whose keys are their corresponding internal names
+             */
+            ammos: generate<string, Ammo>("ammos"),
+            /**
+             * A map whose values are decals and whose keys are their corresponding internal names
+             */
+            decals: generate<string, DecalPrototype>("decals"),
+            /**
+             * A map whose values are equipments and whose keys are their corresponding internal names
+             */
+            equipments: generate<string, EquipmentPrototype>("equipments"),
+            /**
+             * A map whose values are explosions and whose keys are their corresponding internal names
+             */
+            explosions: generate<string, ExplosionPrototype>("explosions"),
+            /**
+             * A map whose values are firearms and whose keys are their corresponding internal names
+             */
+            firearms: generate<string, GunPrototype>("firearms"),
+            /**
+             * A map whose values are firearms and whose keys are their corresponding internal names
+             */
+            melees: generate<string, MeleePrototype>("melees"),
+            /**
+             * A map whose values are obstacles and whose keys are their corresponding internal names
+             */
+            obstacles: generate<string, ObstaclePrototype>("obstacles"),
+            /**
+             * A map whose values are particles and whose keys are their corresponding internal names
+             */
+            particles: generate<string, ParticlePrototype>("particles"),
+            /**
+             * A map whose values are particles and whose keys are their corresponding internal names
+             */
+            statusEffects: generate<string, StatusEffectPrototype<{}>>("statusEffects"),
+        } as const;
+    })();
     /**
     * A collection of every object prototype registered with the game
     */
@@ -672,7 +682,9 @@ const gamespace = new (createSingleton(class Gamespace {
      * A reference to the p5 instance currently in use
      */
     #p5: srvsdbx_ErrorHandling.Maybe<import("p5")> = srvsdbx_ErrorHandling.Nothing;
-
+    /**
+     * A reference to the p5 instance currently in use
+     */
     get p5() { return this.#p5!; }
 
     /**
@@ -688,65 +700,85 @@ const gamespace = new (createSingleton(class Gamespace {
      * Game settings
      */
     readonly #settings: {
-        drawHitboxes: boolean;
-        drawVelocities: boolean;
-        hitboxStyle: "stroke" | "fill" | "both";
+        /**
+         * Whether or not to trace hitboxes
+         */
+        drawHitboxes: boolean,
+        /**
+         * Whether or not to draw vectors representing velocities
+         */
+        drawVelocities: boolean,
+        /**
+         * Whether hitboxes should be drawn as outlines or partially opaque shapes
+         */
+        hitboxStyle: "stroke" | "fill" | "both",
+        /**
+         * At what visual quality to run the game
+         */
+        visualQuality: number,
+        /**
+         * A collection of colors to use depending on an object's type
+         */
         readonly debugColors: {
+            /**
+             * The color to use for elements that have collision enabled
+             */
             COLLIDABLE: string,
+            /**
+             * The color to use for elements that only collide with certain others
+             */
+            SEMI_COLLIDABLE: string,
+            /**
+             * The color to use for the ground
+             */
             GROUND: string,
+            /**
+             * The color to use for particles
+             */
             PARTICLE: string,
+            /**
+             * The color to use for decals
+             */
             DECAL: string,
+            /**
+             * The color to use for areas of effect (blast radii, melee ranges, etc)
+             */
             AREA_OF_EFFECT: string,
+            /**
+             * The color to use for surfaces that reflect projectiles but have no collision otherwise
+             */
             REFLECTIVE: string,
+            /**
+             * The color to use by default
+             */
             DEFAULT: string,
         };
-    } = {
-            /**
-             * Whether or not to trace hitboxes
-             */
+    } = (() => {
+        let visualQuality = 1;
+
+        return {
             drawHitboxes: false,
-            /**
-             * Whether or not to draw vectors representing velocities
-             */
             drawVelocities: false,
-            /**
-             * Whether hitboxes should be drawn as outlines or partially opaque shapes
-             */
             hitboxStyle: "both",
-            /**
-             * A collection of colors to use depending on an object's type
-             */
+            get visualQuality() { return visualQuality; },
+            set visualQuality(value) {
+                if (!Number.isNaN(value)) {
+                    visualQuality = value;
+                    gamespace.#p5?.pixelDensity(value);
+                }
+            },
             debugColors: {
-                /**
-                 * The color to use for elements that have collision enabled
-                 */
                 COLLIDABLE: "#F00",
-                /**
-                 * The color to use for the ground
-                 */
+                SEMI_COLLIDABLE: "#FF0",
                 GROUND: "#000",
-                /**
-                 * The color to use for particles
-                 */
                 PARTICLE: "#F0F",
-                /**
-                 * The color to use for decals
-                 */
-                DECAL: "#FF0",
-                /**
-                 * The color to use for areas of effect (blast radii, melee ranges, etc)
-                 */
+                DECAL: "#08F",
                 AREA_OF_EFFECT: "#F80",
-                /**
-                 * The color to use for surfaces that reflect projectiles but have no collision otherwise
-                 */
                 REFLECTIVE: "#00F",
-                /**
-                 * The color to use by default
-                 */
                 DEFAULT: "#0F0",
             }
         };
+    })();
     /**
      * Game settings
      */
@@ -779,7 +811,6 @@ const gamespace = new (createSingleton(class Gamespace {
      * At any given moment, the difference between the mouse's position and that of the player's,
      * when multiplied by the calculated ratio and added to the player's position, will give the
      * point in the game world over which the mouse is hovering.
-     *
      *
      * All these findings are summarized (although not annotated) in the following Desmos graph: https://www.desmos.com/calculator/agiykvhwdo
      *
@@ -818,7 +849,6 @@ const gamespace = new (createSingleton(class Gamespace {
      * when multiplied by the calculated ratio and added to the player's position, will give the
      * point in the game world over which the mouse is hovering.
      *
-     *
      * All these findings are summarized (although not annotated) in the following Desmos graph: https://www.desmos.com/calculator/agiykvhwdo
      *
      * **This is literally the worst thing I have ever written.**
@@ -827,45 +857,7 @@ const gamespace = new (createSingleton(class Gamespace {
      *
      * @returns The ratio between in-game units and screen pixels; it converts from screen pixels to in-game units
      */
-    static get superCringeEmpiricallyDerivedPixelToUnitRatio() { return this.#superCringeEmpiricallyDerivedPixelToUnitRatio; }
-    /**
-     * Context:
-     * To establish a ratio between screen pixels and in-game units, the following method was used:
-     *
-     * Given a game window with some aspect ratio `a`:
-     * - Place the player at (400, 400).
-     * - Place the cursor at (0, 0).
-     * - Measure how many pixels away from the player the cursor is (axis doesn't matter).
-     * - This gives us a ratio: 400 in-game units to some number `p`.
-     * - Repeat for various window sizes whose aspect ratios are `a`.
-     *
-     * Repeat the above for various other aspect ratios.
-     *
-     * These were then compiled into a Desmos graph, and a curious fact appeared:
-     * for each aspect ratio, the relation between the window's width and the amount `p`
-     * previously mentioned was linear—minus some outliers.
-     *
-     * Between aspect ratios, however, the exact ratio changed
-     * And thus, we attempt to find a relationship between the aspect ratio and the
-     * previously-mentioned ratio. This relation turns out to be exponential, approximated
-     * with the function `5.1271399901e^-(1.3697806015a + 2.0079957) + 0.08619961`, where `a` is the aspect ratio.
-     *
-     * Thus, given an aspect ratio `a`, we may calculate the slope of a line—this slope is the
-     * ratio between the window's width and the amount of pixels it takes to travel 400 units.
-     * At any given moment, the difference between the mouse's position and that of the player's,
-     * when multiplied by the calculated ratio and added to the player's position, will give the
-     * point in the game world over which the mouse is hovering.
-     *
-     *
-     * All these findings are summarized (although not annotated) in the following Desmos graph: https://www.desmos.com/calculator/agiykvhwdo
-     *
-     * **This is literally the worst thing I have ever written.**
-     *
-     * ~~and now the length of the method's name is the same as the average Java class name~~
-     *
-     * @returns The ratio between in-game units and screen pixels; it converts from screen pixels to in-game units
-     */
-    get superCringeEmpiricallyDerivedPixelToUnitRatio() { return Gamespace.superCringeEmpiricallyDerivedPixelToUnitRatio; }
+    get superCringeEmpiricallyDerivedPixelToUnitRatio() { return Gamespace.#superCringeEmpiricallyDerivedPixelToUnitRatio; }
 
     /**
      * The timestamp at which the gamespace became ready
@@ -877,11 +869,6 @@ const gamespace = new (createSingleton(class Gamespace {
     get startup() { return this.#startup; }
 
     /**
-     * A reference to the Matter.js World object used by the current level
-     */
-    get world() { return this.#engine?.world; }
-
-    /**
      * `* It's a constructor. It constructs.`
      */
     constructor() {
@@ -891,38 +878,71 @@ const gamespace = new (createSingleton(class Gamespace {
         type GameObjectEventMaps = GameObjects[GameObjectTypes];
 
         type LayerMapEntry = {
-            decals: Map<ObjectId, Decal>,
-            explosions: Map<ObjectId, Explosion>,
-            obstacles: Map<ObjectId, Generic>,
-            particlesOver: Map<ObjectId, Particle>,
-            particlesUnder: Map<ObjectId, Particle>,
-            players: Map<ObjectId, PlayerLike>,
-            projectilesUnder: Map<ObjectId, Projectile>;
-            projectilesOver: Map<ObjectId, Projectile>;
+            readonly decals: Map<ObjectId, Decal>,
+            readonly emitters: Map<ObjectId, ParticleEmitter>;
+            readonly explosions: Map<ObjectId, Explosion>,
+            readonly obstaclesOver: Map<ObjectId, Obstacle>,
+            readonly obstaclesUnder: Map<ObjectId, Obstacle>,
+            readonly particlesOver: ReducibleMap<ObjectId, Particle, Particle[]>,
+            readonly particlesUnder: ReducibleMap<ObjectId, Particle, Particle[]>,
+            readonly players: Map<ObjectId, PlayerLike>,
+            readonly projectilesUnder: ReducibleMap<ObjectId, Projectile, Projectile[]>,
+            readonly projectilesOver: ReducibleMap<ObjectId, Projectile, Projectile[]>;
         };
+
+        function generateReducibleMap<K extends { subLayer: number; } = { subLayer: number; }>() {
+            return new ReducibleMap<ObjectId, K, K[]>((acc, cur) => {
+                if (!acc.length) {
+                    // If the array is empty, push immediately
+                    acc = [cur];
+                } else if (acc[0].subLayer >= cur.subLayer) {
+                    // If the first element's subLayer is greater than or equal this one's,
+                    // this one will be the smallest; add to beginning
+                    acc.unshift(cur);
+                } else if (acc.at(-1)!.subLayer <= cur.subLayer) {
+                    // If the last element's subLayer is less than or equal this one's,
+                    // this one will be the largest; add to end
+                    acc.push(cur);
+                } else for (let i = 0, l = acc.length; i < l; i++) {
+                    // Otherwise loop through and insert
+                    if (acc[i].subLayer < cur.subLayer) {
+                        acc.push(cur);
+                        break;
+                    }
+                }
+
+                return acc;
+            }, []);
+        }
 
         function getAndSetIfAbsent(map: Map<number, LayerMapEntry>, key: number) {
             if (map.has(key)) return map.get(key)!;
 
             const newMap = {
                 decals: new Map,
+                emitters: new Map,
                 explosions: new Map,
-                obstacles: new Map,
-                particlesOver: new Map,
-                particlesUnder: new Map,
+                obstaclesOver: generateReducibleMap<Obstacle>(),
+                obstaclesUnder: generateReducibleMap<Obstacle>(),
+                particlesOver: generateReducibleMap<Particle>(),
+                particlesUnder: generateReducibleMap<Particle>(),
                 players: new Map,
-                projectilesUnder: new Map,
-                projectilesOver: new Map,
-            } as MapValue<typeof map>;
+                projectilesUnder: generateReducibleMap<Projectile>(),
+                projectilesOver: generateReducibleMap<Projectile>(),
+            } satisfies MapValue<typeof map> as MapValue<typeof map>;
 
             map.set(key, newMap);
 
             return newMap;
         };
 
-        function determineLayerMapKey(originalKey: GameObjectTypes, gameObject: GameObject): keyof LayerMapEntry {
-            if (gameObject instanceof Particle || gameObject instanceof Projectile) {
-                return `${originalKey as "particles" | "projectiles"}${(gameObject.subLayer >= 0 ? "Over" as const : "Under" as const)}`;
+        function determineLayerMapKey<K extends GameObjectTypes = GameObjectTypes>(originalKey: K, gameObject: MapValue<GameObjects[K]>): keyof LayerMapEntry {
+            type LayeredObjectTypes = "particles" | "projectiles" | "obstacles";
+
+            if (
+                ["particles", "projectiles", "obstacles"].includes(originalKey)
+            ) {
+                return `${originalKey as LayeredObjectTypes}${((gameObject as MapValue<GameObjects[LayeredObjectTypes]>).subLayer >= 0 ? "Over" as const : "Under" as const)}`;
             } else {
                 return originalKey as keyof LayerMapEntry;
             }
@@ -931,29 +951,32 @@ const gamespace = new (createSingleton(class Gamespace {
         for (const key in this.#objects) {
             const map: GameObjectEventMaps = this.#objects[key as GameObjectTypes];
 
-            map.addEventListener("set", (_: Event, __: ObjectId, gameObject: GameObject) => {
+            map.addEventListener("set", (ev: Event, objId: ObjectId, gameObject: GameObject) => {
                 const destinationMap = getAndSetIfAbsent(this.#layeredObjects, gameObject.position.z);
                 this.#objectPool.set(gameObject.id, gameObject);
 
-                destinationMap[determineLayerMapKey(key as GameObjectTypes, gameObject)].set(gameObject.id, gameObject as any);
+                const target = destinationMap[determineLayerMapKey(key as GameObjectTypes, gameObject as MapValue<GameObjects[GameObjectTypes]>)];
+
+                target.set(gameObject.id, gameObject as any);
             });
 
             map.addEventListener("delete", (_, id, gameObject: GameObject | undefined) => {
                 if (!gameObject) return;
+                this.#objectPool.delete(id);
 
                 const layer = this.#layeredObjects.get(gameObject.position.z)
-                    ?.[determineLayerMapKey(key as GameObjectTypes, gameObject)];
+                    ?.[determineLayerMapKey(key as GameObjectTypes, gameObject as MapValue<GameObjects[GameObjectTypes]>)];
 
                 if (!layer) return;
 
-                layer?.delete?.(id);
-                this.#objectPool.delete(id);
+                layer.delete(id);
             });
 
             // You probably shouldn't be calling this
             map.addEventListener("clear", () => {
-                for (const [_, object] of map)
-                    object.destroy();
+                for (const [, object] of map)
+                    if (!object.destroyed)
+                        object.destroy();
             });
         }
 
@@ -975,7 +998,7 @@ const gamespace = new (createSingleton(class Gamespace {
      * ready
      */
     invokeWhenReady(callback: (startupTime: number) => void) {
-        if (this.#isReady) return callback(this.#startup);
+        if (this.#isReady) return void callback(this.#startup);
 
         this.#events.once("ready", (_, s) => callback(s));
     }
@@ -1041,7 +1064,8 @@ const gamespace = new (createSingleton(class Gamespace {
         if (this.#settings.drawVelocities) {
             p5.push();
 
-            const body = "body" in object ? object.body : object,
+            const isGeneric = object instanceof Generic,
+                position = isGeneric ? object.body.origin : object.position,
                 linearScale = object instanceof Particle ? object.drag : 1,
                 rotationScale = object instanceof Particle ? object.rotDrag : 1,
                 velocity = (() => {
@@ -1061,7 +1085,7 @@ const gamespace = new (createSingleton(class Gamespace {
                 linearColor = "#0000FF",
                 angularColor = "#FF0000";
 
-            p5.translate(body.position.x, body.position.y);
+            p5.translate(position.x, position.y);
             p5.rotate(velocity.direction + Math.PI / 2);
             p5.rectMode(p5.CENTER);
             p5.fill(linearColor);
@@ -1070,12 +1094,9 @@ const gamespace = new (createSingleton(class Gamespace {
             // only draw arrowhead for non-zero velocities
             if (magnitude)
                 p5.triangle(
-                    -2 * vectorWidth,
-                    vectorLength,
-                    2 * vectorWidth,
-                    vectorLength,
-                    0,
-                    vectorLength - angularVelocityRadius
+                    -2 * vectorWidth, vectorLength,
+                    2 * vectorWidth, vectorLength,
+                    0, vectorLength - angularVelocityRadius
                 );
 
             p5.noFill();
@@ -1105,7 +1126,11 @@ const gamespace = new (createSingleton(class Gamespace {
                 p5.noStroke();
                 p5.fill(angularColor);
                 p5.rotate(-Math.PI / 2 + angularVelocity);
-                p5.triangle(2 * vectorWidth - arrowWidth, 0, 2 * vectorWidth + arrowWidth, 0, 2 * vectorWidth, 15);
+                p5.triangle(
+                    2 * vectorWidth - arrowWidth, 0,
+                    2 * vectorWidth + arrowWidth, 0,
+                    2 * vectorWidth, 15
+                );
             }
 
             p5.pop();
@@ -1120,13 +1145,12 @@ const gamespace = new (createSingleton(class Gamespace {
     setup(p5: import("p5"), player: Player) {
         this.#p5 = p5;
 
-        this.#engine = Matter.Engine.create({ gravity: { x: 0, y: 0 } });
-
         p5.createCanvas(window.innerWidth, window.innerHeight, p5.WEBGL);
 
         window.addEventListener("resize", () => p5.resizeCanvas(window.innerWidth, window.innerHeight, false));
+        document.body.style.backgroundColor = "#000";
 
-        p5.pixelDensity(1);
+        p5.pixelDensity(this.#settings.visualQuality);
         p5.textAlign(p5.CENTER, p5.CENTER);
         p5.imageMode(p5.CENTER);
         p5.angleMode(p5.RADIANS);
@@ -1143,171 +1167,145 @@ const gamespace = new (createSingleton(class Gamespace {
      * A generic function for performing common game logic, like physics
      */
     update() {
+        if (gamespace.#currentLevel == srvsdbx_ErrorHandling.Nothing)
+            throw new srvsdbx_Errors.IllegalOperation("Not currently in a level");
+
         this.#currentUpdate = Date.now();
 
-        const deltaTime = this.#currentUpdate - this.#lastUpdate,
-            p5 = this.#p5!;
+        const p5 = this.#p5!;
 
         // Run physics updates on all the game objects
         this.#objectPool.forEach(gameObject => {
             "update" in gameObject && gameObject.update();
 
-            if (gameObject instanceof PlayerLike) {
+            if (gameObject instanceof PlayerLike)
                 gameObject.statusEffects.forEach(s => {
                     s.update();
 
-                    if (!s.destroyed && gamespace.currentUpdate - s.afflictionTime >= s.prototype.decay) s.destroy();
+                    if (!s.destroyed && gamespace.currentUpdate - s.afflictionTime >= s.prototype.decay)
+                        s.destroy();
                 });
-            }
-
-            if (gameObject instanceof Player) {
-                gameObject.lookAtMouse(p5);
-
-                const cam: import("p5").Camera = (p5 as any)._elements[0]._curCamera,
-                    x = gameObject.body?.position?.x,
-                    y = gameObject.body?.position?.y,
-                    shake = (() => {
-                        // We generate a random unit vector and scale it; no need for sin nor cos
-                        // That being said, I don't know if one sqrt is faster than one sin and one cos…
-                        const x = 2 * Math.random() - 1;
-
-                        return {
-                            x: gameObject.shakeIntensity * x,
-                            y: gameObject.shakeIntensity * Math.sign(Math.random() - 0.5) * Math.sqrt(1 - x ** 2)
-                        };
-                    })(),
-                    cameraX = x ?? cam.eyeX,
-                    cameraY = y ?? cam.eyeY;
-
-                this.#cameraPosition = {
-                    x: x,
-                    y: y
-                };
-
-                p5.camera(
-                    cameraX + shake.x,
-                    cameraY + shake.y,
-                    gameObject.view,
-                    (x ?? cam.centerX) + shake.x,
-                    (y ?? cam.centerY) + shake.y,
-                    0
-                );
-            }
         });
 
         // Dispatch collision events
         const size = gamespace.PLAYER_SIZE,
-            filter = [...this.#objectPool.values()].filter((value => value instanceof Generic) as (value: GameObject) => value is Generic),
+            filter = this.#objectPool
+                .toArray()
+                .filter((value => value instanceof Generic && value.collidable != CollisionLevels.NONE) as (value: GameObject) => value is Generic),
             bodies = filter.map(v => v.body),
-            colliders = filter
-                .filter((g): g is PlayerLike => g instanceof PlayerLike)
-                .map(player => (
-                    [...player.inventory.items.values()].filter(
-                        i => i instanceof Melee &&
-                            i.prototype.isReflective &&
-                            (
-                                (i.owner.activeItem != i && i.prototype.holstered?.collider) ||
-                                (i.owner.activeItem == i && i.prototype.worldObject?.collider)
-                            ) && (
-                                !player.canAttack() || i.prototype.canReflectWhileAttacking
-                            )
-                    ) as Melee[]
-                ).map(m => {
-                    const collider = m.getCollider()!,
-                        reference = (() => {
-                            if (m.owner.activeItem == m) {
-                                const ref = m.getItemReference(),
-                                    world = m.prototype.worldObject;
+            colliders = (
+                filter.filter(
+                    object => object instanceof PlayerLike || (object instanceof Obstacle && object.prototype.reflective)
+                ) as (PlayerLike | Obstacle)[]
+            ).map(
+                object => (
+                    object instanceof PlayerLike ?
+                        object.inventory.containers.main.toArray().filter(
+                            i => i instanceof Melee &&
+                                i.prototype.isReflective &&
+                                (
+                                    (i.owner.activeItem != i && i.prototype.holstered?.collider) ||
+                                    (i.owner.activeItem == i && i.prototype.worldObject?.collider)
+                                ) && (
+                                    object.canAttack() || i.prototype.canReflectWhileAttacking
+                                )
+                        ) as Melee[] :
+                        [[object, object.body]] as [[Obstacle, srvsdbx_Geometry.Shape]]
+                ).map(entry => {
+                    if (entry instanceof Melee) {
+                        const collider = entry.getCollider()!,
+                            reference = (() => {
+                                if (entry.owner.activeItem == entry) {
+                                    const ref = entry.getItemReference(),
+                                        world = entry.prototype.worldObject;
+
+                                    return {
+                                        dimensions: {
+                                            width: ref?.dimensions?.width ?? (+world?.dimensions.width! || 0),
+                                            height: ref?.dimensions?.height ?? (+world?.dimensions.height! || 0)
+                                        },
+                                        offset: {
+                                            parr: ref?.offset?.parr ?? world?.offset.parr ?? 0,
+                                            perp: ref?.offset?.perp ?? world?.offset.perp ?? 0,
+                                            offsetParr: world?.collider?.offsetParr ?? 0,
+                                            offsetPerp: world?.collider?.offsetPerp ?? 0,
+                                            angle: ref?.offset?.angle ?? world?.offset.angle ?? 0
+                                        }
+                                    };
+                                }
+
+                                const holster = entry.prototype.holstered;
 
                                 return {
                                     dimensions: {
-                                        width: ref?.dimensions?.width ?? world?.dimensions.width ?? 0,
-                                        height: ref?.dimensions?.height ?? world?.dimensions.height ?? 0
+                                        width: holster?.dimensions.width ?? 0,
+                                        height: holster?.dimensions.height ?? 0
                                     },
                                     offset: {
-                                        parr: ref?.offset?.parr ?? world?.offset.parr ?? 0,
-                                        perp: ref?.offset?.perp ?? world?.offset.perp ?? 0,
-                                        offsetParr: world?.collider?.offsetParr ?? 0,
-                                        offsetPerp: world?.collider?.offsetPerp ?? 0,
-                                        angle: ref?.offset?.angle ?? world?.offset.angle ?? 0
+                                        parr: holster?.offset.parr ?? 0,
+                                        perp: holster?.offset.perp ?? 0,
+                                        offsetParr: holster?.collider?.offsetParr ?? 0,
+                                        offsetPerp: holster?.collider?.offsetPerp ?? 0,
+                                        angle: holster?.offset.angle ?? 0
                                     }
                                 };
-                            }
+                            })();
 
-                            const holster = m.prototype.holstered;
+                        collider.translate(
+                            srvsdbx_Geometry.Vector2D.zeroVector()
+                                .plus({ direction: object.angle + Math.PI / 2, magnitude: -reference.offset.parr * size }, true)
+                                .plus({ direction: object.angle, magnitude: reference.offset.perp * size }, true)
+                                .plus({ direction: object.angle + reference.offset.angle, magnitude: -reference.offset.offsetParr * size }, true)
+                                .plus({ direction: object.angle + reference.offset.angle + Math.PI / 2, magnitude: reference.offset.offsetPerp * size }, true)
+                                .plus(object.position, true)
+                        );
 
-                            return {
-                                dimensions: {
-                                    width: holster?.dimensions.width ?? 0,
-                                    height: holster?.dimensions.height ?? 0
-                                },
-                                offset: {
-                                    parr: holster?.offset.parr ?? 0,
-                                    perp: holster?.offset.perp ?? 0,
-                                    offsetParr: holster?.collider?.offsetParr ?? 0,
-                                    offsetPerp: holster?.collider?.offsetPerp ?? 0,
-                                    angle: holster?.offset.angle ?? 0
-                                }
-                            };
-                        })();
+                        collider.setAngle(reference.offset.angle);
 
-                    Matter.Body.translate(
-                        collider,
-                        srvsdbx_Geometry.Vector2D.zeroVec()
-                            .plus({ direction: player.angle + Math.PI / 2, magnitude: -reference.offset.parr * size }, true)
-                            .plus({ direction: player.angle, magnitude: reference.offset.perp * size }, true)
-                            .plus({ direction: player.angle + reference.offset.angle, magnitude: -reference.offset.offsetParr * size }, true)
-                            .plus({ direction: player.angle + reference.offset.angle + Math.PI / 2, magnitude: reference.offset.offsetPerp * size }, true)
-                            .plus(player.position, true)
-                    );
-                    Matter.Body.rotate(collider, player.angle + (reference.offset.angle ?? 0));
+                        return [object, collider] as [PlayerLike, srvsdbx_Geometry.Shape];
+                    } else return entry;
+                })
+            ).flat();
 
-                    return [player, collider] as [PlayerLike, Matter.Body];
-                }))
-                .flat();
+        this.#objectPool.forEach(obj => {
+            if (
+                !(obj instanceof Generic || obj instanceof Projectile)
+                || obj.collidable == CollisionLevels.NONE
+            ) return;
 
-        this.#objectPool.forEach(obj => { // todo: optimize this so that we don't do collision math twice
-            if (obj instanceof Generic || obj instanceof Projectile) {
-                if ("collidable" in obj && !obj.collidable) return;
+            const isGeneric = obj instanceof Generic,
+                /**
+                 * The collision output
+                 */
+                collisions = (
+                    isGeneric
+                        ? srvsdbx_Geometry.collisionFunctions.shapeShapes(
+                            obj.body,
+                            bodies
+                        )
+                        : srvsdbx_Geometry.collisionFunctions.segmentShapes(
+                            {
+                                start: obj.lastPosition,
+                                end: obj.position
+                            },
+                            bodies
+                        )
+                );
 
-                const isGeneric = obj instanceof Generic,
+            if (collisions == srvsdbx_ErrorHandling.Nothing) return;
+
+            for (const collision of collisions) {
+                if (obj.destroyed) break;
+
+                const collisionPoints: srvsdbx_Geometry.Point2D[] = [],
                     /**
-                     * The matter.js collision output
+                     * The body that `obj` collided with, if any
                      */
-                    collision = (
-                        isGeneric ?
-                            Matter.Query.collides(obj.body, bodies) :
-                            Matter.Query.ray(bodies, obj.lastPosition, obj.position)
-                    )[0],
-                    /**
-                     * The Matter.Body that `obj` collided with, if any
-                     */
-                    collidedBody =
-                        /*
-                            matter.js does this weird thing where
-                            — a body can collide with itself
-                            — Matter.Query.ray returns a special Matter.Collision object
-                            whose `bodyA` and `bodyB` properties are the same, with an
-                            additional `body` property which is more of the same
-
-                            Assume that `body` exists (making `obj` not a `Generic`). If so,
-                            return it; if not, return whatever body isn't `obj.body`, and
-                            `undefined` if they're both `obj.body`
-                        */
-                        collision
-                            ? (collision as Matter.Collision & { body?: Matter.Body; }).body
-                            ?? (
-                                collision.bodyA == (obj as Generic).body
-                                    ? collision.bodyB == (obj as Generic).body
-                                        ? void 0
-                                        : collision.bodyB
-                                    : collision.bodyA
-                            )
-                            : void 0,
+                    collidedBody = collision[1],
                     /**
                      * The `GameObject` that `collidedBody` belongs to, if applicable
                      */
-                    target = collidedBody && filter.find(v => v.body == collidedBody)!,
+                    target = filter.find(v => v.body == collidedBody)!,
                     /**
                      * Stores the point of collision between this projectile and a reflective surface, if it exists
                      */
@@ -1315,132 +1313,223 @@ const gamespace = new (createSingleton(class Gamespace {
                         ? void 0
                         : colliders
                             .map(
-                                collider =>
-                                    srvsdbx_Geometry.collisionFunctions.segmentPolygon(
-                                        { start: obj.lastPosition, end: obj.position },
-                                        collider[1].vertices
-                                    ).map(p => [collider[0], collider[1], p[0], p[1]]) as [PlayerLike, Matter.Body, srvsdbx_Geometry.Point2D, srvsdbx_Geometry.LineSegment][]
+                                (collider): {
+                                    readonly target: PlayerLike | Obstacle,
+                                    readonly point: srvsdbx_Geometry.Point2D,
+                                    readonly segment: srvsdbx_Geometry.LineSegment;
+                                }[] => {
+                                    if (collider[0].destroyed)
+                                        return void 0 as any;
+
+                                    const [target, body] = collider,
+                                        isCircle = body instanceof srvsdbx_Geometry.Circle,
+
+                                        points = isCircle
+                                            ? (srvsdbx_Geometry.collisionFunctions.segmentCircle(
+                                                { start: obj.lastPosition, end: obj.position },
+                                                {
+                                                    origin: body.origin,
+                                                    radius: (target.radius ?? 0) * ((target as Obstacle<"circle">).scale ?? 1)
+                                                }
+                                            ) ?? [])
+                                                .map(point => [
+                                                    point,
+                                                    (() => {
+                                                        // From the intersection point to the center
+                                                        const diff = srvsdbx_Geometry.Vector2D.fromPoint2D(target.body.origin)
+                                                            .minus(point);
+
+                                                        // Turn it into a tangent
+                                                        diff.direction += Math.PI / 2;
+
+                                                        return {
+                                                            start: point,
+                                                            end: diff.plus(point)
+                                                        } as srvsdbx_Geometry.LineSegment;
+                                                    })()
+                                                ] as const)
+                                            : srvsdbx_Geometry.collisionFunctions.segmentPolygon(
+                                                { start: obj.lastPosition, end: obj.position },
+                                                (body as srvsdbx_Geometry.Rectangle).vertices
+                                            ) ?? [];
+
+                                    return points.map(point => ({
+                                        target: target,
+                                        point: point[0],
+                                        segment: point[1]
+                                    }));
+                                }
                             )
+                            .filter((v, i) => {
+                                if (v) return v;
+
+                                colliders.splice(i, 1);
+                                return false;
+                            })
                             .flat()
-                            .sort(([, , ptA], [, , ptB]) =>
-                                srvsdbx_Geometry.Vector2D.squaredDistBetweenPts(ptA, obj.start) -
-                                srvsdbx_Geometry.Vector2D.squaredDistBetweenPts(ptB, obj.start)
+                            .sort(({ point: ptA }, { point: ptB }) =>
+                                srvsdbx_Geometry.Vector2D.squaredDistanceBetweenPts(ptA, obj.start) -
+                                srvsdbx_Geometry.Vector2D.squaredDistanceBetweenPts(ptB, obj.start)
                             )[0],
                     /**
                      * Stores the point of collision between this projectile and a player, if it exists
                      */
                     bulletPlayerCollision =
-                        collision
+                        collisions
                             && obj instanceof Projectile && target instanceof PlayerLike
-                            ? [
-                                (
+                            && !reflectCollision
+                            ? {
+                                target: target,
+                                point: (
                                     srvsdbx_Geometry.collisionFunctions.segmentCircle(
                                         { start: obj.lastPosition, end: obj.position },
                                         { origin: target.position, radius: target.radius }
                                     ) ?? []
                                 ) as srvsdbx_Geometry.Point2D[],
-                                target
-                            ] as const
+                            }
+                            : void 0,
+                    /**
+                     * Stores the point of collision between this projectile and an obstacle, if it exists
+                     */
+                    bulletObstacleCollision =
+                        collisions
+                            && obj instanceof Projectile && target instanceof Obstacle
+                            && !reflectCollision
+                            ? {
+                                target: target,
+                                point: (
+                                    target.prototype.hitbox.type == "circle"
+                                        ? srvsdbx_Geometry.collisionFunctions.segmentCircle(
+                                            { start: obj.lastPosition, end: obj.position },
+                                            { origin: target.position, radius: (target.body as srvsdbx_Geometry.Circle).radius! }
+                                        )
+                                        : (srvsdbx_Geometry.collisionFunctions.segmentPolygon(
+                                            { start: obj.lastPosition, end: obj.position },
+                                            (target as Obstacle<"rectangle">).body.vertices
+                                        ) ?? []).map(v => v[0])
+                                ) as srvsdbx_Geometry.Point2D[],
+                            }
                             : void 0;
 
-                if (!(collidedBody || reflectCollision)) return;
+                if (!(collidedBody || reflectCollision || bulletObstacleCollision)) return;
 
-                if (obj instanceof Projectile) {
-                    /**
-                     * The collision event that will be honored
-                     * (if multiple collisions are detected, only one can happen)
-                     */
-                    const parsedCollision = (() => {
-                        if (reflectCollision && bulletPlayerCollision) {
-                            // Find which is closer
-
-                            const [r, b] = [
-                                srvsdbx_Geometry.Vector2D.squaredDistBetweenPts(reflectCollision[2], obj.start),
-                                srvsdbx_Geometry.Vector2D.squaredDistBetweenPts(
-                                    bulletPlayerCollision[0].sort((a, b) =>
-                                        srvsdbx_Geometry.Vector2D.squaredDistBetweenPts(a, obj.start) -
-                                        srvsdbx_Geometry.Vector2D.squaredDistBetweenPts(b, obj.start)
-                                    )[0],
-                                    obj.start
-                                )
-                            ];
-
-                            return r < b ? reflectCollision : bulletPlayerCollision;
-                        }
-
-                        return reflectCollision || bulletPlayerCollision;
-                    })();
-
-                    // Exit now, no special logic to run
-                    if (!parsedCollision)
-                        return obj.events.dispatchEvent(new CollisionEvent(collision), target!);
-
-                    if (parsedCollision == reflectCollision) {
-                        /*
-
-                            We have three things: the vector representing the projectile, from obj.lastPosition
-                            to collision[0], stored in `ab`; the vector representing the side that was hit, from
-                            collision[1].start to collision[1].end, stored in `cd`; and the intersection point
-                            between those two segments, stored in collision[0].
-
-                            To deviate a bullet, we first set its start position to the intersection point, to ensure
-                            the interpolation math works correctly
-
-                            Its endpoint has two components: first, its distance from the new start point; that's easy,
-                            it's whatever's left of the projectile's range. The direction is harder. As per the laws of
-                            reflection everyone definitely remembers from secondary 5 physics, the angle of incidence must
-                            match the angle of reflection.
-
-                            These angles are measured with respect to the "normal" of the reflective surface, which is a
-                            line perpendicular to the original, and that intersects it at the same spot it intersects the
-                            incident ray. The angle between the incident ray (in this case our projectile) must match the
-                            angle of the reflected ray (the angle of the reflected projectile).
-
-                            Using this, the intuitive approach is to set about calculating said angles, but there's a better
-                            way. Given some point p on the incident ray, draw a segment from it to the normal such that
-                            the segment is parallel to the reflective surface, and call it l. If you extend this segment to
-                            twice its length, you get a point that will lie on the reflected ray. This is because of the
-                            symmetry imposed by the equality of the two angles. Therefore, using this new point, and the
-                            intersection point, we can determine the angle of the reflected ray.
-
-                            The exact procedure is as follows:
-
-                            1: Project ab onto cd.
-                            2: Add it twice to a
-                                This yields a point on the reflected ray
-                            3: Use that point and the point of intersection to calculate the new ray's direction
-
-                        */
-
-                        const equal = srvsdbx_Geometry.Vector2D.squaredDistBetweenPts(reflectCollision[2], obj.lastPosition) <= 1e-3 ** 2,
-                            a = equal ? srvsdbx_Geometry.Vector2D.minus(obj.lastPosition, obj.position) : obj.lastPosition,
-                            b = reflectCollision[2],
-                            ab = srvsdbx_Geometry.Vector2D.fromPoint2D(b).minus(a),
-                            cd = srvsdbx_Geometry.Vector2D.fromPoint2D(reflectCollision[3].end).minus(reflectCollision[3].start);
-
-                        obj.reflect(
-                            reflectCollision[2],
-                            ab.projection(cd) // step 1
-                                .scale(2, true) // step 2
-                                .plus(a, true) // step 2
-                                .minus(b, true) // step 3
-                                .direction
-                            // Reflections aren't perfect
-                            + srvsdbx_Math.toRad(srvsdbx_Math.meanDevPM_random(0, 5, true), "degrees"),
-                            reflectCollision[0]
-                        );
-
-                        (reflectCollision[0].activeItem as Melee).lastReflect = gamespace.currentUpdate;
-                    } else {
-                        obj.events.dispatchEvent(
-                            new CollisionEvent(
-                                collision,
-                                bulletPlayerCollision![0]
-                            ),
-                            bulletPlayerCollision![1]
-                        );
-                    }
+                if (isGeneric) {
+                    (obj.events as Generic["events"]).dispatchEvent(
+                        "collision",
+                        target!,
+                        collisionPoints
+                    );
+                    continue;
                 }
+
+                /**
+                 * The collision event that will be honored
+                 * (if multiple collisions are detected, only one can happen)
+                 */
+                const parsedCollision = (() => {
+
+                    const candidates = [
+                        reflectCollision!,
+                        bulletObstacleCollision!,
+                        bulletPlayerCollision!
+                    ].filter(v => v),
+
+                        start = obj.start,
+                        sDist = srvsdbx_Geometry.Vector2D.squaredDistanceBetweenPts,
+                        getDistToClosestPoint = (pts: srvsdbx_Geometry.Point2D | srvsdbx_Geometry.Point2D[]) =>
+                            sDist(
+                                Array.isArray(pts)
+                                    ? pts.sort((a, b) =>
+                                        sDist(a, start) -
+                                        sDist(b, start)
+                                    )[0]
+                                    : pts,
+                                start
+                            );
+
+                    return candidates.sort((a, b) => getDistToClosestPoint(a.point) - getDistToClosestPoint(b.point))[0];
+                })();
+
+                // Exit now, no special logic to run
+                if (!parsedCollision) {
+                    if (target) obj.events.dispatchEvent("collision", target as Obstacle | PlayerLike, []);
+                    continue;
+                }
+
+                const dispatchCollision = () => {
+                    obj.events.dispatchEvent(
+                        "collision",
+                        parsedCollision.target,
+                        Array.isArray(parsedCollision.point) ? parsedCollision.point : [parsedCollision.point]
+                    );
+                };
+
+                if (parsedCollision != reflectCollision) {
+                    dispatchCollision();
+                    continue;
+                }
+
+                /*
+
+                    We have three things: the vector representing the projectile, from obj.lastPosition
+                    to collision[0], stored in `ab`; the vector representing the side that was hit, from
+                    collision[1].start to collision[1].end, stored in `cd`; and the intersection point
+                    between those two segments, stored in collision[0].
+
+                    To deviate a bullet, we first set its start position to the intersection point, to ensure
+                    the interpolation math works correctly
+
+                    Its endpoint has two components: first, its distance from the new start point; that's easy,
+                    it's whatever's left of the projectile's range. The direction is harder. As per the laws of
+                    reflection everyone definitely remembers from secondary 5 physics, the angle of incidence must
+                    match the angle of reflection.
+
+                    These angles are measured with respect to the "normal" of the reflective surface, which is a
+                    line perpendicular to the original, and that intersects it at the same spot it intersects the
+                    incident ray. The angle between the incident ray (in this case our projectile) must match the
+                    angle of the reflected ray (the angle of the reflected projectile).
+
+                    Using this, the intuitive approach is to set about calculating said angles, but there's a better
+                    way. Given some point p on the incident ray, draw a segment from it to the normal such that
+                    the segment is parallel to the reflective surface, and call it l. If you extend this segment to
+                    twice its length, you get a point that will lie on the reflected ray. This is because of the
+                    symmetry imposed by the equality of the two angles. Therefore, using this new point, and the
+                    intersection point, we can determine the angle of the reflected ray.
+
+                    The exact procedure is as follows:
+
+                    1: Project ab onto cd.
+                    2: Add it twice to a
+                        This yields a point on the reflected ray
+                    3: Use that point and the point of intersection to calculate the new ray's direction
+
+                */
+
+                const equal = srvsdbx_Geometry.Vector2D.squaredDistanceBetweenPts(reflectCollision.point, obj.lastPosition) <= 1e-3 ** 2,
+                    a = equal ? srvsdbx_Geometry.Vector2D.minus(obj.lastPosition, obj.position) : obj.lastPosition,
+                    b = reflectCollision.point,
+                    ab = srvsdbx_Geometry.Vector2D.fromPoint2D(b).minus(a),
+                    cd = srvsdbx_Geometry.Vector2D.fromPoint2D(reflectCollision.segment.end).minus(reflectCollision.segment.start),
+                    reflectTarget = reflectCollision.target;
+
+                obj.reflect(
+                    reflectCollision.point,
+                    ab.projection(cd) // step 1
+                        .scale(2, true) // step 2
+                        .plus(a, true) // step 2
+                        .minus(b, true) // step 3
+                        .direction
+                    // Reflections aren't perfect
+                    + srvsdbx_Math.toRad(srvsdbx_Math.meanDevPM_random(0, 5, true), "degrees"),
+                    reflectTarget
+                );
+
+                if (!(reflectTarget instanceof PlayerLike)) {
+                    dispatchCollision();
+                    continue;
+                }
+
+                (reflectTarget.activeItem as Melee).lastReflect = gamespace.currentUpdate;
             }
         });
 
@@ -1448,6 +1537,37 @@ const gamespace = new (createSingleton(class Gamespace {
         //@ts-expect-error
         p5.clear();
         // p5's typings are broken, thanks for that
+
+        gamespace.objects.players.forEach(player => player.unintersect());
+
+        const player = gamespace.player;
+        if (player) {
+            player.lookAtMouse(p5);
+
+            const { x, y } = player.body.origin,
+                shake = (() => {
+                    // We generate a random unit vector and scale it; no need for sin nor cos
+                    // That being said, I don't know if one sqrt is faster than one sin and one cos…
+                    const x = 2 * Math.random() - 1;
+
+                    return {
+                        x: player.shakeIntensity * x,
+                        y: player.shakeIntensity * Math.sign(Math.random() - 0.5) * Math.sqrt(1 - x ** 2)
+                    };
+                })();
+
+            this.#cameraPosition.x = x;
+            this.#cameraPosition.y = y;
+
+            p5.camera(
+                x + shake.x,
+                y + shake.y,
+                player.view,
+                x + shake.x,
+                y + shake.y,
+                0
+            );
+        }
 
         const level = gamespace.#currentLevel!,
             { width, height } = level.world;
@@ -1473,30 +1593,42 @@ const gamespace = new (createSingleton(class Gamespace {
         p5.pop();
 
         // Draw all game objects
-        for (const [_, layer] of this.#layeredObjects) {
+        for (const [, layer] of this.#layeredObjects) {
             const objects = [
                 layer.decals,
+                layer.emitters,
                 layer.explosions,
-                layer.projectilesUnder,
                 layer.particlesUnder,
                 layer.players,
-                layer.projectilesOver,
+                layer.projectilesUnder,
+                layer.obstaclesUnder,
                 layer.particlesOver,
-                layer.obstacles
+                layer.obstaclesOver,
+                layer.projectilesOver,
             ];
 
-            for (let i = 0, l = objects.length; i < l; i++)
-                for (const [_, object] of objects[i])
-                    if ( // Don't render if off-screen
-                        srvsdbx_Geometry.Vector2D.squaredDistBetweenPts(
-                            this.#cameraPosition,
-                            object.position
-                        ) < srvsdbx_Geometry.Vector2D.squaredDist({ x: window.innerWidth, y: window.innerHeight })
-                        * Gamespace.superCringeEmpiricallyDerivedPixelToUnitRatio * 1.21
-                    ) object.draw(p5);
+            for (let i = 0, l = objects.length; i < l; i++) {
+                const baseCollection = objects[i],
+                    isReducibleMap = "reduced" in baseCollection,
+                    collection = isReducibleMap ? baseCollection.reduced : baseCollection;
+
+                for (const entry of collection) {
+                    const object = isReducibleMap
+                        ? entry as GameObject
+                        : (entry as [ObjectId, GameObject])[1];
+
+                    if ("draw" in object)
+                        if ( // Don't render if off-screen
+                            srvsdbx_Geometry.Vector2D.squaredDistanceBetweenPts(
+                                this.#cameraPosition,
+                                object.position
+                            ) < srvsdbx_Geometry.Vector2D.squaredDist({ x: window.innerWidth, y: window.innerHeight })
+                            * Gamespace.#superCringeEmpiricallyDerivedPixelToUnitRatio * 1.21
+                        ) object.draw(p5);
+                }
+            }
         }
 
-        Matter.Engine.update(this.#engine!, deltaTime);
         UIManager.update();
 
         this.#lastUpdate = this.#currentUpdate;
@@ -1510,7 +1642,7 @@ type Gamespace = typeof gamespace;
  */
 interface SimpleImport {
     /**
-     * This gun's name
+     * This object's name
      */
     readonly name: string,
     /**
@@ -1606,12 +1738,12 @@ class ImportedObject {
      * @param includePath From where this object was imported
      */
     constructor(
-        name: typeof ImportedObject.prototype.name,
-        displayName: typeof ImportedObject.prototype.displayName,
-        objectType: typeof ImportedObject.prototype.objectType,
-        targetVersion: typeof ImportedObject.prototype.targetVersion,
-        namespace: typeof ImportedObject.prototype.namespace,
-        includePath: typeof ImportedObject.prototype.includePath
+        name: ImportedObject["name"],
+        displayName: ImportedObject["displayName"],
+        objectType: ImportedObject["objectType"],
+        targetVersion: ImportedObject["targetVersion"],
+        namespace: ImportedObject["namespace"],
+        includePath: ImportedObject["includePath"]
     ) {
         this.#name = name;
         this.#displayName = displayName;
@@ -1695,12 +1827,12 @@ class Level extends ImportedObject {
      * `It's a constructor. It constructs.`
      */
     constructor(
-        name: typeof ImportedObject.prototype.name,
-        displayName: typeof ImportedObject.prototype.displayName,
-        objectType: typeof ImportedObject.prototype.objectType,
-        targetVersion: typeof ImportedObject.prototype.targetVersion,
-        namespace: typeof ImportedObject.prototype.namespace,
-        includePath: typeof ImportedObject.prototype.includePath,
+        name: ImportedObject["name"],
+        displayName: ImportedObject["displayName"],
+        objectType: ImportedObject["objectType"],
+        targetVersion: ImportedObject["targetVersion"],
+        namespace: ImportedObject["namespace"],
+        includePath: ImportedObject["includePath"],
         world: SimpleLevel["world"],
         initializer: SimpleLevel["initializer"],
     ) {
@@ -1710,11 +1842,3 @@ class Level extends ImportedObject {
         this.#initializer = initializer;
     }
 }
-
-/*
-
-    tsc util.ts index.ts classes.ts guns.ts projectiles.ts libraries/p5/types/index.d.ts libraries/p5/types/global.d.ts libraries/matter/types/index.d.ts libraries/decimaljs/decimal.global.d.ts --target esnext --declaration --module esnext --moduleResolution node
-
-    tsc assets/default/levels/level0/level.ts util.d.ts index.d.ts classes.d.ts guns.d.ts projectiles.d.ts libraries/p5/types/index.d.ts libraries/p5/types/global.d.ts libraries/matter/types/index.d.ts libraries/decimaljs/decimal.global.d.ts --target esnext --declaration --module esnext --moduleResolution node
-
-*/

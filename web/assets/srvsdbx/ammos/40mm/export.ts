@@ -1,3 +1,5 @@
+
+const peak = 1;
 export default {
     name: "40mm",
     targetVersion: "0.10.0",
@@ -17,11 +19,13 @@ export default {
     },
     projectileInfo: {
         type: "explosive",
-        explosionType: "srvsdbx::explosion_frag",
+        explosionType: "srvsdbx::frag",
         images: ["./proj-40mm-01.svg"],
         spinVel: srvsdbx_Math.toRad(1, "turns"),
-        heightPeak: 1,
+        scale(t) {
+            return -4 * peak * t * (t - 1) + 1;
+        },
         explodeOnContact: true
     },
-    casing: "srvsdbx::casing_40mm"
+    casing: "srvsdbx::casing40mm"
 } satisfies ExportInterface<SimpleAmmo>;

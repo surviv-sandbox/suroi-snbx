@@ -20,7 +20,13 @@ interface SimpleGun extends SimpleEquipableItem {
         // Make the world image mandatory for firearms
     };
     readonly handPositions: {
+        /**
+         * The left hand's position
+         */
         readonly leftHand: HandPositions["leftHand"] & {},
+        /**
+         * The right hand's position
+         */
         readonly rightHand?: HandPositions["rightHand"] & {};
     };
     /**
@@ -40,11 +46,15 @@ interface SimpleGun extends SimpleEquipableItem {
          */
         readonly damage: number,
         /**
-         * The speed at which the projectile will travel
+         * Whether or not this projectile can collide with objects
+         */
+        readonly noCollide?: boolean;
+        /**
+         * The speed at which the projectile will travel in surviv units per millisecond
          */
         readonly velocity: MayBeFunctionWrapped<number, [Gun, PlayerLike]>,
         /**
-         * The distance this weapon's projectiles will travel before despawning
+         * The distance this weapon's projectiles will travel before despawning, in surviv units
          */
         readonly range: MayBeFunctionWrapped<number, [Gun, PlayerLike]>,
         /**
@@ -68,6 +78,14 @@ interface SimpleGun extends SimpleEquipableItem {
              */
             readonly forceMaximumLength?: boolean;
             /**
+             * By default, when a projectile strikes a surface or reaches the end of its life,
+             * it shrinks down into nothingness
+             *
+             * When this flag is set to true, this projectile is immediately destroyed when striking
+             * a surface or reaching its end
+             */
+            readonly noShrink?: boolean;
+            /**
              * Information about the trail that can follow this projectile
              */
             readonly trail?: {
@@ -89,6 +107,8 @@ interface SimpleGun extends SimpleEquipableItem {
                 readonly tint: string,
                 /**
                  * An offset that will be applied to the trail's regular drawing position
+                 *
+                 * (0, 0) places the head of the trail at the head of the projectile
                  */
                 readonly offset: {
                     /**
@@ -100,6 +120,21 @@ interface SimpleGun extends SimpleEquipableItem {
                      */
                     readonly perp: number;
                 };
+            },
+            /**
+             * An offset that will be applied to the tracer's regular drawing position
+             *
+             * (0, 0) places the head of the tracer at the projectile's position
+             */
+            readonly offset?: {
+                /**
+                 * The offset along the axis parallel to the projectile's trajectory
+                 */
+                readonly parr: number,
+                /**
+                 * The offset along the axis perpendicular to the projectile's trajectory
+                 */
+                readonly perp: number;
             };
         },
         /**
@@ -134,13 +169,13 @@ interface SimpleGun extends SimpleEquipableItem {
         /**
          * The amount by which a projectile's damage will be multiplied when striking an obstacle
          */
-        readonly obstacleMult: number,
+        readonly obstacleMultiplier: number,
         /**
          * The amount by which a projectile's damage will be multiplied if this projectile is a "headshot".
          *
          * Headshots occur at a fixed 15% rate, unless this parameter is set to 1, in which case the rate is 0%.
          */
-        readonly headshotMult: number,
+        readonly headshotMultiplier: number,
         /**
          * Information about this weapon's ability to fire fully-accurate shots
          */
@@ -183,7 +218,7 @@ interface SimpleGun extends SimpleEquipableItem {
     /**
      * The internal name of the ammo type object this firearm uses
      */
-    readonly caliber: PrototypeReference<"ammoTypes">,
+    readonly caliber: PrototypeReference<"ammos">,
     /**
      * The `deployGroup` this weapon belongs to; two weapons belonging to the same non-zero deploy group cannot be quickswitched
      */
@@ -576,7 +611,7 @@ interface SimpleGun extends SimpleEquipableItem {
  *
  * In a sense, this is a class for classes.
  */
-class GunPrototype extends InventoryItemPrototype {
+class GunPrototype extends InventoryItemPrototype implements EquipableItemPrototype {
     /**
      * References to this weapon's associated images
      */
@@ -798,7 +833,13 @@ class GunPrototype extends InventoryItemPrototype {
      *
      * This one is concerned with those residing below the weapon
     */
-    readonly #addonsBelow?: srvsdbx_AssetManagement.ConvertPathsToImages<SimpleGun["addons"] & {}> & { [key: number]: { dimensions: { layer: -1; }; }; };
+    readonly #addonsBelow?: srvsdbx_AssetManagement.ConvertPathsToImages<SimpleGun["addons"] & {}> & {
+        readonly [key: number]: {
+            readonly dimensions: {
+                readonly layer: -1;
+            };
+        };
+    };
     /**
      * An array of additional objects that can be rendered alongside this weapon
      *
@@ -811,7 +852,13 @@ class GunPrototype extends InventoryItemPrototype {
      *
      * This one is concerned with those residing above the weapon
      */
-    readonly #addonsAbove?: srvsdbx_AssetManagement.ConvertPathsToImages<SimpleGun["addons"] & {}> & { [key: number]: { dimensions: { layer: 1; }; }; };
+    readonly #addonsAbove?: srvsdbx_AssetManagement.ConvertPathsToImages<SimpleGun["addons"] & {}> & {
+        readonly [key: number]: {
+            readonly dimensions: {
+                readonly layer: 1;
+            };
+        };
+    };
     /**
      * An array of additional objects that can be rendered alongside this weapon
     *
@@ -829,19 +876,63 @@ class GunPrototype extends InventoryItemPrototype {
     get addons() { return this.#addons; }
 
     /**
+     * A map that contains images that have been declared by this object, and whose keys
+     * are the paths to those images, *as declared in the original object file*.
+     *
+     * This map's `get` method is guaranteed not to return `undefined`: if an invalid key
+     * is used, an error is thrown
+     */
+    readonly #imageMap;
+    /**
+     * A map that contains images that have been declared by this object, and whose keys
+     * are the paths to those images, *as declared in the original object file*.
+     *
+     * This map's `get` method is guaranteed not to return `undefined`: if an invalid key
+     * is used, an error is thrown
+     */
+    get imageMap() { return this.#imageMap; }
+
+    /**
      * Takes a simplified representation of a melee weapon and converts it into a more rigorous one
      * @param obj The `SimpleGun` object to parse
      * @returns A new `GunPrototype`
      */
-    static async from(obj: SimpleGun): Promise<srvsdbx_ErrorHandling.Result<GunPrototype, SandboxError[]>> {
-        const errors: SandboxError[] = [],
+    static async from(obj: SimpleGun): Promise<srvsdbx_ErrorHandling.Result<GunPrototype, srvsdbx_Errors.SandboxError[]>> {
+        const errors: srvsdbx_Errors.SandboxError[] = [],
+            imageMap = (() => {
+                const map = new Map<string, srvsdbx_AssetManagement.ImageSrcPair>(),
+                    nativeGet = map.get.bind(map);
+
+                map.get = (key: string) => {
+                    if (!map.has(key))
+                        throw new srvsdbx_Errors.UndeclaredImageUsage(`Attempted to use an undeclared image at path '${key}'`);
+
+                    return nativeGet(key);
+                };
+
+                return map as Omit<Map<string, srvsdbx_AssetManagement.ImageSrcPair>, "get"> & {
+                    /**
+                     * Returns the element located at a certain key.
+                     *
+                     * **If there is no item at the specified key, _an error is thrown!_**
+                     * @param key The key to fetch
+                     * @returns The item located there. If this method does not throw, this value is
+                     * guaranteed not to be `undefined`.
+                     * @throws {srvsdbx_Errors.UndeclaredImageUsage} If there is no item at the given key
+                     */
+                    get(key: string): NonNullable<srvsdbx_AssetManagement.ImageSrcPair>;
+                };
+            })(),
             pathPrefix = `${obj.includePath}/`,
             trailImage = obj.ballistics.tracer.trail
                 ? srvsdbx_ErrorHandling.handleResult(
                     await srvsdbx_AssetManagement.loadingFunctions.loadImageAsync(
                         `${pathPrefix}${obj.ballistics.tracer.trail.image}`
                     ),
-                    srvsdbx_ErrorHandling.identity,
+                    res => {
+                        imageMap.set(res.src, res);
+                        return res;
+                    },
                     e => errors.push(e)
                 )
 
@@ -850,7 +941,10 @@ class GunPrototype extends InventoryItemPrototype {
                 await srvsdbx_AssetManagement.loadingFunctions.loadImageAsync(
                     `${pathPrefix}${obj.images.loot}`
                 ),
-                srvsdbx_ErrorHandling.identity,
+                res => {
+                    imageMap.set(res.src, res);
+                    return res;
+                },
                 e => errors.push(e)
             ),
 
@@ -858,7 +952,10 @@ class GunPrototype extends InventoryItemPrototype {
                 await srvsdbx_AssetManagement.loadingFunctions.loadImageAsync(
                     `${pathPrefix}${obj.images.world}`
                 ),
-                srvsdbx_ErrorHandling.identity,
+                res => {
+                    imageMap.set(res.src, res);
+                    return res;
+                },
                 e => errors.push(e)
             ),
 
@@ -867,7 +964,10 @@ class GunPrototype extends InventoryItemPrototype {
                     await srvsdbx_AssetManagement.loadingFunctions.loadImageAsync(
                         `${pathPrefix}${obj.chargeProps.chargeImage.image}`
                     ),
-                    srvsdbx_ErrorHandling.identity,
+                    res => {
+                        imageMap.set(res.src, res);
+                        return res;
+                    },
                     e => errors.push(e)
                 )
                 : void 0,
@@ -877,26 +977,31 @@ class GunPrototype extends InventoryItemPrototype {
                     await srvsdbx_AssetManagement.loadingFunctions.loadImageAsync(
                         `${pathPrefix}${obj.chargeProps.chargeImageHUD.image}`
                     ),
-                    srvsdbx_ErrorHandling.identity,
+                    res => {
+                        imageMap.set(res.src, res);
+                        return res;
+                    },
                     e => errors.push(e)
                 )
                 : void 0,
 
             addonImages = obj.addons ? await (async () => {
-                const array: srvsdbx_AssetManagement.ImageSrcPair[][] = [];
+                const addonImages: srvsdbx_AssetManagement.ImageSrcPair[][] = [];
 
-                for (const addon of obj.addons!) {
-                    array.push(
-                        await srvsdbx_AssetManagement.loadImageArray(
-                            addon.images,
-                            errors,
-                            pathPrefix
-                        ) as srvsdbx_AssetManagement.ImageSrcPair[]
+                for (const addon of obj.addons!)
+                    addonImages.push(
+                        await srvsdbx_AssetManagement.loadImageArray(addon.images, errors, pathPrefix)
                     );
-                }
 
-                return array;
+                for (const imageArray of addonImages)
+                    for (const image of imageArray)
+                        imageMap.set(image.src, image);
+
+                return addonImages;
             })() : void 0;
+
+        for (const image of (await srvsdbx_AssetManagement.loadImageArray(obj.imageDeclaration ?? [], errors, pathPrefix)))
+            imageMap.set(image.src, image);
 
         if (!errors.length) {
             return {
@@ -915,26 +1020,32 @@ class GunPrototype extends InventoryItemPrototype {
                     obj.tint,
                     {
                         damage: obj.ballistics.damage,
+                        noCollide: obj.ballistics.noCollide,
                         effectsOnHit: obj.ballistics.effectsOnHit,
                         falloff: obj.ballistics.falloff,
                         firstShotAccuracy: obj.ballistics.firstShotAccuracy,
-                        headshotMult: obj.ballistics.headshotMult,
-                        obstacleMult: obj.ballistics.obstacleMult,
+                        headshotMultiplier: obj.ballistics.headshotMultiplier,
+                        obstacleMultiplier: obj.ballistics.obstacleMultiplier,
                         persistance: obj.ballistics.persistance,
                         projectiles: obj.ballistics.projectiles,
                         range: obj.ballistics.range,
                         velocity: obj.ballistics.velocity,
                         tracer: {
+                            width: obj.ballistics.tracer.width,
+                            height: obj.ballistics.tracer.height,
                             drawAbovePlayer: obj.ballistics.tracer.drawAbovePlayer,
                             forceMaximumLength: obj.ballistics.tracer.forceMaximumLength,
-                            height: obj.ballistics.tracer.height,
-                            width: obj.ballistics.tracer.width,
+                            noShrink: obj.ballistics.tracer.noShrink,
                             trail: obj.ballistics.tracer.trail ? {
                                 maxLength: obj.ballistics.tracer.trail.maxLength,
                                 offset: obj.ballistics.tracer.trail.offset,
                                 tint: obj.ballistics.tracer.trail.tint,
                                 width: obj.ballistics.tracer.trail.width,
                                 image: trailImage as srvsdbx_AssetManagement.ImageSrcPair,
+                            } : void 0,
+                            offset: obj.ballistics.tracer.offset ? {
+                                parr: obj.ballistics.tracer.offset.parr,
+                                perp: obj.ballistics.tracer.offset.perp,
                             } : void 0
                         }
                     },
@@ -983,7 +1094,8 @@ class GunPrototype extends InventoryItemPrototype {
                                 images: addonImages![i] as srvsdbx_AssetManagement.ImageSrcPair[],
                             };
                         })
-                        : void 0
+                        : void 0,
+                    imageMap
                 )
             };
         }
@@ -1001,11 +1113,11 @@ class GunPrototype extends InventoryItemPrototype {
      * @returns An `Animation` object representing the weapon recoiling into the shooter
      */
     static generateRecoilAnimation(
-        handPositions: typeof GunPrototype.prototype.handPositions,
-        worldImage: typeof InventoryItemPrototype.prototype.images.world & {},
-        dimensions: typeof GunPrototype.prototype.dimensions,
-        imageOffset: typeof GunPrototype.prototype.imageOffset,
-        recoilImpulse: typeof GunPrototype.prototype.recoilImpulse
+        handPositions: GunPrototype["handPositions"],
+        worldImage: InventoryItemPrototype["images"]["world"] & {},
+        dimensions: GunPrototype["dimensions"],
+        imageOffset: GunPrototype["imageOffset"],
+        recoilImpulse: GunPrototype["recoilImpulse"]
     ) {
         const imageDimensions = srvsdbx_AssetManagement.determineImageDimensions(worldImage.asset, dimensions);
 
@@ -1097,37 +1209,38 @@ class GunPrototype extends InventoryItemPrototype {
      * `* It's a constructor. It constructs.`
      */
     constructor(
-        name: typeof ImportedObject.prototype.name,
-        displayName: typeof ImportedObject.prototype.displayName,
-        objectType: typeof ImportedObject.prototype.objectType,
-        includePath: typeof ImportedObject.prototype.includePath,
-        namespace: typeof ImportedObject.prototype.namespace,
-        targetVersion: typeof ImportedObject.prototype.targetVersion,
-        images: typeof GunPrototype.prototype.images,
-        dual: typeof GunPrototype.prototype.dual,
-        tint: typeof GunPrototype.prototype.tint,
-        ballistics: typeof GunPrototype.prototype.ballistics,
-        effectsOnFire: typeof GunPrototype.prototype.effectsOnFire,
-        suppressed: typeof GunPrototype.prototype.suppressed,
-        caliber: typeof GunPrototype.prototype.caliber,
-        useDelay: typeof GunPrototype.prototype.useDelay,
-        deployGroup: typeof GunPrototype.prototype.deployGroup,
-        accuracy: typeof GunPrototype.prototype.accuracy,
-        moveSpeedPenalties: typeof GunPrototype.prototype.moveSpeedPenalties,
-        imageOffset: typeof GunPrototype.prototype.imageOffset,
-        dimensions: typeof GunPrototype.prototype.dimensions,
-        reload: typeof GunPrototype.prototype.reload,
-        altReload: typeof GunPrototype.prototype.altReload,
-        magazineCapacity: typeof GunPrototype.prototype.magazineCapacity,
-        switchDelay: typeof GunPrototype.prototype.switchDelay,
-        handPositions: typeof GunPrototype.prototype.handPositions,
-        projectileSpawnOffset: typeof GunPrototype.prototype.projectileSpawnOffset,
-        casings: typeof GunPrototype.prototype.casings,
-        recoilImpulse: typeof GunPrototype.prototype.recoilImpulse,
-        fireMode: typeof GunPrototype.prototype.fireMode,
-        burstProps: typeof GunPrototype.prototype.burstProps,
-        chargeProps: typeof GunPrototype.prototype.chargeProps,
-        addons: typeof GunPrototype.prototype.addons,
+        name: ImportedObject["name"],
+        displayName: ImportedObject["displayName"],
+        objectType: ImportedObject["objectType"],
+        includePath: ImportedObject["includePath"],
+        namespace: ImportedObject["namespace"],
+        targetVersion: ImportedObject["targetVersion"],
+        images: GunPrototype["images"],
+        dual: GunPrototype["dual"],
+        tint: GunPrototype["tint"],
+        ballistics: GunPrototype["ballistics"],
+        effectsOnFire: GunPrototype["effectsOnFire"],
+        suppressed: GunPrototype["suppressed"],
+        caliber: GunPrototype["caliber"],
+        useDelay: GunPrototype["useDelay"],
+        deployGroup: GunPrototype["deployGroup"],
+        accuracy: GunPrototype["accuracy"],
+        moveSpeedPenalties: GunPrototype["moveSpeedPenalties"],
+        imageOffset: GunPrototype["imageOffset"],
+        dimensions: GunPrototype["dimensions"],
+        reload: GunPrototype["reload"],
+        altReload: GunPrototype["altReload"],
+        magazineCapacity: GunPrototype["magazineCapacity"],
+        switchDelay: GunPrototype["switchDelay"],
+        handPositions: GunPrototype["handPositions"],
+        projectileSpawnOffset: GunPrototype["projectileSpawnOffset"],
+        casings: GunPrototype["casings"],
+        recoilImpulse: GunPrototype["recoilImpulse"],
+        fireMode: GunPrototype["fireMode"],
+        burstProps: GunPrototype["burstProps"],
+        chargeProps: GunPrototype["chargeProps"],
+        addons: GunPrototype["addons"],
+        imageMap: Map<string, srvsdbx_AssetManagement.ImageSrcPair>,
     ) {
         super(name, displayName, objectType, targetVersion, namespace, includePath, images, moveSpeedPenalties);
 
@@ -1140,6 +1253,7 @@ class GunPrototype extends InventoryItemPrototype {
         this.#images = images;
         this.#ballistics = {
             damage: ballistics.damage,
+            noCollide: ballistics.noCollide,
             velocity: (gun, shooter) => extractValue(ballistics.velocity, gun, shooter) * size / 1000,
             range: (gun, shooter) => extractValue(ballistics.range, gun, shooter) * size,
             tracer: {
@@ -1147,6 +1261,7 @@ class GunPrototype extends InventoryItemPrototype {
                 height: autoOrScale(ballistics.tracer.height),
                 drawAbovePlayer: ballistics.tracer.drawAbovePlayer,
                 forceMaximumLength: ballistics.tracer.forceMaximumLength,
+                noShrink: ballistics.tracer.noShrink,
                 trail: ballistics.tracer.trail ? {
                     image: ballistics.tracer.trail.image,
                     tint: ballistics.tracer.trail.tint,
@@ -1156,13 +1271,17 @@ class GunPrototype extends InventoryItemPrototype {
                         parr: ballistics.tracer.trail.offset.parr * size,
                         perp: ballistics.tracer.trail.offset.perp * size
                     }
+                } : void 0,
+                offset: ballistics.tracer.offset ? {
+                    parr: ballistics.tracer.offset.parr * size,
+                    perp: ballistics.tracer.offset.perp * size,
                 } : void 0
             },
             effectsOnHit: ballistics.effectsOnHit,
             falloff: ballistics.falloff,
             firstShotAccuracy: ballistics.firstShotAccuracy,
-            headshotMult: ballistics.headshotMult,
-            obstacleMult: ballistics.obstacleMult,
+            headshotMultiplier: ballistics.headshotMultiplier,
+            obstacleMultiplier: ballistics.obstacleMultiplier,
             persistance: ballistics.persistance,
             projectiles: ballistics.projectiles,
         };
@@ -1285,6 +1404,21 @@ class GunPrototype extends InventoryItemPrototype {
 
         this.#addonsBelow = this.#addons?.filter?.(addon => addon.dimensions.layer == -1) as any;
         this.#addonsAbove = this.#addons?.filter?.(addon => addon.dimensions.layer == 1) as any;
+        this.#imageMap = imageMap;
+    }
+
+    /**
+     * Creates a new `Gun` object from this prototype
+     * @param owner The `PlayerLike` the created weapon belongs to
+     * @returns A new weapon with this object as its prototype
+     */
+    create(
+        owner: PlayerLike
+    ) {
+        return new Gun(
+            this,
+            owner
+        );
     }
 }
 
@@ -1293,12 +1427,11 @@ class GunPrototype extends InventoryItemPrototype {
  */
 class Gun
     extends InventoryItem<GunPrototype>
-    implements EquipableItem<Required<ItemAnimation> & { item: { offset: { parr: number, perp: number; }; }; }>,
-    Destroyable {
+    implements EquipableItem<Required<ItemAnimation> & { item: { offset: { parr: number, perp: number; }; }; }>, Destroyable {
     /**
      * An object to manage this item's animations
      */
-    readonly #animationManager: srvsdbx_Animation.AnimationManager<Required<ItemAnimation & { item: { offset: { parr: number, perp: number; }; }; }>, "idle" | "using">;
+    readonly #animationManager: srvsdbx_Animation.AnimationManager<Required<ItemAnimation & { readonly item: { readonly offset: { readonly parr: number, readonly perp: number; }; }; }>, "idle" | "using">;
     /**
      * An object to manage this item's animations
      */
@@ -1347,7 +1480,16 @@ class Gun
     /**
      * This weapon image's final dimensions
      */
-    readonly #dimensions: { width: number, height: number; };
+    readonly #dimensions: {
+        /**
+         * The image's width, in pixels
+         */
+        readonly width: number,
+        /**
+         * The image's height, in pixels
+         */
+        readonly height: number;
+    };
     /**
      * This weapon image's final dimensions
      */
@@ -1356,7 +1498,10 @@ class Gun
     /**
      * The final dimensions of this weapon's charged dimensions, if applicable
      */
-    readonly #chargedDimensions: srvsdbx_ErrorHandling.Maybe<{ width: number, height: number; }>;
+    readonly #chargedDimensions: srvsdbx_ErrorHandling.Maybe<{
+        readonly width: number,
+        readonly height: number;
+    }>;
     /**
      * The final dimensions of this weapon's charged dimensions, if applicable
      */
@@ -1403,7 +1548,7 @@ class Gun
      * Destroys the current charge particle
      */
     #destroyChargeParticle() {
-        this.#chargeParticle?.destroy?.();
+        this.#chargeParticle?.destroy();
         this.#chargeParticle = srvsdbx_ErrorHandling.Nothing;
     }
 
@@ -1473,8 +1618,28 @@ class Gun
      * Cancels every anticipated reload, and clears the map storing them
      */
     #cancelAnticipatedReloads() {
-        for (const [_, r] of this.#anticipatedReloads) clearTimerIfPresent(r);
+        for (const [, reload] of this.#anticipatedReloads) clearTimerIfPresent(reload);
         this.#anticipatedReloads.clear();
+    }
+
+    /**
+     * A timer optionally representing this weapon being reloaded
+     */
+    #reloadTimer: number | false = false;
+    /**
+     * A timer optionally representing this weapon being reloaded
+     */
+    get reloadTimer() {
+        return {
+            value: this.#reloadTimer,
+            /**
+             * Clears this timer
+             */
+            clear: () => {
+                clearTimerIfPresent(this.#reloadTimer);
+                this.#reloadTimer = false;
+            }
+        };
     }
 
     /**
@@ -1482,8 +1647,8 @@ class Gun
      * @param owner The `PlayerLike` that owns this weapon
      * @param prototype The `GunPrototype` this object is based on
      */
-    constructor(owner: PlayerLike, prototype: GunPrototype) {
-        super(owner, prototype);
+    constructor(prototype: GunPrototype, owner: PlayerLike) {
+        super(prototype, owner);
 
         this.#animationManager = new srvsdbx_Animation.AnimationManager<Required<ItemAnimation & { item: { offset: { parr: number, perp: number; }; }; }>, "idle" | "using">(
             {
@@ -1508,12 +1673,13 @@ class Gun
 
         this.#dimensions = srvsdbx_AssetManagement.determineImageDimensions(prototype.images.world.asset, prototype.dimensions);
 
-        this.#chargedDimensions = prototype.chargeProps?.chargeImage
-            ? srvsdbx_AssetManagement.determineImageDimensions(
-                (prototype.chargeProps.chargeImage.image ?? prototype.images.world).asset,
-                prototype.chargeProps.chargeImage.dimensions ?? prototype.dimensions
+        this.#chargedDimensions = srvsdbx_ErrorHandling.createIf(
+            prototype.chargeProps?.chargeImage !== void 0,
+            () => srvsdbx_AssetManagement.determineImageDimensions(
+                (prototype.chargeProps!.chargeImage!.image ?? prototype.images.world).asset,
+                prototype.chargeProps!.chargeImage!.dimensions ?? prototype.dimensions
             )
-            : srvsdbx_ErrorHandling.Nothing;
+        );
 
         {
             const player = this.owner,
@@ -1522,38 +1688,40 @@ class Gun
 
             if (!chargeProps?.chargeParticle) this.#updateChargeParticle = () => { };
             else {
-                const particleProto = gamespace.prototypes.particles.get(chargeProps.chargeParticle.particle)!;
+                const particleProto = gamespace.prototypes.particles.get(chargeProps.chargeParticle.particle);
 
                 this.#updateChargeParticle = () => {
-                    const playerDir = body.angle - Math.PI / 2;
+                    const playerDir = player.angle - Math.PI / 2;
 
                     if (chargeProps?.chargeParticle?.particle) {
                         const particle =
-                            this.#chargeParticle ??= (() => {
-                                const p = new Particle(
-                                    particleProto,
-                                    srvsdbx_Geometry.Vector2D.fromPoint2D(body.position)
-                                        .plus({
-                                            direction: playerDir,
-                                            magnitude: chargeProps.chargeParticle.offset.parr
-                                        }, true)
-                                        .plus({
-                                            direction: playerDir + Math.PI / 2,
-                                            magnitude: chargeProps.chargeParticle.offset.perp
-                                        }, true),
-                                    player.angle
-                                );
+                            this.#chargeParticle ??= (
+                                (() => {
+                                    const particle = new Particle(
+                                        particleProto,
+                                        srvsdbx_Geometry.Vector2D.fromPoint2D(body.origin)
+                                            .plus({
+                                                direction: playerDir,
+                                                magnitude: chargeProps.chargeParticle.offset.parr
+                                            }, true)
+                                            .plus({
+                                                direction: playerDir + Math.PI / 2,
+                                                magnitude: chargeProps.chargeParticle.offset.perp
+                                            }, true),
+                                        player.angle
+                                    );
 
-                                p.follow(player, {
-                                    x: 0,
-                                    y: 0,
-                                    z: 0,
-                                    parr: chargeProps.chargeParticle.offset.parr,
-                                    perp: chargeProps.chargeParticle.offset.perp
-                                });
+                                    particle.follow(player, {
+                                        x: 0,
+                                        y: 0,
+                                        z: 0,
+                                        parr: chargeProps.chargeParticle.offset.parr,
+                                        perp: chargeProps.chargeParticle.offset.perp
+                                    });
 
-                                return p;
-                            })();
+                                    return particle;
+                                })()
+                            );
 
                         if (chargeProps.chargeParticle.scale)
                             particle.forceScale(
@@ -1612,7 +1780,7 @@ class Gun
      * the idle animation will be terminated
      */
     getItemReference() {
-        return this.#getAnimation()?.item;
+        return this.#getAnimation().item;
     }
 
     /**
@@ -1623,12 +1791,9 @@ class Gun
      * the idle animation will be terminated
      */
     getHandReference() {
-        return this.#getAnimation()?.hands;
+        return this.#getAnimation().hands;
     }
 
-    /**
-     * Serves to stop any animation related to this weapon that are currently playeing
-     */
     stopAnimations() {
         this.#animationManager.endAll();
         this.#cancelledAnimation = true;
@@ -1640,7 +1805,10 @@ class Gun
     usePrimary() {
         const player = this.owner,
             prototype = this.prototype,
-            ammoInfo = gamespace.prototypes.ammoTypes.get(prototype.caliber)!,
+            ammoInfo = gamespace.prototypes.ammos.get(prototype.caliber)!,
+            /**
+             * Equivalent to `player.body`
+             */
             body = player.body,
 
             isCharge = !!prototype.fireMode.match(/^(auto|release)-charge/),
@@ -1653,10 +1821,14 @@ class Gun
             shotDelay = (isBurst && prototype.burstProps ? prototype.burstProps.shotDelay : prototype.useDelay) * this.owner.modifiers.ergonomics.reduced,
             attackDelay = (isBurst && prototype.burstProps ? prototype.burstProps.burstDelay : prototype.useDelay) * this.owner.modifiers.ergonomics.reduced,
 
+            /**
+             * Equivalent to `player.state`
+             */
             state = player.state;
 
-        // Only proceed if the time since the lsat shot is greater than the use delay
-        if (gamespace.currentUpdate - this.#lastUse >= attackDelay) {
+        // Only proceed if the time since the last shot is greater than the use delay
+        // And if this item is the active item
+        if (gamespace.currentUpdate - this.#lastUse >= player.state.firingDelay && this == player.activeItem) {
             if (isCharge) { // Terrible charge-fire logic
                 // This function, as the name implies, schedules a re-attempt to fire
                 const scheduleRetry = () => {
@@ -1730,7 +1902,9 @@ class Gun
                         // We have no ammo
                         weapon.#ammo <= 0 ||
                         // We've fired all the shots in our burst
-                        firedAllInBurst
+                        firedAllInBurst ||
+                        // This item isn't the active one
+                        weapon != player.activeItem
                     ) {
                         weapon.#ammo = Math.max(weapon.#ammo, 0);
                         state.firing = false;
@@ -1761,8 +1935,9 @@ class Gun
                     weapon.#charged = false;
                     weapon.#isCharging = false;
                     state.reloading = false;
+                    player.state.firingDelay = attackDelay;
                     weapon.#cancelAnticipatedReloads();
-                    clearTimerIfPresent(player.timers.reload);
+                    clearTimerIfPresent(weapon.#reloadTimer);
 
                     if (gamespace.currentUpdate - state.lastSwitch < state.effectiveSwitchDelay) {
                         player.timers.firing = setTimeout(() => {
@@ -1782,22 +1957,29 @@ class Gun
 
                     const size = gamespace.PLAYER_SIZE,
                         playerVelocity = player.compileVelocities(),
-                        playerDir = body.angle - Math.PI / 2,
+                        playerDir = player.angle - Math.PI / 2,
                         ballistics = prototype.ballistics,
 
-                        start = srvsdbx_Geometry.Vector2D.fromPoint2D(body.position)
-                            /* parallel      offsets */.plus({
-                            direction: playerDir,
-                            magnitude: prototype.projectileSpawnOffset.parr + size * prototype.imageOffset.parr + weapon.#dimensions.height / 2
-                        }, true)
-                            /* perpendicular offsets */.plus({
-                            direction: playerDir + Math.PI / 2,
-                            magnitude: weapon.#recoilImpulseParity * prototype.projectileSpawnOffset.perp
-                        }, true),
+                        start = srvsdbx_Geometry.Vector2D.fromPoint2D(body.origin)
+                            /* parallel      offsets */
+                            .plus({
+                                direction: playerDir,
+                                magnitude: prototype.projectileSpawnOffset.parr + size * prototype.imageOffset.parr + weapon.#dimensions.height / 2
+                            }, true)
+                            /* perpendicular offsets */
+                            .plus({
+                                direction: playerDir + Math.PI / 2,
+                                magnitude: weapon.#recoilImpulseParity * prototype.projectileSpawnOffset.perp
+                            }, true),
 
-                        shouldFSA = ballistics.firstShotAccuracy.enabled && gamespace.currentUpdate - weapon.#lastUse > ballistics.firstShotAccuracy.rechargeTime;
+                        shouldFSA = ballistics.firstShotAccuracy.enabled && gamespace.currentUpdate - weapon.#lastUse > ballistics.firstShotAccuracy.rechargeTime,
 
-                    for (let i = 0, proj = ballistics.projectiles; i < proj; i++) {
+                        obstacleBodies = gamespace.objects.obstacles
+                            .filter(o => o.collidable == CollisionLevels.ALL)
+                            .map(o => o.body)
+                            .toArray();
+
+                    for (let i = 0, projectileCount = ballistics.projectiles; i < projectileCount; i++) {
                         const deviation =
                             shouldFSA
                                 ? 0
@@ -1805,53 +1987,96 @@ class Gun
 
                             offset = ammoInfo.spawnVar ?
                                 "radius" in ammoInfo.spawnVar ?
-                                /* spawn variance (circular) */srvsdbx_Geometry.Vector2D.fromPolarToPt(srvsdbx_Math.randomAngle(), ammoInfo.spawnVar.radius * size) :
+                                /* spawn variance (circular) */srvsdbx_Geometry.Vector2D.fromPolarToPt(
+                                    srvsdbx_Math.randomAngle(),
+                                    Math.random() * ammoInfo.spawnVar.radius * size
+                                ) :
                                 /* spawn variance (box) */{
                                         x: Math.sign(Math.random() - 0.5) * Math.random() * ammoInfo.spawnVar.width * size,
                                         y: Math.sign(Math.random() - 0.5) * Math.random() * ammoInfo.spawnVar.height * size
                                     }
-                                : srvsdbx_Geometry.Vector2D.zeroPt(),
-                            newStart = start.plus(offset);
+                                : srvsdbx_Geometry.Vector2D.zeroPoint(),
+                            newStart = start.plus(offset),
 
-                        new Bullet(
-                            newStart,
-                            ballistics.falloff,
-                            newStart
-                                .plus(
-                                    srvsdbx_Geometry.Vector2D.fromPolarToPt(
-                                        playerDir + deviation,
-                                        Math.max(0, extractValue(ballistics.range, weapon, player))
-                                    )
-                                ),
-                            extractValue(ballistics.velocity, weapon, player),
-                            ballistics.damage * (ballistics.headshotMult != 1 && Math.random() > 0.85 ? ballistics.headshotMult : 1),
-                            Bullet.drawFromFirearm(weapon),
-                            ammoInfo.projectileInfo,
-                            {
-                                allowMultipleHitsPerTarget: ballistics.persistance?.allowMultipleHitsPerTarget ?? false,
-                                hitMultiplier: ballistics.persistance?.hitMultiplier ?? 0,
-                                hitsBeforeDespawn: ballistics.persistance?.hitsBeforeDespawn ?? 1
-                            },
-                            ballistics.effectsOnHit,
-                            weapon
-                        );
+                            headshot = ballistics.headshotMultiplier != 1 && Math.random() > 0.85,
+
+                            bullet = new Bullet(
+                                newStart,
+                                ballistics.falloff,
+                                newStart
+                                    .plus(
+                                        srvsdbx_Geometry.Vector2D.fromPolarToPt(
+                                            playerDir + deviation,
+                                            Math.max(0, extractValue(ballistics.range, weapon, player))
+                                        )
+                                    ),
+                                extractValue(ballistics.velocity, weapon, player),
+                                ballistics.damage,
+                                Bullet.drawFromFirearm(weapon),
+                                ammoInfo.projectileInfo,
+                                {
+                                    allowMultipleHitsPerTarget: ballistics.persistance?.allowMultipleHitsPerTarget ?? false,
+                                    hitMultiplier: ballistics.persistance?.hitMultiplier ?? 0,
+                                    hitsBeforeDespawn: ballistics.persistance?.hitsBeforeDespawn ?? 1
+                                },
+                                ballistics.effectsOnHit,
+                                headshot,
+                                {
+                                    headshot: prototype.ballistics.headshotMultiplier,
+                                    obstacle: prototype.ballistics.obstacleMultiplier
+                                },
+                                prototype.ballistics.tracer.drawAbovePlayer,
+                                prototype.ballistics.noCollide
+                            );
+
+                        /*
+                            If the player's gun is intersecting an obstacle, then the obstacle should take damage
+
+                            More formally, draw a line from the player's center to the starting position of the bullet;
+                            if it intersects an obstacle, immediately apply the appropriate damage to that obstacle
+                        */
+                        const bodyPosition = body.origin,
+                            collisions = (srvsdbx_Geometry.collisionFunctions.segmentShapes(
+                                {
+                                    start: bodyPosition,
+                                    end: newStart
+                                },
+                                obstacleBodies
+                            ) ?? [])
+                                .filter(c => c[0] != srvsdbx_ErrorHandling.Nothing)
+                                .map(([pt, c]) =>
+                                    (pt!.filter(p => "x" in p) as srvsdbx_Geometry.Point2D[]).map(p => [p, c] as const)
+                                )
+                                .flat();
+
+                        // If there is a collision, find the closes obstacle and apply damage
+                        if (collisions.length) {
+                            const collision = collisions.sort((a, b) =>
+                                srvsdbx_Geometry.Vector2D.squaredDistanceBetweenPts(bodyPosition, a[0]) -
+                                srvsdbx_Geometry.Vector2D.squaredDistanceBetweenPts(bodyPosition, b[0])
+                            )[0],
+                                targetBody = collision?.[1],
+                                target = gamespace.objects.obstacles.find(o => o.body == targetBody);
+
+                            if (target)
+                                bullet.events.dispatchEvent("collision", target, collision ? [collision[0]] : []);
+                        }
                     }
 
                     if (prototype.casings?.spawnOn == "fire")
                         for (let i = 0, limit = prototype.casings.count ?? 1; i < limit; i++)
                             weapon.makeCasing(prototype.casings.spawnDelay);
 
-                    const players = [...gamespace.objects.players.values()].map(p => [p, srvsdbx_Geometry.Vector2D.squaredDistBetweenPts(p.position, player.position)] as const);
+                    const players = gamespace.objects.players.map(p => [p, srvsdbx_Geometry.Vector2D.squaredDistanceBetweenPts(p.position, player.position)] as const);
 
                     if (prototype.effectsOnFire?.length)
                         for (const query of prototype.effectsOnFire)
-                            for (const target of players.filter(p => p[1] <= query.radius * query.radius))
+                            for (const [, target] of players.filter(p => p[1] <= query.radius * query.radius))
                                 for (const effect of query.effects)
                                     target[0].statusEffects.add(
-                                        new StatusEffect(
-                                            gamespace.prototypes.statusEffects.get(effect)!,
-                                            target[0]
-                                        )
+                                        gamespace.prototypes.statusEffects
+                                            .get(effect)
+                                            .create(target[0])
                                     );
 
                     if (!["semi", "auto-charge", "release-charge"].includes(prototype.fireMode))
@@ -1931,13 +2156,13 @@ class Gun
             for (let i = 0, limit = proto.casings.count ?? proto.magazineCapacity.normal; i < limit; i++)
                 this.makeCasing(proto.casings.spawnDelay);
 
-        this.owner.timers.reload = setTimeout(() => {
+        this.#reloadTimer = setTimeout(() => {
             this.#ammo = Math.min(this.#ammo + (r.ammoReloaded == "all" ? Infinity : r.ammoReloaded), proto.magazineCapacity.normal);
 
             owner.state.reloading = false;
 
             if (this.#ammo < proto.magazineCapacity.normal && r.chain) {
-                clearTimerIfPresent(this.owner.timers.reload);
+                clearTimerIfPresent(this.#reloadTimer);
                 (forceChains ? this.#reload : this.standardReload).call(this);
             }
         }, r.duration * this.owner.modifiers.ergonomics.reduced) as unknown as number;
@@ -1983,7 +2208,7 @@ class Gun
         else {
             setTimeout(
                 () => {
-                    if (this.owner.activeItem == this) makeCasing();
+                    if (!this.destroyed && this.owner.activeItem == this) makeCasing();
                 },
                 delay
             );
@@ -1991,10 +2216,10 @@ class Gun
 
         function makeCasing() {
             const proto = T.prototype,
-                ammo = gamespace.prototypes.ammoTypes.get(proto.caliber)!;
+                ammo = gamespace.prototypes.ammos.get(proto.caliber);
 
             if (ammo.casing) {
-                const playerDir = T.owner.body.angle - Math.PI / 2,
+                const playerDir = T.owner.angle - Math.PI / 2,
                     size = gamespace.PLAYER_SIZE,
                     start = srvsdbx_Geometry.Vector2D.fromPoint2D(T.owner.position)
                         .plus(srvsdbx_Geometry.Vector2D.fromPolarToVec(playerDir + Math.PI / 2, (T.#recoilImpulseParity * proto.casings!.spawnOffset.perp * size)), true)
@@ -2007,11 +2232,11 @@ class Gun
                     perp = extractValue(casingVel.perp),
                     parr = extractValue(casingVel.parr),
 
-                    casing = new Particle(
-                        gamespace.prototypes.particles.get(ammo.casing)!,
-                        start,
-                        T.owner.angle
-                    );
+                    casing = gamespace.prototypes.particles.get(ammo.casing)
+                        .create(
+                            start,
+                            T.owner.angle
+                        );
 
                 casing.velocityMap.set("intrinsic", {
                     x: sin * perp - cos * parr,
@@ -2041,12 +2266,15 @@ class Gun
      * Clears this instance's object attributes
      */
     destroy() {
+        if (this.destroyed) return;
         super.destroy();
 
         this.#cancelAnticipatedReloads();
+        this.stopCharging();
+        clearTimerIfPresent(this.#reloadTimer);
 
         // @ts-expect-error
-        this.#anticipatedReloads = this.#animationManager = this.#chargeParticle = this.#chargedDimensions = this.#destroyChargeParticle = this.#dimensions = this.#updateChargeParticle = void 0;
+        this.#anticipatedReloads = this.#animationManager = this.#chargeParticle = this.#chargedDimensions = this.#dimensions = this.#updateChargeParticle = void 0;
     }
 }
 
@@ -2141,16 +2369,24 @@ interface SimpleAmmo extends SimpleImport {
          * Whether or not the explosion should be spawned when colliding with an object or not
          */
         readonly explodeOnContact: boolean;
-        /**
-         * Dictates the magnitude of the scaling effect applied to this projectile's world image in order to simulate height change
-         */
-        readonly heightPeak?: number;
     } | {
         /**
          * The projectile's type
-         */
+        */
         readonly type: "bullet";
     }) & {
+        /**
+         * Optionally specify a function that will be used to determine this projectile's scale
+         * @param t A number between 0 and 1 representing how far this projectile is through its lifetime; 0 is the start, 1 is the end and 0.5 is halfway trough
+         * @returns A number that will be used as a scale factor for this projectile
+         */
+        scale?: (t: number) => number;
+        /**
+         * Optionally specify a function that will be used to determine this projectile's opacity
+         * @param t A number between 0 and 1 representing how far this projectile is through its lifetime; 0 is the start, 1 is the end and 0.5 is halfway trough
+         * @returns A number that will be used as an opacity factor for this projectile
+         */
+        alpha?: (t: number) => number;
         /**
          * An array containing paths for the images corresponding to this projectile
          *
@@ -2177,8 +2413,8 @@ class Ammo extends ImportedObject {
      * @param obj The `SimpleAmmo` object to parse
      * @returns Either a new `Ammo` object, or an array containing the errors that prevented its creation
      */
-    static async from(ammo: SimpleAmmo): Promise<srvsdbx_ErrorHandling.Result<Ammo, SandboxError[]>> {
-        const errors: SandboxError[] = [],
+    static async from(ammo: SimpleAmmo): Promise<srvsdbx_ErrorHandling.Result<Ammo, srvsdbx_Errors.SandboxError[]>> {
+        const errors: srvsdbx_Errors.SandboxError[] = [],
 
             projectileImages = ammo.projectileInfo.images == "none" || ammo.projectileInfo.images.length == 0
                 ? "none"
@@ -2202,7 +2438,8 @@ class Ammo extends ImportedObject {
                     type: ammo.projectileInfo.type,
                     explodeOnContact: (ammo.projectileInfo as any).explodeOnContact,
                     explosionType: (ammo.projectileInfo as any).explosionType,
-                    heightPeak: (ammo.projectileInfo as any).heightPeak,
+                    scale: ammo.projectileInfo.scale ?? (() => 1),
+                    alpha: ammo.projectileInfo.alpha ?? (() => 1),
                     spinVel: ammo.projectileInfo.spinVel,
                     images: projectileImages as srvsdbx_AssetManagement.ImageSrcPair[]
                 },
@@ -2267,16 +2504,24 @@ class Ammo extends ImportedObject {
          * Whether or not the explosion should be spawned when colliding with an object or not
          */
         readonly explodeOnContact: boolean;
-        /**
-         * Dictates the magnitude of the scaling effect applied to this projectile's world image in order to simulate height change
-         */
-        readonly heightPeak?: number;
     } | {
         /**
          * The projectile's type
-         */
+        */
         readonly type: "bullet";
     }) & {
+        /**
+         * Optionally specify a function that will be used to determine this projectile's scale
+         * @param t A number between 0 and 1 representing how far this projectile is through its lifetime; 0 is the start, 1 is the end and 0.5 is halfway trough
+         * @returns A number that will be used as a scale factor for this projectile
+         */
+        scale: (t: number) => number;
+        /**
+         * Optionally specify a function that will be used to determine this projectile's opacity
+         * @param t A number between 0 and 1 representing how far this projectile is through its lifetime; 0 is the start, 1 is the end and 0.5 is halfway trough
+         * @returns A number that will be used as an opacity factor for this projectile
+         */
+        alpha: (t: number) => number;
         /**
          * An array containing paths for the images corresponding to this projectile
          *
@@ -2306,18 +2551,18 @@ class Ammo extends ImportedObject {
      * `* It's a constructor. It constructs.`
      */
     constructor(
-        name: typeof ImportedObject.prototype.name,
-        displayName: typeof ImportedObject.prototype.displayName,
-        objectType: typeof ImportedObject.prototype.objectType,
-        includePath: typeof ImportedObject.prototype.includePath,
-        namespace: typeof ImportedObject.prototype.namespace,
-        targetVersion: typeof ImportedObject.prototype.targetVersion,
-        tints: typeof Ammo.prototype.tints,
-        alpha: typeof Ammo.prototype.alpha,
-        spawnVar: typeof Ammo.prototype.spawnVar,
-        imageOffset: typeof Ammo.prototype.imageOffset,
-        projectileInfo: typeof Ammo.prototype.projectileInfo,
-        casing: typeof Ammo.prototype.casing,
+        name: ImportedObject["name"],
+        displayName: ImportedObject["displayName"],
+        objectType: ImportedObject["objectType"],
+        includePath: ImportedObject["includePath"],
+        namespace: ImportedObject["namespace"],
+        targetVersion: ImportedObject["targetVersion"],
+        tints: Ammo["tints"],
+        alpha: Ammo["alpha"],
+        spawnVar: Ammo["spawnVar"],
+        imageOffset: Ammo["imageOffset"],
+        projectileInfo: Ammo["projectileInfo"],
+        casing: Ammo["casing"],
     ) {
         super(name, displayName, objectType, targetVersion, namespace, includePath);
         this.#tints = tints;

@@ -67,7 +67,9 @@ export default {
             }
         }
     ],
-    obstacleMult: 0.8,
+    obstacleMultiplier: 0.8,
+    stonePiercing: false,
+    armorPiercing: false,
     useDelay: 500,
     animations: {
         idle: "none",

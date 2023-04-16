@@ -36,7 +36,7 @@ interface SimpleMelee extends SimpleEquipableItem {
                 readonly perp: number;
             };
             /**
-             * The maximum distance between the melee and a target that is still considered a hit
+             * The maximum distance between the melee and a target that is still considered a hit in surviv units
              */
             readonly radius: number;
         };
@@ -67,7 +67,15 @@ interface SimpleMelee extends SimpleEquipableItem {
     /**
      * A number by which this weapon's damage will be multiplied when the damage is applied to an obstacle
      */
-    readonly obstacleMult: number,
+    readonly obstacleMultiplier: number,
+    /**
+     * Whether or not this melee weapon can damage obstacles marked as "armor-plated"
+     */
+    readonly armorPiercing: boolean;
+    /**
+     * Whether or not this melee weapon can damage obstacles marked as "stone-plated"
+     */
+    readonly stonePiercing: boolean;
     /**
      * Information about this weapon's in-world rendition when active
      */
@@ -122,16 +130,22 @@ interface SimpleMelee extends SimpleEquipableItem {
             readonly height: Dimension | "match";
         }) & {
             /**
-             * The offset along the axis parallel to the player's aim line
+             * This collider's offset along the axis parallel to the player's aim line
+             *
+             * This refers to where the center of the world image will end up
              */
             readonly offsetParr: number;
             /**
-             * The offset along the axis perpendicular to the player's aim line
+             * This collider's offset along the axis perpendicular to the player's aim line
+             *
+             * This refers to where the center of the world image will end up
              */
             readonly offsetPerp: number;
         },
         /**
          * At what offset to draw this image, with (0, 0) being the player's center
+         *
+         * This refers to where the center of the world image will end up
          */
         readonly offset: {
             /**
@@ -299,11 +313,11 @@ interface SimpleMelee extends SimpleEquipableItem {
 /**
  * Represents a certain type of melee weapon
  */
-class MeleePrototype extends InventoryItemPrototype {
+class MeleePrototype extends InventoryItemPrototype implements EquipableItemPrototype {
     /**
      * Specify default positions for the user's hands when holding this weapon when no animations are playing
      */
-    #handPositions: SimpleMelee["handPositions"];
+    readonly #handPositions: SimpleMelee["handPositions"];
     /**
      * Specify default positions for the user's hands when holding this weapon when no animations are playing
      */
@@ -341,7 +355,7 @@ class MeleePrototype extends InventoryItemPrototype {
      * For each entry, the first number indicates the damage dealt and the second indicates
      * the amount of time after the initial swing that should pass before testing for a hit
      */
-    #damages: SimpleMelee["damages"];
+    readonly #damages: SimpleMelee["damages"];
     /**
      * Information about the damage this melee weapon deals and their offsets in time
      *
@@ -349,6 +363,24 @@ class MeleePrototype extends InventoryItemPrototype {
      * the amount of time after the initial swing that should pass before testing for a hit
      */
     get damages() { return this.#damages; }
+
+    /**
+     * Whether or not this melee weapon can damage obstacles marked as "armor-plated"
+     */
+    #armorPiercing: boolean;
+    /**
+     * Whether or not this melee weapon can damage obstacles marked as "armor-plated"
+     */
+    get armorPiercing() { return this.#armorPiercing; }
+
+    /**
+     * Whether or not this melee weapon can damage obstacles marked as "stone-plated"
+     */
+    #stonePiercing: boolean;
+    /**
+     * Whether or not this melee weapon can damage obstacles marked as "stone-plated"
+     */
+    get stonePiercing() { return this.#stonePiercing; }
 
     /**
      * Whether or not this melee weapon's bounding box reflects bullets
@@ -371,11 +403,11 @@ class MeleePrototype extends InventoryItemPrototype {
     /**
      * A number by which this weapon's damage will be multiplied when the damage is applied to an obstacle
      */
-    #obstacleMult: SimpleMelee["obstacleMult"];
+    #obstacleMultiplier: SimpleMelee["obstacleMultiplier"];
     /**
      * A number by which this weapon's damage will be multiplied when the damage is applied to an obstacle
      */
-    get obstacleMult() { return this.#obstacleMult; }
+    get obstacleMultiplier() { return this.#obstacleMultiplier; }
 
     /**
      * The minimum amount of time between two consecutive swings
@@ -389,7 +421,7 @@ class MeleePrototype extends InventoryItemPrototype {
     /**
      * A set of `Animation`s for this melee weapon to use
      */
-    #animations: { [K in keyof SimpleMelee["animations"]]-?: srvsdbx_Animation.Animation<ItemAnimation> | srvsdbx_Animation.BoundIndeterminateAnimation<ItemAnimation> };
+    readonly #animations: { [K in keyof SimpleMelee["animations"]]-?: srvsdbx_Animation.Animation<ItemAnimation> | srvsdbx_Animation.BoundIndeterminateAnimation<ItemAnimation> };
     /**
      * A set of `Animation`s for this melee weapon to use
      */
@@ -398,8 +430,15 @@ class MeleePrototype extends InventoryItemPrototype {
     /**
      * Information about this weapon's in-world rendition
      */
-    #worldObject: Omit<SimpleMelee["worldObject"] & {}, "collider"> & {
-        collider?: Omit<(SimpleMelee["worldObject"] & {})["collider"] & {}, "width" | "height" | "radius"> & ({ radius: number; } | { width: number, height: number; });
+    readonly #worldObject: Omit<SimpleMelee["worldObject"] & {}, "collider"> & {
+        readonly collider?: Omit<(SimpleMelee["worldObject"] & {})["collider"] & {}, "width" | "height" | "radius"> & (
+            {
+                readonly radius: number;
+            } | {
+                readonly width: number,
+                readonly height: number;
+            }
+        );
     } | undefined;
     /**
      * Information about this weapon's in-world rendition
@@ -409,14 +448,21 @@ class MeleePrototype extends InventoryItemPrototype {
     /**
      * Information about this weapon's in-world rendition
      */
-    #holstered: srvsdbx_AssetManagement.ConvertPathsToImages<
+    readonly #holstered: srvsdbx_AssetManagement.ConvertPathsToImages<
         Required<
             Omit<
                 SimpleMelee["holstered"] & {},
                 "dimensions" | "collider"
             > & {
-                dimensions: { width: number, height: number, layer: 0 | 1 | 2; },
-                collider: Omit<(SimpleMelee["holstered"] & {})["collider"] & {}, "width" | "height"> & { width: number, height: number; };
+                readonly dimensions: {
+                    readonly width: number,
+                    readonly height: number,
+                    readonly layer: 0 | 1 | 2;
+                },
+                readonly collider: Omit<(SimpleMelee["holstered"] & {})["collider"] & {}, "width" | "height"> & {
+                    readonly width: number,
+                    readonly height: number;
+                };
             }
         >
     > | undefined;
@@ -426,11 +472,26 @@ class MeleePrototype extends InventoryItemPrototype {
     get holstered() { return this.#holstered; }
 
     /**
+     * Information about the movement speed penalties incurred by the use of this weapon
+     */
+    override #moveSpeedPenalties: SimpleMelee["moveSpeedPenalties"];
+    /**
+     * Information about the movement speed penalties incurred by the use of this weapon
+     */
+    override get moveSpeedPenalties() { return this.#moveSpeedPenalties; }
+
+    /**
      * An array of additional objects that can be rendered alongside this item
      *
      * This one is concerned with those residing below the item
     */
-    #addonsBelow?: srvsdbx_AssetManagement.ConvertPathsToImages<SimpleGun["addons"] & {}> & { [key: number]: { dimensions: { layer: -1; }; }; };
+    readonly #addonsBelow?: srvsdbx_AssetManagement.ConvertPathsToImages<SimpleGun["addons"] & {}> & {
+        readonly [key: number]: {
+            readonly dimensions: {
+                readonly layer: -1;
+            };
+        };
+    };
     /**
      * An array of additional objects that can be rendered alongside this item
      *
@@ -443,7 +504,13 @@ class MeleePrototype extends InventoryItemPrototype {
      *
      * This one is concerned with those residing above the item
      */
-    #addonsAbove?: srvsdbx_AssetManagement.ConvertPathsToImages<SimpleGun["addons"] & {}> & { [key: number]: { dimensions: { layer: 1; }; }; };
+    readonly #addonsAbove?: srvsdbx_AssetManagement.ConvertPathsToImages<SimpleGun["addons"] & {}> & {
+        readonly [key: number]: {
+            readonly dimensions: {
+                readonly layer: 1;
+            };
+        };
+    };
     /**
      * An array of additional objects that can be rendered alongside this item
     *
@@ -454,64 +521,135 @@ class MeleePrototype extends InventoryItemPrototype {
     /**
      * An array of additional objects that can be rendered alongside this item
      */
-    #addons: srvsdbx_AssetManagement.ConvertPathsToImages<SimpleMelee["addons"] & {}> | undefined;
+    readonly #addons: srvsdbx_AssetManagement.ConvertPathsToImages<SimpleMelee["addons"] & {}> | undefined;
     /**
      * An array of additional objects that can be rendered alongside this item
      */
     get addons() { return this.#addons; }
 
     /**
-     * Takes a simplified representation of a firearm and converts it into a more rigorous one
+     * A map that contains images that have been declared by this object, and whose keys
+     * are the paths to those images, *as declared in the original object file*.
+     *
+     * This map's `get` method is guaranteed not to return `undefined`: if an invalid key
+     * is used, an error is thrown
+     */
+    readonly #imageMap;
+    /**
+     * A map that contains images that have been declared by this object, and whose keys
+     * are the paths to those images, *as declared in the original object file*.
+     *
+     * This map's `get` method is guaranteed not to return `undefined`: if an invalid key
+     * is used, an error is thrown
+     */
+    get imageMap() { return this.#imageMap; }
+
+    /**
+     * Takes a simplified representation of a melee and converts it into a more rigorous one
      * @param obj The `SimpleMelee` object to parse
      * @returns A new `MeleePrototype`
      */
-    static async from(obj: SimpleMelee): Promise<srvsdbx_ErrorHandling.Result<MeleePrototype, SandboxError[]>> {
-        const errors: SandboxError[] = [],
+    static async from(obj: SimpleMelee): Promise<srvsdbx_ErrorHandling.Result<MeleePrototype, srvsdbx_Errors.SandboxError[]>> {
+        const errors: srvsdbx_Errors.SandboxError[] = [],
+            imageMap = (() => {
+                const map = new Map<string, srvsdbx_AssetManagement.ImageSrcPair>(),
+                    nativeGet = map.get.bind(map);
+
+                map.get = (key: string) => {
+                    if (!map.has(key))
+                        throw new srvsdbx_Errors.UndeclaredImageUsage(`Attempted to use an undeclared image at path '${key}'`);
+
+                    return nativeGet(key);
+                };
+
+                return map as Omit<Map<string, srvsdbx_AssetManagement.ImageSrcPair>, "get"> & {
+                    /**
+                     * Returns the element located at a certain key.
+                     *
+                     * **If there is no item at the specified key, _an error is thrown!_**
+                     * @param key The key to fetch
+                     * @returns The item located there. If this method does not throw, this value is
+                     * guaranteed not to be `undefined`.
+                     * @throws {srvsdbx_Errors.UndeclaredImageUsage} If there is no item at the given key
+                     */
+                    get(key: string): NonNullable<srvsdbx_AssetManagement.ImageSrcPair>;
+                };
+            })(),
             pathPrefix = `${obj.includePath}/`,
             lootImage = srvsdbx_ErrorHandling.handleResult(
                 await srvsdbx_AssetManagement.loadingFunctions.loadImageAsync(`${pathPrefix}${obj.images.loot}`),
-                srvsdbx_ErrorHandling.identity,
-                e => errors.push(e)
+                res => {
+                    imageMap.set(res.src, res);
+                    return res;
+                },
+                e => (errors.push(e), void 0)
             ),
 
             worldImage = obj.images.world ? srvsdbx_ErrorHandling.handleResult(
                 await srvsdbx_AssetManagement.loadingFunctions.loadImageAsync(`${pathPrefix}${obj.images.world}`),
-                srvsdbx_ErrorHandling.identity,
-                e => errors.push(e)
+                res => {
+                    imageMap.set(res.src, res);
+                    return res;
+                },
+                e => (errors.push(e), void 0)
             ) : void 0,
 
             holsteredImage = obj.holstered && !!(obj.holstered.image ?? obj.images.world) ? srvsdbx_ErrorHandling.handleResult(
                 await srvsdbx_AssetManagement.loadingFunctions.loadImageAsync(`${pathPrefix}${obj.holstered.image ?? obj.images.world}`),
-                srvsdbx_ErrorHandling.identity,
-                e => errors.push(e)
+                res => {
+                    imageMap.set(res.src, res);
+                    return res;
+                },
+                e => (errors.push(e), void 0)
             ) : void 0,
 
             addonImages = obj.addons ? await (async () => {
-                const array: srvsdbx_AssetManagement.ImageSrcPair[][] = [];
+                const addonImages: srvsdbx_AssetManagement.ImageSrcPair[][] = [];
 
                 for (const addon of obj.addons!) {
-                    array.push(await srvsdbx_AssetManagement.loadImageArray(addon.images, errors, pathPrefix) as srvsdbx_AssetManagement.ImageSrcPair[]);
+                    addonImages.push(
+                        await srvsdbx_AssetManagement.loadImageArray(addon.images, errors, pathPrefix)
+                    );
                 }
 
-                return array;
+                for (const imageArray of addonImages)
+                    for (const image of imageArray)
+                        imageMap.set(image.src, image);
+
+                return addonImages;
             })() : void 0;
+
+        for (const image of (await srvsdbx_AssetManagement.loadImageArray(obj.imageDeclaration ?? [], errors, pathPrefix)))
+            imageMap.set(image.src, image);
 
         if (errors.length) return { err: errors };
 
-        const fetchDimensions = cachify((size: { width?: Dimension, height?: Dimension; }) => {
-            return srvsdbx_AssetManagement.determineImageDimensions(
-                (worldImage as srvsdbx_AssetManagement.ImageSrcPair).asset,
-                {
-                    width: size.width ?? "auto",
-                    height: size.height ?? "auto",
+        const fetchDimensions = cachify(
+            (image: srvsdbx_AssetManagement.ImageSrcPair,
+                size: {
+                    readonly width?: Dimension,
+                    readonly height?: Dimension,
+                    readonly layer?: 0 | 1 | 2;
                 }
-            );
-        }, {
-            equalityFunction(a, b) {
-                return a[0].width === b[0].width
-                    && a[0].height === b[0].height;
+            ) => ({
+                ...srvsdbx_AssetManagement.determineImageDimensions(
+                    image.asset,
+                    {
+                        width: size.width ?? "auto",
+                        height: size.height ?? "auto"
+                    }
+                ),
+                layer: size.layer
+            }),
+            {
+                equalityFunction([srcA, a], [srcB, b]) {
+                    return srcA == srcB
+                        && a.width === b.width
+                        && a.height === b.height
+                        && a.layer === b.layer;
+                }
             }
-        });
+        );
 
         const worldObject = obj.worldObject,
             size = gamespace.PLAYER_SIZE;
@@ -526,10 +664,29 @@ class MeleePrototype extends InventoryItemPrototype {
 
                 [itemAOffset, itemBOffset] = [itemA?.offset, itemB?.offset],
 
+                calculatedWorldImage =
+                    itemA?.image !== void 0 ? imageMap.get(`${pathPrefix}${itemA.image}`) :
+                        itemB?.image !== void 0 ? imageMap.get(`${pathPrefix}${itemB.image}`) :
+                            worldImage,
+
                 [itemADim, itemBDim] = worldImage
                     ? [
-                        fetchDimensions(itemA?.dimensions ?? worldObject?.dimensions ?? { width: "auto", height: "auto" }),
-                        fetchDimensions(itemB?.dimensions ?? worldObject?.dimensions ?? { width: "auto", height: "auto" })
+                        fetchDimensions(
+                            calculatedWorldImage!,
+                            {
+                                width: itemA?.dimensions?.width ?? worldObject?.dimensions.width ?? "auto",
+                                height: itemA?.dimensions?.height ?? worldObject?.dimensions.height ?? "auto",
+                                layer: itemA?.dimensions?.layer ?? worldObject?.dimensions.layer
+                            }
+                        ),
+                        fetchDimensions(
+                            calculatedWorldImage!,
+                            {
+                                width: itemB?.dimensions?.width ?? worldObject?.dimensions.width ?? "auto",
+                                height: itemB?.dimensions?.height ?? worldObject?.dimensions.height ?? "auto",
+                                layer: itemB?.dimensions?.layer ?? worldObject?.dimensions.layer
+                            }
+                        )
                     ]
                     : [
                         void 0,
@@ -550,6 +707,7 @@ class MeleePrototype extends InventoryItemPrototype {
                     }
                 },
                 item: worldImage ? {
+                    image: calculatedWorldImage!.src,
                     dimensions: {
                         width: size * linterp(
                             itemADim!.width,
@@ -560,7 +718,8 @@ class MeleePrototype extends InventoryItemPrototype {
                             itemADim!.height,
                             itemBDim!.height,
                             t
-                        )
+                        ),
+                        layer: itemADim?.layer ?? itemBDim?.layer ?? worldObject?.dimensions.layer ?? 0
                     },
                     offset: {
                         parr: linterp(
@@ -608,13 +767,14 @@ class MeleePrototype extends InventoryItemPrototype {
 
                             return {
                                 width: dim.width * size,
-                                height: dim.height * size
+                                height: dim.height * size,
+                                layer: worldObject?.dimensions.layer
                             };
                         })() :
                         void 0,
                     offset: {
-                        parr: worldObject?.offset.parr === void 0 ? void 0 : worldObject?.offset.parr,
-                        perp: worldObject?.offset.perp === void 0 ? void 0 : worldObject?.offset.perp,
+                        parr: worldObject?.offset.parr,
+                        perp: worldObject?.offset.perp,
                         angle: worldObject?.offset.angle
                     }
                 }
@@ -667,7 +827,9 @@ class MeleePrototype extends InventoryItemPrototype {
                         offsetPerp: holsterCollider?.offsetPerp ?? holster?.offset?.perp ?? worldObject?.offset.perp ?? 0,
                     } : void 0
                 } : void 0,
-                obj.obstacleMult,
+                obj.obstacleMultiplier,
+                obj.armorPiercing,
+                obj.stonePiercing,
                 obj.useDelay,
                 {
                     idle: determineAnimation(obj.animations.idle),
@@ -685,7 +847,8 @@ class MeleePrototype extends InventoryItemPrototype {
                             images: addonImages![i] as srvsdbx_AssetManagement.ImageSrcPair[],
                         };
                     })
-                    : void 0
+                    : void 0,
+                imageMap
             )
         };
     }
@@ -694,36 +857,41 @@ class MeleePrototype extends InventoryItemPrototype {
      * `* It's a constructor. It constructs`
      */
     constructor(
-        name: typeof ImportedObject.prototype.name,
-        displayName: typeof ImportedObject.prototype.displayName,
-        objectType: typeof ImportedObject.prototype.objectType,
-        targetVersion: typeof ImportedObject.prototype.targetVersion,
-        namespace: typeof ImportedObject.prototype.namespace,
-        includePath: typeof ImportedObject.prototype.includePath,
-        images: typeof InventoryItemPrototype.prototype.images,
-        moveSpeedPenalties: typeof InventoryItemPrototype.prototype.moveSpeedPenalties,
-        handPositions: typeof MeleePrototype.prototype.handPositions,
-        isReflective: typeof MeleePrototype.prototype.isReflective,
-        canReflectWhileAttacking: typeof MeleePrototype.prototype.canReflectWhileAttacking,
-        autoAttack: typeof MeleePrototype.prototype.autoAttack,
-        maxTargets: typeof MeleePrototype.prototype.maxTargets,
-        damages: typeof MeleePrototype.prototype.damages,
+        name: ImportedObject["name"],
+        displayName: ImportedObject["displayName"],
+        objectType: ImportedObject["objectType"],
+        targetVersion: ImportedObject["targetVersion"],
+        namespace: ImportedObject["namespace"],
+        includePath: ImportedObject["includePath"],
+        images: InventoryItemPrototype["images"],
+        moveSpeedPenalties: MeleePrototype["moveSpeedPenalties"],
+        handPositions: MeleePrototype["handPositions"],
+        isReflective: MeleePrototype["isReflective"],
+        canReflectWhileAttacking: MeleePrototype["canReflectWhileAttacking"],
+        autoAttack: MeleePrototype["autoAttack"],
+        maxTargets: MeleePrototype["maxTargets"],
+        damages: MeleePrototype["damages"],
         worldObject: srvsdbx_AssetManagement.ConvertPathsToImages<
             Omit<SimpleMelee["worldObject"] & {}, "collider"> &
-            { collider?: (SimpleMelee["worldObject"] & {})["collider"] & {}; }
+            {
+                readonly collider?: (SimpleMelee["worldObject"] & {})["collider"] & {};
+            }
         > | undefined,
         holstered: srvsdbx_AssetManagement.ConvertPathsToImages<
             Omit<
                 Required<SimpleMelee["holstered"] & {}>,
                 "collider"
             > & {
-                collider?: (SimpleMelee["holstered"] & {})["collider"];
+                readonly collider?: (SimpleMelee["holstered"] & {})["collider"];
             }
         > | undefined,
-        obstacleMult: typeof MeleePrototype.prototype.obstacleMult,
-        firingDelay: typeof MeleePrototype.prototype.useDelay,
-        animations: typeof MeleePrototype.prototype.animations,
-        addons: typeof MeleePrototype.prototype.addons,
+        obstacleMultiplier: MeleePrototype["obstacleMultiplier"],
+        armorPiercing: MeleePrototype["armorPiercing"],
+        stonePiercing: MeleePrototype["stonePiercing"],
+        firingDelay: MeleePrototype["useDelay"],
+        animations: MeleePrototype["animations"],
+        addons: MeleePrototype["addons"],
+        imageMap: Map<string, srvsdbx_AssetManagement.ImageSrcPair>,
     ) {
         super(
             name,
@@ -748,6 +916,7 @@ class MeleePrototype extends InventoryItemPrototype {
         this.#damages = damages;
         this.#isReflective = isReflective;
         this.#canReflectWhileAttacking = canReflectWhileAttacking;
+        this.#moveSpeedPenalties = moveSpeedPenalties;
         this.#worldObject = worldObject ? (() => {
             const image = images.world!.asset,
                 worldDim = srvsdbx_AssetManagement.determineImageDimensions(image, worldObject.dimensions);
@@ -795,7 +964,9 @@ class MeleePrototype extends InventoryItemPrototype {
                 })() : void 0
             };
         })() : void 0;
-        this.#obstacleMult = obstacleMult;
+        this.#obstacleMultiplier = obstacleMultiplier;
+        this.#armorPiercing = armorPiercing;
+        this.#stonePiercing = stonePiercing;
         this.#useDelay = firingDelay;
         this.#animations = animations;
         this.#holstered = holstered ? (() => {
@@ -856,6 +1027,21 @@ class MeleePrototype extends InventoryItemPrototype {
 
         this.#addonsBelow = this.#addons?.filter?.(addon => addon.dimensions.layer == -1) as any;
         this.#addonsAbove = this.#addons?.filter?.(addon => addon.dimensions.layer == 1) as any;
+        this.#imageMap = imageMap;
+    }
+
+    /**
+     * Creates a new `Melee` object from this prototype
+     * @param owner The `PlayerLike` the created weapon belongs to
+     * @returns A new weapon with this object as its prototype
+     */
+    create(
+        owner: PlayerLike
+    ) {
+        return new Melee(
+            this,
+            owner
+        );
     }
 }
 
@@ -864,8 +1050,7 @@ class MeleePrototype extends InventoryItemPrototype {
  */
 class Melee
     extends InventoryItem<MeleePrototype>
-    implements EquipableItem<ItemAnimation, "idle" | "using" | "deflect">,
-    Destroyable {
+    implements EquipableItem<ItemAnimation, "idle" | "using" | "deflect">, Destroyable {
     /**
      * An object to manage this item's animations
      */
@@ -906,14 +1091,15 @@ class Melee
     get lastReflect() { return this.#lastReflect; }
     set lastReflect(v) {
         this.#lastReflect = v;
+        this.#cancelledAnimation = false;
         this.#animationManager.end("deflect");
     }
 
     /**
      * `* It's a constructor. It constructs`
      */
-    constructor(owner: PlayerLike, prototype: MeleePrototype) {
-        super(owner, prototype);
+    constructor(prototype: MeleePrototype, owner: PlayerLike) {
+        super(prototype, owner);
 
         this.#animationManager = new srvsdbx_Animation.AnimationManager(prototype.animations);
     }
@@ -929,9 +1115,8 @@ class Melee
         if (!this.prototype.isReflective) return;
 
         if (this != this.owner.activeItem && this.prototype.holstered?.collider) {
-            return Matter.Bodies.rectangle(
-                0,
-                0,
+            return new srvsdbx_Geometry.Rectangle(
+                srvsdbx_Geometry.Vector2D.zeroPoint(),
                 this.prototype.holstered!.collider.width,
                 this.prototype.holstered!.collider.height
             );
@@ -939,16 +1124,14 @@ class Melee
             const collider = this.prototype.worldObject.collider;
 
             if ("width" in collider)
-                return Matter.Bodies.rectangle(
-                    0,
-                    0,
+                return new srvsdbx_Geometry.Rectangle(
+                    srvsdbx_Geometry.Vector2D.zeroPoint(),
                     collider.width,
                     collider.height
                 );
 
-            return Matter.Bodies.circle(
-                0,
-                0,
+            return new srvsdbx_Geometry.Circle(
+                srvsdbx_Geometry.Vector2D.zeroPoint(),
                 collider.radius
             );
         }
@@ -962,7 +1145,7 @@ class Melee
      * the idle animation will be terminated
      */
     #getAnimation(): ItemAnimation | undefined {
-        if (this != this.owner.activeItem && this.prototype.holstered?.collider) {
+        if (this != this.owner.activeItem && this.prototype.holstered?.collider)
             return {
                 item: {
                     dimensions: {
@@ -985,21 +1168,26 @@ class Melee
                     }
                 }
             };
-        }
 
         const timeSinceLastShot = gamespace.currentUpdate - (this.#lastUse ?? 0),
             timeSinceLastReflect = gamespace.currentUpdate - this.#lastReflect;
 
-        if (!this.cancelledAnimation) {
-            if (timeSinceLastReflect < this.#animationManager.fetchInstance("deflect")[0].duration) {
+        if (!this.#cancelledAnimation) {
+            let deflect = this.#animationManager.fetchInstance("deflect");
+
+            if (timeSinceLastReflect < deflect[0].duration) {
                 this.#animationManager.end("using");
                 this.#animationManager.end("idle");
-                return this.#animationManager.fetch("deflect")(timeSinceLastReflect, true);
+                return deflect[1](timeSinceLastReflect, true);
 
-            } else if (timeSinceLastShot < this.prototype.useDelay) {
-                this.#animationManager.end("deflect");
-                this.#animationManager.end("idle");
-                return this.#animationManager.fetch("using")(timeSinceLastShot, true);
+            } else {
+                let using = this.#animationManager.fetchInstance("using");
+
+                if (timeSinceLastShot < this.#animationManager.fetchInstance("using")[0].duration) {
+                    this.#animationManager.end("deflect");
+                    this.#animationManager.end("idle");
+                    return using[1](timeSinceLastShot, true);
+                }
             }
         }
 
@@ -1031,7 +1219,7 @@ class Melee
     }
 
     /**
-     * Serves to stop any animation related to this melee that are currently playeing
+     * Serves to stop any animation related to this melee that are currently playing
      */
     stopAnimations() {
         this.#animationManager.endAll();
@@ -1048,8 +1236,7 @@ class Melee
 
         if (
             !state.attacking ||
-            gamespace.currentUpdate - state.lastSwitch < state.effectiveSwitchDelay ||
-            gamespace.currentUpdate - this.#lastUse < prototype.useDelay
+            gamespace.currentUpdate - this.#lastUse < player.state.firingDelay
         ) {
             clearTimerIfPresent(player.timers.firing);
             return;
@@ -1063,63 +1250,157 @@ class Melee
                 }
 
                 state.firing = true;
+                state.noSlow = false;
                 melee.#lastUse = gamespace.currentUpdate;
+                player.state.firingDelay = prototype.useDelay;
                 melee.#cancelledAnimation = false;
 
                 for (const { damage, time, areaOfEffect: collision } of prototype.damages) {
                     function dealDamage() {
                         if (player.activeItem != melee) return;
 
-                        const targets = ([...gamespace.objects.players.values()]
-                            .map(p => {
-                                if (p != player) {
-                                    const diff = srvsdbx_Geometry.Vector2D.fromPoint2D(p.position)
-                                        .plus({
-                                            direction: player.angle + Math.PI / 2,
-                                            magnitude: gamespace.PLAYER_SIZE * collision.offset.parr
-                                        })
-                                        .plus({
-                                            direction: player.angle,
-                                            magnitude: gamespace.PLAYER_SIZE * collision.offset.perp
-                                        })
-                                        .minus(player.position, true),
-                                        [direction, length] = [diff.direction, diff.length / gamespace.PLAYER_SIZE];
+                        // This is stupid
+                        const colliderOriginCirc = srvsdbx_Geometry.Vector2D.fromPolarToVec(
+                            player.angle + Math.PI / 2,
+                            gamespace.PLAYER_SIZE * collision.offset.parr
+                        ).plus(
+                            {
+                                direction: player.angle,
+                                magnitude: gamespace.PLAYER_SIZE * collision.offset.perp
+                            },
+                            true
+                        ),
+                            colliderOriginBox = srvsdbx_Geometry.Vector2D.fromPolarToVec(
+                                player.angle - Math.PI / 2,
+                                gamespace.PLAYER_SIZE * collision.offset.parr
+                            ).plus(
+                                {
+                                    direction: player.angle - Math.PI,
+                                    magnitude: gamespace.PLAYER_SIZE * collision.offset.perp
+                                },
+                                true
+                            ).plus(player.position, true),
 
-                                    return { player: p, direction, length } as const;
-                                }
-                            })
-                            .filter((ele) => {
-                                if (ele === undefined) return;
+                            pixelRadius = collision.radius * gamespace.PLAYER_SIZE,
+                            targets = (
+                                (gamespace.objects.players.toArray() as (PlayerLike | Obstacle)[])
+                                    .concat(...gamespace.objects.obstacles.toArray())
+                                    .map(obj => {
+                                        if (obj == player || obj.collidable == CollisionLevels.NONE) return;
 
-                                return ele.length <= collision.radius + 1; // Edge detection
-                            }) as { player: PlayerLike, direction: number, length: number; }[])
-                            .sort(
-                                (a, b) => srvsdbx_Geometry.Vector2D.squaredDistBetweenPts(player.position, a.player.position)
-                                /*   */ - srvsdbx_Geometry.Vector2D.squaredDistBetweenPts(player.position, b.player.position)
+                                        const diff = srvsdbx_Geometry.Vector2D.fromPoint2D(obj.position)
+                                            .plus(colliderOriginCirc, true)
+                                            .minus(player.position, true),
+                                            [direction, length] = [diff.direction, diff.length / gamespace.PLAYER_SIZE];
+
+                                        return { entity: obj, direction, length } as const;
+                                    })
+                                    .filter(ele => {
+                                        if (ele === undefined) return;
+
+                                        if (ele.entity instanceof PlayerLike) {
+                                            return ele.length <= collision.radius + ele.entity.radius / gamespace.PLAYER_SIZE;
+                                        } else if (ele.entity.prototype.hitbox.type == "circle") {
+                                            return ele.length <= collision.radius + (ele.entity.radius! * ele.entity.scale / gamespace.PLAYER_SIZE);
+                                        } else {
+                                            return (ele.entity.body as srvsdbx_Geometry.Rectangle).vertices
+                                                .map((v, i, a) => ({ start: v, end: a[(i + 1) % a.length] } as srvsdbx_Geometry.LineSegment))
+                                                .map(v => srvsdbx_Geometry.collisionFunctions.segmentCircle(
+                                                    v,
+                                                    {
+                                                        origin: colliderOriginBox,
+                                                        radius: pixelRadius
+                                                    }
+                                                ))
+                                                .some(v => v !== srvsdbx_ErrorHandling.Nothing)
+                                                || ele.entity.body.collides(new srvsdbx_Geometry.Circle(colliderOriginBox, pixelRadius));
+                                        }
+                                    }) as { entity: PlayerLike | Obstacle, direction: number, length: number; }[]
+                            ).sort(
+                                (a, b) => srvsdbx_Geometry.Vector2D.squaredDistanceBetweenPts(player.position, a.entity.position)
+                                /*   */ - srvsdbx_Geometry.Vector2D.squaredDistanceBetweenPts(player.position, b.entity.position)
                             );
 
                         for (let i = 0, limit = Math.min(targets.length, prototype.maxTargets ?? 1); i < limit; i++) {
-                            const target = targets[i];
+                            const target = targets[i],
+                                particleSpawn = typeof target.entity.radius == "number"
+                                    // If there's a radius, the calculation is easy
+                                    ? srvsdbx_Geometry.Vector2D.fromPolarToVec(
+                                        target.direction,
+                                        -("scale" in target.entity ? target.entity.scale : 1) * target.entity.radius
+                                    )
+                                        .plus(target.entity.position, true)
 
-                            const particleSpawn = srvsdbx_Geometry.Vector2D.fromPolarToVec(target.direction, -target.player.radius)
-                                .plus(target.player.position, true),
-                                offsetFromTarget = srvsdbx_Geometry.Vector2D.minus(particleSpawn, target.player.position);
+                                    // Otherwise, find the intersection point between the line joining the object and the melee's owner and the object's hitbox
+                                    : (srvsdbx_Geometry.collisionFunctions.segmentPolygon(
+                                        {
+                                            start: target.entity.position,
+                                            end: melee.owner.position
+                                        },
+                                        (target.entity.body as srvsdbx_Geometry.Rectangle).vertices
+                                    ) ?? [])
+                                        .sort((a, b) =>
+                                            srvsdbx_Geometry.Vector2D.squaredDistanceBetweenPts(a[0], melee.owner.position) -
+                                            srvsdbx_Geometry.Vector2D.squaredDistanceBetweenPts(b[0], melee.owner.position)
+                                        )?.[0]?.[0] ?? { x: 0, y: 0 },
 
-                            const p = new Particle(
-                                gamespace.prototypes.particles.get("srvsdbx::blood_splat")!,
-                                particleSpawn,
-                                srvsdbx_Math.randomAngle()
-                            );
+                                offsetFromTarget = srvsdbx_Geometry.Vector2D.minus(particleSpawn, target.entity.position),
+                                targetIsPlayer = target.entity instanceof PlayerLike,
 
-                            p.follow(target.player, {
-                                x: offsetFromTarget.x,
-                                y: offsetFromTarget.y,
-                                z: 0, parr: 0, perp: 0
-                            });
+                                particlePrototype = gamespace.prototypes.particles.get(
+                                    targetIsPlayer
+                                        ? "srvsdbx::bloodSplat"
+                                        : (target.entity as Obstacle).prototype.hitParticle.particle
+                                )!;
 
-                            target.player.events.once("death", () => p.destroyed || p.destroy());
+                            let lethal = false;
+                            function listen() { lethal = true; }
 
-                            target.player.applyDamage(damage);
+                            targetIsPlayer && (target.entity as PlayerLike).events.once("death", listen);
+                            /*
+                                We want to know if this projectile killed its target, but checking
+                                if the hp is less than 0 won't work, because if they're respawned,
+                                the check will fail. Instead, we append a listener and store its
+                                result in a variable
+                            */
+
+
+                            if (
+                                /* Always apply melee damage to players */
+                                targetIsPlayer
+                                || (
+                                    /* If the obstacle isn't armor-plated or if this weapon is armor piercing */
+                                    (!(target.entity as Obstacle).prototype.armorPlated || prototype.armorPiercing)
+                                    /* If the obstacle isn't stone-plated or if this weapon is stone piercing */
+                                    && (!(target.entity as Obstacle).prototype.stonePlated || prototype.stonePiercing)
+                                )
+                            ) target.entity.applyDamage(damage * (targetIsPlayer ? 1 : prototype.obstacleMultiplier));
+
+                            if (particlePrototype && !target.entity.destroyed && !lethal) {
+                                for (let i = 0, limit = targetIsPlayer ? 1 : extractValue((target.entity as Obstacle).prototype.hitParticle.count); i < limit; i++) {
+                                    const part = particlePrototype.create(
+                                        particleSpawn,
+                                        srvsdbx_Math.randomAngle()
+                                    );
+
+                                    if (targetIsPlayer) {
+                                        part.follow(target.entity, {
+                                            x: offsetFromTarget.x,
+                                            y: offsetFromTarget.y,
+                                            z: 0, parr: 0, perp: 0
+                                        });
+                                        (target.entity as PlayerLike).events.once("death", () => part.destroyed || part.destroy());
+                                    } else {
+                                        part.velocityMap.set(
+                                            "intrinsic",
+                                            srvsdbx_Geometry.Vector2D.fromPolarToVec(
+                                                srvsdbx_Geometry.Vector2D.toPolar(offsetFromTarget).direction,
+                                                srvsdbx_Math.bounds_random(0.001, 0.005)
+                                            ).toPoint3D()
+                                        );
+                                    }
+                                }
+                            }
                         }
                     }
 
@@ -1152,6 +1433,7 @@ class Melee
      * Clears this instance's object fields
      */
     destroy() {
+        if (this.destroyed) return;
         super.destroy();
 
         // @ts-expect-error

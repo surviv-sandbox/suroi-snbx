@@ -69,15 +69,18 @@ interface Array<T> {
      * immediately returns that element value. Otherwise, `findLast` returns undefined.
      * @param thisArg If provided, it will be used as the this value for each invocation of
      * predicate. If it is not provided, `undefined` is used instead.
+     * @template S The type of value the `is` predicate will test for
      */
     findLast<S extends T>(predicate: (value: T, index: number, obj: T[]) => value is S, thisArg?: any): S | undefined;
     findLast(predicate: (value: T, index: number, obj: T[]) => unknown, thisArg?: any): T | undefined;
 }
 
 /**
- * Allows type safety in export.js files by removing the `namespace` and `includePath` fields normally required by the `SimpleImport` interface
+ * Allows type safety in export.ts files by removing the `namespace` and `includePath` fields normally required by the `SimpleImport` interface
  *
- * These fields are provided by the import script, and it's less error-prone that way
+ * These fields are provided by the import script, and are therefore not required
+ *
+ * @template I The type of object to import
  */
 type ExportInterface<I extends SimpleImport> = Omit<I, Exclude<keyof SimpleImport, "name" | "displayName" | "targetVersion">>;
 
@@ -88,32 +91,26 @@ type Dimension = number | "auto";
 
 /**
  * Converts a tuple type—such as `[1, 5, "s"]`—into a union of its members—`1 | 5 | "s"`
+ * @template T The tuple to convert
  */
 type TupleToUnion<T extends readonly any[]> = T extends readonly [infer U, ...infer V] ? V extends [infer W] ? U | W : U | TupleToUnion<V> : never;
 
 /**
- * Extracts the key type from a Map type
- */
-type MapKey<T> = T extends Map<infer K, any> ? K : never;
-
-/**
- * Extracts the value type from a Map type
- */
-type MapValue<T> = T extends Map<any, infer V> ? V : never;
-
-/**
  * Extracts the key type from an object type
+ * @template T The object from which to extract keys
  */
 type ObjectKey<T extends object> = keyof T;
 
 /**
  * Extracts the value type from an object type
+ * @template T The object from which to extract values
 */
 type ObjectValue<T extends object> = T[keyof T];
 // type ObjectValue<T extends object> = T extends { [K in keyof T]: infer V } ? V : never;
 
 /**
  * An extension of the `Partial` type provided natively by Typescript that recursively renders fields optional
+ * @template T The object to render partial
  */
 type DeepPartial<T extends object> = {
     [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]> : T[K];
@@ -121,6 +118,7 @@ type DeepPartial<T extends object> = {
 
 /**
  * An extension of the `Required` type provided natively by Typescript that recursively renders fields required
+ * @template T The object to render required
  */
 type DeepRequired<T extends object> = {
     [K in keyof T]-?: T[K] extends object ? DeepRequired<T[K]> : T[K];
@@ -145,34 +143,66 @@ type ObjectId = ReturnType<typeof generateId>;
  */
 namespace srvsdbx_ErrorHandling {
     /**
-     * Represents the explicit absence of a value
+     * Represents the explicit abscence of a value
      */
     export const Nothing = null;
 
     /**
-     * Represents the explicit absence of a value
+     * Represents the explicit abscence of a value
      */
     export type Nothing = typeof Nothing;
 
     /**
      * Represents a value that might exist
+     * @template T The type of value that might exist
      */
-    export type Maybe<T> = T | Nothing;
+    export type Maybe<T> = T | null;
+
+    /**
+     * Asserts that a value is not `null`
+     * @template T The type of value
+     * @param value The value to test
+     * @returns `true` if the value is not `null` and `false` otherwise
+    */
+    export function assertIsPresent<T>(value: Maybe<T>): value is T {
+        return value != Nothing;
+    }
+
+    /**
+     * Returns the given value if a certain condition is true
+     * @template T The type of value
+     * @param condition The condition that will be evaluated
+     * @param value The value to return if the condition is true. May be a function that generates it, in which
+     * case said function will be called
+     * @returns The value if the condition is `true`, and `null` otherwise
+     */
+    export function createIf<T, B extends boolean>(condition: B, value: MayBeFunctionWrapped<T>): B extends true ? T : Nothing {
+        return condition ? extractValue(value) : Nothing as any;
+    }
+
     /**
      * Represents a successful operation
-     */
+     * @template T The type of the successful operation's result
+    */
     export type ResultRes<T> = { res: T; };
     /**
      * Represents a failed operation
+     * @template E The type of the failed operation's result
      */
     export type ResultErr<E> = { err: E; };
     /**
      * Represents a result whose state is unknown
+     * @template T The type of the successful operation's result
+     * @template E The type of the failed operation's result
      */
     export type Result<T, E> = ResultRes<T> | ResultErr<E>;
 
     /**
      * Utility function for handling success and failure
+     * @template T The type of result to handle
+     * @template E The type of error to handle
+     * @template Sr The return type of the success callback
+     * @template Fr The return type of the failure callback
      * @param val The value to evaluate
      * @param success A callback to be invoked if `val` is a `ResultRes` (no error)
      * @param error A callback to be invoked if `val` is a `ResultErr` (an error occurred)
@@ -193,6 +223,7 @@ namespace srvsdbx_ErrorHandling {
 
     /**
      * A function that returns its value. Useful for passing `ResultRes` values out of `handleResult`
+     * @template T The type of the inputted value
      * @param x The value to return
      * @returns The inputted value
      */
@@ -202,6 +233,8 @@ namespace srvsdbx_ErrorHandling {
      * A wrapper for a common `handleResult` call, with the result as the first argument, `identity` as the second and `yeet` as the third.
      *
      * If the result is a `ResultRes`, said result is returned. Otherwise, the result is a `ResultErr`, and said error is thrown.
+     * @template T The type of the success value
+     * @template E The type of the error value
      * @param val The expression to evaluate
      * @returns The result of whichever callback ends up being invoked
      */
@@ -215,6 +248,7 @@ namespace srvsdbx_ErrorHandling {
 
     /**
      * Throws an expression [with force](https://areweyeetyet.rs)
+     * @template E The type of value to throw
      * @param e The expression to be thrown
      */
     export function yeet<E>(e: E): never {
@@ -224,26 +258,34 @@ namespace srvsdbx_ErrorHandling {
 
 /**
  * Represents a value wrapped in a function that returns it
+ * @template T The wrapper's return type
+ * @template U The arguments passed to the wrapper
  */
 type FunctionWrapper<T, U extends any[] = []> = (...args: U) => T;
 
 /**
  * Represents a value that might be "as-is" or wrapped in a function
+ * @template T The value's type
+ * @template U The arguments that would be passed to the wrapper
  */
 type MayBeFunctionWrapped<T, U extends any[] = []> = T | FunctionWrapper<T, U>;
 
 /**
  * Extracts the wrapped value from a `MayBeFunctionWrapped` type
- */
+ * @template T The `MayBeFunctionWrapped` type from which to extract
+*/
 type ExtractWrapped<T> = T extends MayBeFunctionWrapped<infer U, any> ? U : never;
 
 /**
  * Extracts the arguments from a `MayBeFunctionWrapped` type's function form
+ * @template T The `MayBeFunctionWrapped` type from which to extract
  */
 type ExtractArgs<T> = T extends MayBeFunctionWrapped<any, infer U> ? U : never;
 
 /**
  * Extracts a value that may either be a "plain" value or one wrapped in a function
+ * @template T The type of the value to extract
+ * @template U The arguments to the wrapper function
  * @param val The expression to evaluate
  * @param args Arguments to be passed to the function, if the expression ends up being one
  * @returns Either the value if it's "as-is", or the result of the invoked function
@@ -256,17 +298,30 @@ function extractValue<T, U extends any[] = []>(val: MayBeFunctionWrapped<T, U>, 
 }
 
 /**
+ * Represents a type that may be one or another, depending on a boolean
+ * @template B The boolean that will decide the type
+ * @template I The type to use if the predicate is true
+ * @template E The type to use if the predicate is false
+*/
+type IfThenElse<B extends boolean, I, E> = B extends true ? I : E;
+
+/**
  * Symbolically represents a pointer to a game object. Practically speaking, a `string`.
+ * @template T The type of game object to point to
  */
 type PrototypeReference<T extends keyof Gamespace["prototypes"]> = MapKey<Gamespace["prototypes"][T]>;
 
 /**
  * Represents an event handler function for `Element.addEventListener`
- */
+ * @template T The type of element to which this listener is attached
+ * @template K The type of event this listener listens for
+*/
 type SimpleListener<T extends keyof HTMLElementTagNameMap, K extends keyof HTMLElementEventMap> = (this: HTMLElementTagNameMap[T], ev: HTMLElementEventMap[K]) => void;
 
 /**
  * Represents a more complex listener where options—such as `passive` and `once`—have been specified.
+ * @template T The type of element to which this listener is attached
+ * @template K The type of event this listener listens for
  */
 type OptionsListener<T extends keyof HTMLElementTagNameMap, K extends keyof HTMLElementEventMap> = {
     /**
@@ -281,6 +336,7 @@ type OptionsListener<T extends keyof HTMLElementTagNameMap, K extends keyof HTML
 
 /**
  * Creates an element, along with any properties, children and listeners one wishes to add
+ * @template K The element's tag name
  * @param key The element's tag name
  * @param properties An object specifying the element's properties. All properties are optional
  * @param children Either a single string, a single Node, or an array of both. (`HTMLElement` extends `Node`)
@@ -328,38 +384,22 @@ function makeElement<K extends keyof HTMLElementTagNameMap>(
 }
 
 /**
- * A custom error class (Java moment) representing errors relating to the
- * sandbox's operation
- */
-class SandboxError extends Error {
-    /**
-     * `* It's a constructor. It constructs.`
-     *
-     * Creates a new `SandboxErorr`.
-     * @param message Optionally specify an error message
-     * @param options Optionally specify a set of options
-     */
-    constructor(message?: string, options?: ErrorOptions) {
-        super(message, options);
-    }
-}
-
-/**
  * A namespace containing types and functions to manage assets and work with p5's corresponding classes
  */
 namespace srvsdbx_AssetManagement {
     /**
      * A utility types used to keep assets and their paths together
+     * @template T The type of asset
      */
     export type AssetSrcPair<T> = {
         /**
          * The path at which this asset lies
          */
-        src: string,
+        readonly src: string,
         /**
          * The asset
          */
-        asset: T;
+        readonly asset: T;
     };
 
     /**
@@ -392,7 +432,7 @@ namespace srvsdbx_AssetManagement {
         }
 
         function toAsync<R>(original: (path: string, success: (args: R) => any, failure: (error: unknown) => any) => R) {
-            return async function(path: string): Promise<srvsdbx_ErrorHandling.Result<AssetSrcPair<R>, SandboxError>> {
+            return async function(path: string): Promise<srvsdbx_ErrorHandling.Result<AssetSrcPair<R>, srvsdbx_Errors.SandboxError>> {
                 try {
                     return {
                         res: {
@@ -401,7 +441,7 @@ namespace srvsdbx_AssetManagement {
                         }
                     };
                 } catch (e) {
-                    return { err: new SandboxError(`Failed loading asset at path '${path}'`) };
+                    return { err: new srvsdbx_Errors.SandboxError(`Failed loading asset at path '${path}'`) };
                 }
             };
         }
@@ -441,11 +481,12 @@ namespace srvsdbx_AssetManagement {
                 )
             );
 
-        return array;
+        return array.filter(srvsdbx_ErrorHandling.assertIsPresent);
     }
 
     /**
      * Converts any properties named `image` to `ImageSrcPair`s and any properties named `images` to `ImageSrcPair[]`s
+     * @template O The type of object to convert
      */
     export type ConvertPathsToImages<O extends object> = {
         // Amazing formatting makes this ternary spam even better
@@ -600,12 +641,12 @@ namespace srvsdbx_Geometry {
         get length() { return Math.sqrt(this.squaredLength); }
         set length(v: number) {
             if (!Number.isNaN(v)) {
-                const l = this.length,
-                    k = v / l;
+                const length = this.length,
+                    scaleFactor = v / length;
 
-                if (l) {
-                    this.#x *= k;
-                    this.#y *= k;
+                if (length) {
+                    this.#x *= scaleFactor;
+                    this.#y *= scaleFactor;
                 } else {
                     this.#x = v;
                 }
@@ -621,10 +662,10 @@ namespace srvsdbx_Geometry {
         get direction() { return srvsdbx_Math.normalizeAngle(Math.atan2(this.#y, this.#x), "radians"); }
         set direction(v: number) {
             if (!Number.isNaN(v) && Number.isFinite(v)) {
-                const l = this.length;
+                const length = this.length;
 
-                this.#x = l * Math.cos(v);
-                this.#y = l * Math.sin(v);
+                this.#x = length * Math.cos(v);
+                this.#y = length * Math.sin(v);
             }
         }
 
@@ -632,13 +673,13 @@ namespace srvsdbx_Geometry {
          * Simply returns a new zero vector
          * @returns A new zero vector
          */
-        static zeroVec() { return new Vector2D(0, 0); }
+        static zeroVector() { return new Vector2D(0, 0); }
 
         /**
          * Returns the origin
          * @returns The origin, (0, 0)
          */
-        static zeroPt() { return { x: 0, y: 0 } as Point2D; }
+        static zeroPoint() { return { x: 0, y: 0 } as Point2D; }
 
         /**
          * Given a `Point2D`, creates a new point with additional polar coordinate info
@@ -651,94 +692,103 @@ namespace srvsdbx_Geometry {
                 return point.clone() as T extends Vector2D ? Vector2D : Hydrated2DPoint;
             }
 
-            const cart = this.toCartesian(point),
+            const cartesian = this.toCartesian(point),
                 polar = this.toPolar(point);
 
             return {
-                x: cart.x,
-                y: cart.y,
+                x: cartesian.x,
+                y: cartesian.y,
                 magnitude: polar.magnitude,
                 direction: polar.direction
             } as T extends Vector2D ? Vector2D : Hydrated2DPoint;
         }
 
         /**
-         * Translates a `Vector3D` to a `Vector2D` by simply removing its `z` component
-         * @param vec The vector to convert
+         * Transforms a `Vector3D` to a `Vector2D` by removing its `z` component
+         * @param vector The vector to convert
+         * @returns A new `Vector2D` object whose `x` and `y` components match those
+         * of the `Vector3D` object passed in
          */
-        static fromVector3D(vec: Vector3D) {
-            return new Vector2D(vec.x, vec.y);
+        static fromVector3D(vector: Vector3D) {
+            return new Vector2D(vector.x, vector.y);
         }
 
         /**
-         * Translates a `Vector2D` to a `Vector3D` by setting its `z` component to 0
-         * @param vec The vector to convert
+         * Transforms a `Vector2D` to a `Vector3D` by setting its `z` component to 0
+         * @param vector The vector to convert
+         * @returns A new `Vector3D` object whose `x` and `y` components match those
+         * of the `Vector2D` object passed in and whose `z` component is 0
          */
-        static toVector3D(vec: Vector2D) {
-            return new Vector3D(vec.x, vec.y, 0);
+        static toVector3D(vector: Vector2D) {
+            return new Vector3D(vector.x, vector.y, 0);
         }
 
         /**
          * Converts from polar coordinates to a `Point2D`
          * @param angle The angle of the point relative to the x-axis
          * @param magnitude The distance of the point from the origin
+         * @returns A `Point2D` object corresponding to the given polar coordinate
          */
         static fromPolarToPt(angle: number, magnitude: number) {
-            return { x: magnitude * Math.cos(angle), y: magnitude * Math.sin(angle) } as Point2D;
+            return {
+                x: magnitude * Math.cos(angle),
+                y: magnitude * Math.sin(angle)
+            } as Point2D;
         }
 
         /**
          * Converts from polar coordinates to a `Vector2D`
          * @param angle The angle of the point relative to the x-axis
          * @param magnitude The distance of the point from the origin
+         * @returns A `Vector2D` object corresponding to the given polar coordinate
          */
         static fromPolarToVec(angle: number, magnitude: number) {
-            const vec = new Vector2D(magnitude * Math.cos(angle), magnitude * Math.sin(angle));
+            const vector = new Vector2D(magnitude * Math.cos(angle), magnitude * Math.sin(angle));
 
-            vec.squaredLength != magnitude * magnitude && vec.squaredLength && (vec.length = Math.abs(magnitude));
+            vector.squaredLength != magnitude * magnitude && vector.squaredLength && (vector.length = Math.abs(magnitude));
 
-            return vec;
+            return vector;
         }
 
         /**
          * Gets the squared distance between a point and the origin
-         * @param pt The point to be measured
-         * @returns The squared distance
+         * @param point The point to be measured
+         * @returns The squared distance between the given point and the origin
          */
-        static squaredDist(pt: Point2D) {
-            return pt.x * pt.x + pt.y * pt.y;
+        static squaredDist(point: Point2D) {
+            return point.x * point.x + point.y * point.y;
         }
 
         /**
          * Returns the distance between a point and the origin
-         * @param pt The point to be measured
-         * @returns The distance
+         * @param point The point to be measured
+         * @returns The distance between the given point and the origin
          */
-        static dist(pt: Point2D) {
-            return Math.sqrt(this.squaredDist(pt));
+        static dist(point: Point2D) {
+            return Math.sqrt(this.squaredDist(point));
         }
 
         /**
          * Gets the squared distance between two points
-         * @param ptA The first point
+         * @param pointA The first point
          * @param ptB The second point
          * @returns The squared distance between the two points
          */
-        static squaredDistBetweenPts(ptA: Point2D, ptB: Point2D) {
-            const dx = ptA.x - ptB.x,
-                dy = ptA.y - ptB.y;
+        static squaredDistanceBetweenPts(pointA: Point2D, ptB: Point2D) {
+            const dx = pointA.x - ptB.x,
+                dy = pointA.y - ptB.y;
 
             return dx * dx + dy * dy;
         }
 
         /**
          * Returns the distance between two points
-         * @param ptA The first point
+         * @param pointA The first point
          * @param ptB The second point
          * @returns The distance between the two points
          */
-        static distBetweenPts(ptA: Point2D, ptB: Point2D) {
-            return Math.sqrt(this.squaredDistBetweenPts(ptA, ptB));
+        static distanceBetweenPts(pointA: Point2D, ptB: Point2D) {
+            return Math.sqrt(this.squaredDistanceBetweenPts(pointA, ptB));
         }
 
         /**
@@ -747,160 +797,164 @@ namespace srvsdbx_Geometry {
          * @returns A point whose distance from the origin is 1, and whose direction is the same as the original point
          */
         static unit(pt: Point2D) {
-            const l = this.dist(pt),
-                vec = new Vector2D(pt.x / l, pt.y / l);
+            const length = this.dist(pt),
+                vector = new Vector2D(pt.x / length, pt.y / length);
 
-            (vec.squaredLength != 1 && vec.squaredLength) && (vec.length = 1); // Just to be sure
+            (vector.squaredLength != 1 && vector.squaredLength) && (vector.length = 1); // Just to be sure
 
-            return vec.toPoint2D();
+            return vector.toPoint2D();
         }
 
         /**
          * Returns whether or not two points have the same components
-         * @param ptA The first point to compare
+         * @param pointA The first point to compare
          * @param ptB The second point to compare
          * @returns Whether or not the two points have the same components
          */
-        static equals(ptA: Point2D, ptB: Point2D) {
-            return ptA.x == ptB.x && ptA.y == ptB.y;
+        static equals(pointA: Point2D, ptB: Point2D) {
+            return pointA.x == ptB.x && pointA.y == ptB.y;
         }
 
         /**
          * Adds the components of two points together, either modifying the first one or returning a new point.
-         * @param ptA The first point to add. If `mutate` is set to `true`, this point's components will be changed.
-         * @param ptB The second point. Will never change.
-         * @param mutate Whether or not the result should overwrite `ptA` or if it should be returned as a new point.
-         * @returns Either a completely new point, or `ptA` if `mutate` was set to `true`.
+         * @param pointA The first point to add. If `mutate` is set to `true`, this point's components will be changed.
+         * @param pointB The second point. Will never change.
+         * @param mutate Whether or not the result should overwrite `pointA` or if it should be returned as a new point.
+         * @returns Either a completely new point, or `pointA` if `mutate` was set to `true`.
          */
-        static plus(ptA: Point2D, ptB: Point2D, mutate?: boolean) {
+        static plus(pointA: Point2D, pointB: Point2D, mutate?: boolean) {
             if (mutate) {
-                ptA.x += ptB.x;
-                ptA.y += ptB.y;
-                return ptA;
+                pointA.x += pointB.x;
+                pointA.y += pointB.y;
+                return pointA;
             }
 
-            return this.hydrate({ x: ptA.x + ptB.x, y: ptA.y + ptB.y });
+            return this.hydrate({ x: pointA.x + pointB.x, y: pointA.y + pointB.y });
         }
 
         /**
          * Subtracts the components of the second point from the first one, either modifying the first one or returning a new point.
-         * @param ptA The first point to be subtracted from. If `mutate` is set to `true`, this point's components will be changed.
-         * @param ptB The second point. Will never change.
-         * @param mutate Whether or not the result should overwrite `ptA` or if it should be returned as a new point.
-         * @returns Either a completely new point, or `ptA` if `mutate` was set to `true`.
+         * @param pointA The first point to be subtracted from. If `mutate` is set to `true`, this point's components will be changed.
+         * @param pointB The second point. Will never change.
+         * @param mutate Whether or not the result should overwrite `pointA` or if it should be returned as a new point.
+         * @returns Either a completely new point, or `pointA` if `mutate` was set to `true`.
          */
-        static minus(ptA: Point2D, ptB: Point2D, mutate?: boolean) {
+        static minus(pointA: Point2D, pointB: Point2D, mutate?: boolean) {
             if (mutate) {
-                ptA.x -= ptB.x;
-                ptA.y -= ptB.y;
-                return ptA;
+                pointA.x -= pointB.x;
+                pointA.y -= pointB.y;
+                return pointA;
             }
 
-            return this.hydrate({ x: ptA.x - ptB.x, y: ptA.y - ptB.y });
+            return this.hydrate({ x: pointA.x - pointB.x, y: pointA.y - pointB.y });
         }
 
         /**
          * Creates a clone of a Point2D or Vector2D object
-         * @param pt The point to clone
+         * @template T The type of object passed in
+         * @param point The point to clone
+         * @returns A clone of the given object
          */
-        static clone<T extends Point2D | Vector2D>(pt: T) {
-            return pt instanceof Vector2D ? pt.clone() as T : { x: pt.x, y: pt.y };
+        static clone<T extends Point2D | Vector2D>(point: T) {
+            return point instanceof Vector2D ? point.clone() as T : { x: point.x, y: point.y };
         }
 
         /**
          * Multiplies the given point's components by a scalar, either modifying the original point or returning a new one
-         * @param pt The point to be scaled
+         * @param point The point to be scaled
          * @param scale The scale factor
          * @param mutate Whether the original point should be modified or if the result should be returned in a new point
          * @returns The result of scaling the input point's components by the scalar
          */
-        static scale(pt: Point2D, scale: number, mutate?: boolean) {
-            return mutate ? (pt.x *= scale, pt.y = scale, pt) : this.hydrate({ x: scale * pt.x, y: scale * pt.y });
+        static scale(point: Point2D, scale: number, mutate?: boolean) {
+            return mutate ? (point.x *= scale, point.y = scale, point) : this.hydrate({ x: scale * point.x, y: scale * point.y });
         }
 
         /**
          * Multiplies the given point's components by -1, either modifying the original point or returning a new one
-         * @param pt The point to be scaled
+         * @param point The point to be scaled
          * @param mutate Whether the original point should be modified or if the result should be returned in a new point
          * @returns The result of scaling the input point's components by the scalar
          */
-        static invert(pt: Point2D, mutate?: boolean) {
-            return mutate ? (pt.x *= -1, pt.y = -1, pt) : this.hydrate({ x: -pt.x, y: -pt.y });
+        static invert(point: Point2D, mutate?: boolean) {
+            return mutate ? (point.x *= -1, point.y = -1, point) : this.hydrate({ x: -point.x, y: -point.y });
         }
 
         /**
          * Treats the two points as vectors and performs a dot product on them
-         * @param ptA The first point
-         * @param ptB The second point
+         * @param pointA The first point
+         * @param pointB The second point
          * @returns The result of performing the dot product on the points treated as vectors
          */
-        static dotProduct(ptA: Point2D, ptB: Point2D) {
-            return ptA.x * ptB.x + ptA.y * ptB.y;
+        static dotProduct(pointA: Point2D, pointB: Point2D) {
+            return pointA.x * pointB.x + pointA.y * pointB.y;
         }
 
         /**
          * Treats the two points as vectors and returns the angle between them
-         * @param ptA The first point
-         * @param ptB The second point
+         * @param pointA The first point
+         * @param pointB The second point
          * @returns The angle between the two points, treated as vectors
          */
-        static angleBetween(ptA: Point2D, ptB: Point2D) {
-            return Math.acos(this.dotProduct(ptA, ptB) / Math.sqrt(this.squaredDist(ptA) * this.squaredDist(ptB)));
+        static angleBetween(pointA: Point2D, pointB: Point2D) {
+            return Math.acos(this.dotProduct(pointA, pointB) / Math.sqrt(this.squaredDist(pointA) * this.squaredDist(pointB)));
         }
 
         /**
          * Treats the two points as vectors and returns the vector projection of the first onto the second.
-         * @param ptA The point, whose vector representation will be the vector to be projected
-         * @param ptB The point, whose vector representation will be projected on
+         * @param pointA The point, whose vector representation will be the vector to be projected
+         * @param pointB The point, whose vector representation will be projected on
          * @returns The result of projecting the first vector onto the second
          */
-        static projection(ptA: Point2D, ptB: Point2D) {
-            return this.hydrate(this.scale(ptB, this.dotProduct(ptA, ptB) / this.squaredDist(ptB)));
+        static projection(pointA: Point2D, pointB: Point2D) {
+            return this.hydrate(this.scale(pointB, this.dotProduct(pointA, pointB) / this.squaredDist(pointB)));
         }
 
         /**
          * Creates a new Vector2D object from a point. Copies the point's components
-         * @param pt The point to be converted
+         * @param point The point to be converted
          * @returns The newly-created vector
          */
-        static fromPoint2D(pt: Point2D) {
-            return new Vector2D(pt.x, pt.y);
+        static fromPoint2D(point: Point2D) {
+            return new Vector2D(point.x, point.y);
         }
 
         /**
          * Linearly interpolates between two points
-         * @param ptA The first point (start)
-         * @param ptB The second point (end)
+         * @param pointA The first point (start)
+         * @param pointB The second point (end)
          * @param t The interpolation factor. Not clamped to [0, 1]
          * @returns A new point containing the result's operation\
-         * `t = 0` is guaranteed to return a clone of `ptA`; `t = 1` is guaranteed to return a clone of `ptB`.
+         * `t = 0` is guaranteed to return a clone of `pointA`; `t = 1` is guaranteed to return a clone of `ptB`.
          */
-        static lerp(ptA: Point2D, ptB: Point2D, t: number) {
-            let res: Point2D;
+        static linterp(pointA: Point2D, pointB: Point2D, t: number) {
+            let result: Point2D;
 
             switch (t) {
-                case 0: res = Vector2D.clone(ptA);
-                case 1: res = Vector2D.clone(ptB);
-                default: res = this.plus(ptA, this.scale(this.minus(ptB, ptA), t));
+                case 0: result = Vector2D.clone(pointA); break;
+                case 1: result = Vector2D.clone(pointB); break;
+                default: result = this.plus(pointA, this.scale(this.minus(pointB, pointA), t));
             }
 
-            return this.hydrate(res);
+            return this.hydrate(result);
         }
 
         /**
          * Checks the point and returns whether either component is `NaN`
-         * @param pt The point to check
+         * @param point The point to check
+         * @returns `true` if either of the point's components is `NaN`
          */
-        static hasNaN(pt: Point2D) {
-            return Number.isNaN(pt.x) || Number.isNaN(pt.y);
+        static hasNaN(point: Point2D) {
+            return Number.isNaN(point.x) || Number.isNaN(point.y);
         }
 
         /**
          * Casts either a `Vector2D` or a `Point2D` to a `Point2D`
-         * @param pt The object to be casted. If a `Point2D` is passed, it is not cloned, and the original is returned
+         * @param point The object to be casted. If a `Point2D` is passed, it is not cloned, and the original is returned
+         * @returns A `Point2D` object with the same components as the object given
          */
-        static toPoint2D(pt: Point2D | Vector2D) {
-            return pt instanceof Vector2D ? pt.toPoint2D() : pt;
+        static toPoint2D(point: Point2D | Vector2D) {
+            return point instanceof Vector2D ? point.toPoint2D() : point;
         }
 
         /**
@@ -908,6 +962,8 @@ namespace srvsdbx_Geometry {
          * coordinates
          * @param point The point to convert. If a `Point2D` is passed in, it
          * is returned as-is
+         * @returns Either the original object if it was already a cartesian point,
+         * or a cartesian point designating the given polar coordinate
          */
         static toCartesian(point: Point2D | Polar2D) {
             return "x" in point ? point : this.fromPolarToPt(point.direction, point.magnitude);
@@ -918,6 +974,8 @@ namespace srvsdbx_Geometry {
          * coordinates
          * @param point The point to convert. If a `Polar2D` is passed in, it
          * is returned as-is
+         * @returns Either the original object if it was already a polar coordinate,
+         * or a polar point designating the given cartesian point
          */
         static toPolar(point: Point2D | Polar2D) {
             return "magnitude" in point
@@ -944,81 +1002,88 @@ namespace srvsdbx_Geometry {
 
         /**
          * Treating this vector as a point, gets the squared distance between this point and another
-         * @param pt The point to which to measure
+         * @param point The point to which to measure
          * @returns The squared distance between the two points
          */
-        squaredDistToPt(pt: Point2D) {
-            const dx = this.#x - pt.x,
-                dy = this.#y - pt.y;
+        squaredDistToPt(point: Point2D) {
+            const dx = this.#x - point.x,
+                dy = this.#y - point.y;
 
             return dx * dx + dy * dy;
         }
 
         /**
          * Treating this vector as a point, returns the distance between this point and another
-         * @param pt The point to which to measure
+         * @param point The point to which to measure
          * @returns The distance between the two points
          */
-        distToPt(pt: Point2D) {
-            return Math.sqrt(this.squaredDistToPt(pt));
+        distToPt(point: Point2D) {
+            return Math.sqrt(this.squaredDistToPt(point));
         }
 
         /**
          * Returns a new vector whose direction is identical to this one's, but whose magnitude is 1
+         * @returns A new vector whose direction is identical to this one's, but whose magnitude is 1
          */
         unit() {
-            const l = this.length,
-                vec = new Vector2D(this.#x / l, this.#y / l);
+            const length = this.length,
+                vector = new Vector2D(this.#x / length, this.#y / length);
 
-            (vec.squaredLength != 1 && vec.squaredLength) && (vec.length = 1); // Just to be sure
+            (vector.squaredLength != 1 && vector.squaredLength) && (vector.length = 1);
 
-            return vec;
+            return vector;
         }
 
         /**
          * Compares two vectors, returning whether or not they're equal
-         * @param vec The vector to be compared to
+         * @param vector The vector to be compared to
+         * @returns Whether this vector's components are the same as the one passed in
          */
-        equals(vec: Point2D) {
-            return this.#x == vec.x && this.#y == vec.y;
+        equals(vector: Point2D) {
+            return this.#x == vector.x && this.#y == vector.y;
         }
 
         /**
          * Adds a vector to this one, either mutating this one or returning a new vector that's the result of the operation.
-         * @param vec The vector to add. This is never modified.
+         * @param vector The vector to add. This is never modified.
          * @param mutate Whether or not to mutate this vector
+         * @returns This vector if `mutate` was set to `true`, and a new `Vector2D` object with the operation's result
+         * otherwise
          */
-        plus(vec: Point2D | Polar2D, mutate?: boolean) {
-            vec = Vector2D.toCartesian(vec);
+        plus(vector: Point2D | Polar2D, mutate?: boolean) {
+            vector = Vector2D.toCartesian(vector);
 
             if (mutate) {
-                this.#x += vec.x;
-                this.#y += vec.y;
+                this.#x += vector.x;
+                this.#y += vector.y;
                 return this;
             }
 
-            return new Vector2D(this.#x + vec.x, this.#y + vec.y);
+            return new Vector2D(this.#x + vector.x, this.#y + vector.y);
         }
 
         /**
          * Subtracts a vector from this vector, either mutating this one or returning a new vector that's the result of the operation.
-         * @param vec The vector to subtract from this one. This is never modified.
+         * @param vector The vector to subtract from this one. This is never modified.
          * @param mutate Whether or not to mutate this vector
+         * @returns This vector if `mutate` was set to `true`, and a new `Vector2D` object with the operation's result
+         * otherwise
          */
-        minus(vec: Point2D | Polar2D, mutate?: boolean) {
-            vec = Vector2D.toCartesian(vec);
+        minus(vector: Point2D | Polar2D, mutate?: boolean) {
+            vector = Vector2D.toCartesian(vector);
 
             if (mutate) {
-                this.#x -= vec.x;
-                this.#y -= vec.y;
+                this.#x -= vector.x;
+                this.#y -= vector.y;
                 return this;
             }
 
-            return new Vector2D(this.#x - vec.x, this.#y - vec.y);
+            return new Vector2D(this.#x - vector.x, this.#y - vector.y);
         }
 
         /**
          * Returns a new vector whose components are identical to this one
+         * @returns A new vector whose components are identical to this one
          */
         clone() {
             return new Vector2D(this.#x, this.#y);
@@ -1028,6 +1093,8 @@ namespace srvsdbx_Geometry {
          * Multiplies this vector by a scalar, either modifying this vector or returning a new vector with the result
          * @param scale The factor to scale this vector by
          * @param mutate Whether or not to mutate this vector or return a new one
+         * @returns This vector if `mutate` was set to `true`, and a new `Vector2D` object with the operation's result
+         * otherwise
          */
         scale(scale: number, mutate?: boolean) {
             return mutate ? (this.length *= scale, this) : new Vector2D(this.#x * scale, this.#y * scale);
@@ -1036,6 +1103,8 @@ namespace srvsdbx_Geometry {
         /**
          * Multiplies this vector by -1, either modifying this vector or returning a new vector with the result
          * @param mutate Whether or not to mutate this vector or return a new one
+         * @returns This vector if `mutate` was set to `true`, and a new `Vector2D` object with the operation's result
+         * otherwise
          */
         invert(mutate?: boolean) {
             return mutate ? (this.length *= -1, this) : new Vector2D(-this.#x, -this.#y);
@@ -1044,47 +1113,52 @@ namespace srvsdbx_Geometry {
         /**
          * Performs the dot product between this vector and another. Can be used to test perpendicularity: if
          * the dot product is zero, then the two vectors are perpendicular
-         * @param vec The vector to perform the dot product with
+         * @param vector The vector to perform the dot product with
+         * @returns The result of the dot product operation
          */
-        dotProduct(vec: Point2D | Polar2D) {
-            vec = Vector2D.toCartesian(vec);
+        dotProduct(vector: Point2D | Polar2D) {
+            vector = Vector2D.toCartesian(vector);
 
-            return this.#x * vec.x + this.#y * vec.y;
+            return this.#x * vector.x + this.#y * vector.y;
         }
 
         /**
          * Returns the angle between this vector and another
-         * @param vec The other vector to compare to
+         * @param vector The other vector to compare to
+         * @returns The angle between this vector and another
          */
-        angleBetween(vec: Vector2D) {
-            return Math.acos(this.dotProduct(vec) / Math.sqrt(this.squaredLength * vec.squaredLength));
+        angleBetween(vector: Vector2D) {
+            return Math.acos(this.dotProduct(vector) / Math.sqrt(this.squaredLength * vector.squaredLength));
         }
 
         /**
          * Projects this vector onto another, returning the projected vector
-         * @param vec The vector to be projected on
+         * @param vector The vector to be projected on
+         * @returns A new vector parallel to the one passed in, that can be
+         * thought as being this one's "shadow" onto the other
          */
-        projection(vec: Vector2D) {
-            return vec.scale(this.dotProduct(vec) / vec.squaredLength);
+        projection(vector: Vector2D) {
+            return vector.scale(this.dotProduct(vector) / vector.squaredLength);
         }
 
         /**
          * Linearly interpolates between this vector and another
-         * @param vec The vector to interpolate with
+         * @param vector The vector to interpolate with
          * @param t The interpolation factor. Not clamped to [0, 1]
          * @returns A new vector containing the result of the operation\
          * `t = 0` is guaranteed to return a copy of `this`; `t = 1` is guaranteed to return a `Vector2D` whose components are `vec`'s.
          */
-        lerp(vec: Point2D, t: number) {
+        linterp(vector: Point2D, t: number) {
             switch (t) {
                 case 0: return this.clone();
-                case 1: return Vector2D.fromPoint2D(vec);
-                default: return this.plus(this.minus(vec).scale(-t));
+                case 1: return Vector2D.fromPoint2D(vector);
+                default: return this.plus(this.minus(vector).scale(-t));
             }
         }
 
         /**
          * Checks the point and returns whether either component is `NaN`
+         * @returns Whether either component of this vector is `NaN`
          */
         hasNaN() {
             return Number.isNaN(this.#x) || Number.isNaN(this.#y);
@@ -1092,6 +1166,8 @@ namespace srvsdbx_Geometry {
 
         /**
          * Returns a lightweight representation of this object
+         * @returns A new `Point2D` object whose components are identical to this
+         * vector's
          */
         toPoint2D() {
             return { x: this.#x, y: this.#y } as Point2D;
@@ -1099,6 +1175,8 @@ namespace srvsdbx_Geometry {
 
         /**
          * Returns a lightweight 3D representation of this object
+         * @returns A new `Point3D` object whose `x` and `y` components are
+         * identical to this vector's, and whose `z` component is 0
          */
         toPoint3D() {
             return { x: this.#x, y: this.#y, z: 0 } as Point3D;
@@ -1106,6 +1184,8 @@ namespace srvsdbx_Geometry {
 
         /**
          * Returns a 3D vector identical to this one (with a z component of 0)
+         * @returns A new `Vector3D` object whose `x` and `y` components are
+         * identical to this vector's, and whose `z` component is 0
          */
         toVector3D() {
             return new Vector3D(this.#x, this.#y, 0);
@@ -1139,9 +1219,8 @@ namespace srvsdbx_Geometry {
          */
         get x() { return this.#x; }
         set x(v: number) {
-            if (!Number.isNaN(v)) {
+            if (!Number.isNaN(v))
                 this.#x = v;
-            }
         }
         /**
          * This vector's y component
@@ -1151,9 +1230,8 @@ namespace srvsdbx_Geometry {
      */
         get y() { return this.#y; }
         set y(v: number) {
-            if (!Number.isNaN(v)) {
+            if (!Number.isNaN(v))
                 this.#y = v;
-            }
         }
 
         /**
@@ -1165,9 +1243,8 @@ namespace srvsdbx_Geometry {
          */
         get z() { return this.#z; }
         set z(v: number) {
-            if (!Number.isNaN(v)) {
+            if (!Number.isNaN(v))
                 this.#z = v;
-            }
         }
 
         /**
@@ -1187,13 +1264,13 @@ namespace srvsdbx_Geometry {
         }
         set length(v: number) {
             if (!Number.isNaN(v)) {
-                const l = this.length,
-                    k = v / l;
+                const length = this.length,
+                    scaleFactor = v / length;
 
-                if (l) {
-                    this.#x *= k;
-                    this.#y *= k;
-                    this.#z *= k;
+                if (length) {
+                    this.#x *= scaleFactor;
+                    this.#y *= scaleFactor;
+                    this.#z *= scaleFactor;
                 } else {
                     this.#x = v;
                 }
@@ -1206,273 +1283,285 @@ namespace srvsdbx_Geometry {
          * `set`: Modifies this vector's components to match the given [direction cosines](https://en.wikipedia.org/wiki/Direction_cosine#Cartesian_coordinates)
          */
         get direction(): { x: number, y: number, z: number; } {
-            const l = this.length;
+            const length = this.length;
 
             return {
-                x: Math.acos(this.#x / l),
-                y: Math.acos(this.#y / l),
-                z: Math.acos(this.#z / l)
+                x: Math.acos(this.#x / length),
+                y: Math.acos(this.#y / length),
+                z: Math.acos(this.#z / length)
             };
         }
         set direction(v: [number, number, number] | { x: number, y: number, z: number; }) {
-            const dir = Array.isArray(v) ? { x: v[0], y: v[1], z: v[2] } : v,
-                l = this.length;
+            const direction = Array.isArray(v)
+                ? { x: v[0], y: v[1], z: v[2] }
+                : v,
+                length = this.length;
 
-            this.x = l * Math.cos(dir.x);
-            this.y = l * Math.cos(dir.y);
-            this.z = l * Math.cos(dir.z);
+            this.x = length * Math.cos(direction.x);
+            this.y = length * Math.cos(direction.y);
+            this.z = length * Math.cos(direction.z);
         }
 
         /**
          * Returns a new zero vector
          * @returns A new zero vector
          */
-        static zeroVec() { return new Vector3D(0, 0, 0); }
+        static zeroVector() { return new Vector3D(0, 0, 0); }
 
         /**
-         * Returns the origin
+         * Returns the origin of the 3-dimensional Cartesian plane
          * @returns The origin, (0, 0, 0)
          */
-        static zeroPt() { return { x: 0, y: 0, z: 0 } as Point3D; }
+        static zeroPoint() { return { x: 0, y: 0, z: 0 } as Point3D; }
 
         /**
-         * Translates a `Vector2D` to a `Vector3D` by simply removing its `z` component
-         * @param vec The vector to convert
+         * Translates a `Point2D` to a `Vector3D` by simply removing this one's `z` component
+         * @param point The point (`Vector2D` objects will work too) to convert
          */
-        static fromVector2D(vec: Vector2D) {
-            return new Vector3D(vec.x, vec.y, 9);
+        static fromPoint2D(point: Point2D) {
+            return new Vector3D(point.x, point.y, 0);
         }
 
         /**
          * Translates a `Vector3D` to a `Vector2D` by setting its `z` component to 0
-         * @param vec The vector to convert
+         * @param vector The vector to convert
          */
-        static toVector2D(vec: Vector3D) {
-            return new Vector2D(vec.x, vec.y);
+        static toVector2D(vector: Vector3D) {
+            return new Vector2D(vector.x, vector.y);
         }
 
         /**
          * Gets the squared distance between a point and the origin
-         * @param pt The point to be measured
+         * @param point The point to be measured
          * @returns The square of the distance between the point and th origin
          */
-        static squaredDist(pt: Point3D) {
-            return pt.x * pt.x + pt.y * pt.y + pt.z * pt.z;
+        static squaredDistance(point: Point3D) {
+            return point.x * point.x + point.y * point.y + point.z * point.z;
         }
 
         /**
          * Gets the distance between a point and the origin
-         * @param pt The point to be measured
+         * @param point The point to be measured
          * @returns The of the distance between the point and th origin
          */
-        static dist(pt: Point3D) {
-            return Math.sqrt(this.squaredDist(pt));
+        static distance(point: Point3D) {
+            return Math.sqrt(this.squaredDistance(point));
         }
 
         /**
          * Gets the squared distance between two points
-         * @param ptA The first point
-         * @param ptB The second point
+         * @param pointA The first point
+         * @param pointB The second point
          * @returns The squared distance between the two points
          */
-        static squaredDistBetweenPts(ptA: Point3D, ptB: Point3D) {
-            const dx = ptA.x - ptB.x,
-                dy = ptA.y - ptB.y,
-                dz = ptA.z - ptB.z;
+        static squaredDistanceBetweenPts(pointA: Point3D, pointB: Point3D) {
+            const dx = pointA.x - pointB.x,
+                dy = pointA.y - pointB.y,
+                dz = pointA.z - pointB.z;
 
             return dx * dx + dy * dy + dz * dz;
         }
 
         /**
          * Returns the distance between two points
-         * @param ptA The first point
-         * @param ptB The second point
+         * @param pointA The first point
+         * @param pointB The second point
          * @returns The distance between the two points
          */
-        static distBetweenPts(ptA: Point3D, ptB: Point3D) {
-            return Math.sqrt(this.squaredDistBetweenPts(ptA, ptB));
+        static distanceBetweenPts(pointA: Point3D, pointB: Point3D) {
+            return Math.sqrt(this.squaredDistanceBetweenPts(pointA, pointB));
         }
 
         /**
          * Returns a point whose direction is the same as the original, but whose distance from the origin is 1
-         * @param pt The point
+         * @param point The point
          * @returns A new point colinear with the origin and the original, 1 unit away from the origin
          */
-        static unit(pt: Point3D) {
-            const l = this.dist(pt),
-                vec = new Vector3D(pt.x / l, pt.y / l, pt.z / l);
+        static unit(point: Point3D) {
+            const length = this.distance(point),
+                vector = new Vector3D(point.x / length, point.y / length, point.z / length);
 
-            (vec.squaredLength != 1 && vec.squaredLength) && (vec.length = 1);
+            (vector.squaredLength != 1 && vector.squaredLength) && (vector.length = 1);
 
-            return vec.toPoint3D();
+            return vector.toPoint3D();
         }
 
         /**
          * Returns whether or not two points have the same components
-         * @param ptA The first point to compare
-         * @param ptB The second point to compare
+         * @param pointA The first point to compare
+         * @param pointB The second point to compare
          * @returns Whether or not all of the two points' components match
          */
-        static equals(ptA: Vector3D, ptB: Vector3D) {
-            return ptA.x == ptB.x && ptA.y == ptB.y && ptA.z == ptB.z;
+        static equals(pointA: Vector3D, pointB: Vector3D) {
+            return pointA.x == pointB.x && pointA.y == pointB.y && pointA.z == pointB.z;
         }
 
         /**
          * Adds the components of two points together, either modifying the first point or returning a new point
-         * @param ptA The first point. If `mutate` is set to `true`, it will be modified
-         * @param ptB The second point. Wll never be modified
-         * @param mutate Whether the result should be stored in `ptA` or returned as a new point
-         * @returns If `mutate` is `false`, a new point with the result is returned; otherwise, `ptA` is mutated accordingly and returned.
+         * @param pointA The first point. If `mutate` is set to `true`, it will be modified
+         * @param pointB The second point. Wll never be modified
+         * @param mutate Whether the result should be stored in `pointA` or returned as a new point
+         * @returns If `mutate` is `false`, a new point with the result is returned; otherwise, `pointA` is mutated accordingly and returned.
          */
-        static plus(ptA: Point3D, ptB: Point3D, mutate?: boolean) {
+        static plus(pointA: Point3D, pointB: Point3D, mutate?: boolean) {
             if (mutate) {
-                ptA.x += ptB.x;
-                ptA.y += ptB.y;
-                ptA.z += ptB.z;
-                return ptA;
+                pointA.x += pointB.x;
+                pointA.y += pointB.y;
+                pointA.z += pointB.z;
+                return pointA;
             }
 
-            return { x: ptA.x + ptB.x, y: ptA.y + ptB.y, z: ptA.z + ptB.z } as Point3D;
+            return { x: pointA.x + pointB.x, y: pointA.y + pointB.y, z: pointA.z + pointB.z } as Point3D;
         }
 
         /**
          * Subtracts the components of the second point from the first, either modifying the first point or returning a new point
-         * @param ptA The first point. If `mutate` is set to `true`, it will be modified
-         * @param ptB The second point. Wll never be modified
-         * @param mutate Whether the result should be stored in `ptA` or returned as a new point
-         * @returns If `mutate` is `false`, a new point with the result is returned; otherwise, `ptA` is mutated accordingly and returned.
+         * @param pointA The first point. If `mutate` is set to `true`, it will be modified
+         * @param pointB The second point. Wll never be modified
+         * @param mutate Whether the result should be stored in `pointA` or returned as a new point
+         * @returns If `mutate` is `false`, a new point with the result is returned; otherwise, `pointA` is mutated accordingly and returned.
          */
-        static minus(ptA: Point3D, ptB: Point3D, mutate?: boolean) {
+        static minus(pointA: Point3D, pointB: Point3D, mutate?: boolean) {
             if (mutate) {
-                ptA.x += ptB.x;
-                ptA.y += ptB.y;
-                ptA.z += ptB.z;
-                return ptA;
+                pointA.x += pointB.x;
+                pointA.y += pointB.y;
+                pointA.z += pointB.z;
+                return pointA;
             }
 
-            return { x: ptA.x + ptB.x, y: ptA.y + ptB.y, z: ptA.z + ptB.z } as Point3D;
+            return { x: pointA.x + pointB.x, y: pointA.y + pointB.y, z: pointA.z + pointB.z } as Point3D;
         }
 
         /**
          * Clones a point and returns the clone
-         * @param pt The point to be cloned
+         * @template T The type of object passed in
+         * @param point The point to be cloned
          * @returns The cloned point
          */
-        static clone<T extends Point3D | Vector3D>(pt: T) {
-            return pt instanceof Vector3D ? pt.clone() as T : { x: pt.x, y: pt.y, z: pt.z };
+        static clone<T extends Point3D | Vector3D>(point: T) {
+            return point instanceof Vector3D ? point.clone() as T : { x: point.x, y: point.y, z: point.z };
         }
 
         /**
          * Scales a point's components by a scalar, either mutating the original or returning a new point
-         * @param pt The point to be scaled
+         * @param point The point to be scaled
          * @param scale The scale factor
          * @param mutate Whether to modify the original point to store the result or to create a new one to store the result
          */
-        static scale(pt: Point3D, scale: number, mutate?: boolean) {
-            return mutate ? (pt.x *= scale, pt.y *= scale, pt.z *= scale, pt) : { x: pt.x * scale, y: pt.y * scale, z: pt.z * scale } as Point3D;
+        static scale(point: Point3D, scale: number, mutate?: boolean) {
+            return mutate
+                ? (point.x *= scale, point.y *= scale, point.z *= scale, point)
+                : { x: point.x * scale, y: point.y * scale, z: point.z * scale } as Point3D;
         }
 
         /**
          * Scales a point's components by -1, either mutating the original or returning a new point
-         * @param pt The point to be scaled
+         * @param point The point to be scaled
          * @param scale The scale factor
          * @param mutate Whether to modify the original point to store the result or to create a new one to store the result
          */
-        static invert(pt: Point3D, mutate?: boolean) {
-            return mutate ? (pt.x *= -1, pt.y *= -1, pt.z *= -1, pt) : { x: -pt.x, y: -pt.y, z: -pt.z } as Point3D;
+        static invert(point: Point3D, mutate?: boolean) {
+            return mutate
+                ? (point.x *= -1, point.y *= -1, point.z *= -1, point)
+                : { x: -point.x, y: -point.y, z: -point.z } as Point3D;
         }
 
         /**
          * Treats the two points as vectors and performs the dot product between them
-         * @param ptA The first point
-         * @param ptB The second point
+         * @param pointA The first point
+         * @param pointB The second point
          * @returns The result of performing the dot product between the two points, interpreted as vectors
          */
-        static dotProduct(ptA: Point3D, ptB: Point3D) {
-            return ptA.x * ptB.x + ptA.y * ptB.y + ptA.z * ptB.z;
+        static dotProduct(pointA: Point3D, pointB: Point3D) {
+            return pointA.x * pointB.x + pointA.y * pointB.y + pointA.z * pointB.z;
         }
 
         /**
          * Treats the two points as vectors and gets the angle between the two
-         * @param ptA The first point
-         * @param ptB The second point
+         * @param pointA The first point
+         * @param pointB The second point
          * @returns The angle between the two points, treated as vectors
          */
-        static angleTo(ptA: Point3D, ptB: Point3D) {
-            return Math.acos(this.dotProduct(ptA, ptB) / Math.sqrt(this.squaredDist(ptA) * this.squaredDist(ptB)));
+        static angleBetween(pointA: Point3D, pointB: Point3D) {
+            return Math.acos(this.dotProduct(pointA, pointB) / Math.sqrt(this.squaredDistance(pointA) * this.squaredDistance(pointB)));
         }
 
         /**
          * Treats the two points as vectors and projects the first onto the second
-         * @param ptA The first point
-         * @param ptB The second point
+         * @param pointA The first point
+         * @param pointB The second point
          * @returns The result of projecting the first vector onto the second
          */
-        static projection(ptA: Point3D, ptB: Point3D) {
-            return this.scale(ptA, this.dotProduct(ptA, ptB) / this.dist(ptB));
+        static projection(pointA: Point3D, pointB: Point3D) {
+            return this.scale(pointA, this.dotProduct(pointA, pointB) / this.distance(pointB));
         }
 
         /**
          * Treats the two points as vectors and performs the cross product between them
-         * @param ptA The first point
-         * @param ptB The second point
+         * @param pointA The first point
+         * @param pointB The second point
          * @returns The result of performing the cross product between the two points, interpreted as vectors
          */
-        static crossProduct(ptA: Point3D, ptB: Point3D) {
-            return { x: ptA.y * ptB.z - ptA.z * ptB.y, y: ptA.z * ptB.x - ptA.x * ptB.z, z: ptA.x * ptB.y - ptA.y * ptB.x } as Point3D;
+        static crossProduct(pointA: Point3D, pointB: Point3D) {
+            return {
+                x: pointA.y * pointB.z - pointA.z * pointB.y,
+                y: pointA.z * pointB.x - pointA.x * pointB.z,
+                z: pointA.x * pointB.y - pointA.y * pointB.x
+            } as Point3D;
         }
 
         /**
          * Treats all three points as vectors, and returns the dot product of the first with the cross product of the second.
          * @link https://en.wikipedia.org/wiki/Triple_product
-         * @param ptA The first point
-         * @param ptB The second point
-         * @param ptC The third point
-         * @returns The result of the triple product: if it isn't 0, the three vectors are linearly dependant, and the numerical value is the volume of the parallepiped delimited by the three vectors
+         * @param pointA The first point
+         * @param pointB The second point
+         * @param pointC The third point
+         * @returns The result of the triple product: if it isn't 0, the three vectors are linearly independent, and the numerical
+         * value is the volume of the parallepiped delimited by the three vectors
          */
-        static tripleProduct(ptA: Point3D, ptB: Point3D, ptC: Point3D) {
-            return this.dotProduct(ptA, this.crossProduct(ptB, ptC));
+        static tripleProduct(pointA: Point3D, pointB: Point3D, pointC: Point3D) {
+            return this.dotProduct(pointA, this.crossProduct(pointB, pointC));
         }
 
         /**
          * Creates a new Vector3D object from a point. Copies the point's components
-         * @param pt The point to be converted
+         * @param point The point to be converted
          * @returns The newly-created vector
          */
-        static fromPoint3D(pt: Point3D) {
-            return new Vector3D(pt.x, pt.y, pt.z);
+        static fromPoint3D(point: Point3D) {
+            return new Vector3D(point.x, point.y, point.z);
         }
 
         /**
          * Linearly interpolates between two points
-         * @param ptA The first point (start)
-         * @param ptB The second point (end)
+         * @param pointA The first point (start)
+         * @param pointB The second point (end)
          * @param t The interpolation factor. Not clamped to [0, 1]
          * @returns A new point containing the result's operation\
-        * t = 0` is guaranteed to return a clone of `ptA`; `t = 1` is guaranteed to return a clone of `ptB`.
+         * `t = 0` is guaranteed to return a clone of `pointA`; `t = 1` is guaranteed to return a clone of `ptB`.
          */
-        static lerp(ptA: Point3D, ptB: Point3D, t: number) {
+        static linterp(pointA: Point3D, pointB: Point3D, t: number) {
             switch (t) {
-                case 0: return Vector3D.clone(ptA);
-                case 1: return Vector3D.clone(ptB);
-                default: return this.plus(ptA, this.scale(this.minus(ptB, ptA), t));
+                case 0: return Vector3D.clone(pointA);
+                case 1: return Vector3D.clone(pointB);
+                default: return this.plus(pointA, this.scale(this.minus(pointB, pointA), t));
             }
         }
 
         /**
          * Checks the point and returns whether any component is `NaN`
-         * @param pt The point to check
+         * @param point The point to check
          */
-        static hasNaN(pt: Point3D) {
-            return Number.isNaN(pt.x) || Number.isNaN(pt.y) || Number.isNaN(pt.z);
+        static hasNaN(point: Point3D) {
+            return Number.isNaN(point.x) || Number.isNaN(point.y) || Number.isNaN(point.z);
         }
 
         /**
          * Casts either a Vector3D or a Point3D to a Point3D
-         * @param pt The object to be casted. If a Point3D is passed, it is not cloned, and the original is returned
+         * @param point The object to be casted. If a Point3D is passed, it is not cloned, and the original is returned
          */
-        static toPoint3D(pt: Point3D | Vector3D) {
-            return pt instanceof Vector3D ? pt.toPoint3D() : pt;
+        static toPoint3D(point: Point3D | Vector3D) {
+            return point instanceof Vector3D ? point.toPoint3D() : point;
         }
 
         /**
@@ -1493,77 +1582,77 @@ namespace srvsdbx_Geometry {
 
         /**
          * Treating this vector as a point, gets the squared distance between this point and another
-         * @param pt The point to which to measure
+         * @param point The point to which to measure
          * @returns The squared distance between the two points
          */
-        squaredDistToPt(pt: Point3D) {
-            const dx = this.#x - pt.x,
-                dy = this.#y - pt.y,
-                dz = this.#z - pt.z;
+        squaredDistToPt(point: Point3D) {
+            const dx = this.#x - point.x,
+                dy = this.#y - point.y,
+                dz = this.#z - point.z;
 
             return dx * dx + dy * dy + dz * dz;
         }
 
         /**
          * Treating this vector as a point, returns the distance between this point and another
-         * @param pt The point to which to measure
+         * @param point The point to which to measure
          * @returns The distance between the two points
          */
-        distToPt(pt: Point3D) {
-            return Math.sqrt(this.squaredDistToPt(pt));
+        distToPt(point: Point3D) {
+            return Math.sqrt(this.squaredDistToPt(point));
         }
 
         /**
          * Returns the unit vector associated with this vector
          */
         unit() {
-            const l = this.length,
-                vec = new Vector3D(this.#x / l, this.#y / l, this.#z / l);
+            const length = this.length,
+                vector = new Vector3D(this.#x / length, this.#y / length, this.#z / length);
 
-            (vec.squaredLength != 1 && vec.squaredLength) && (vec.length = 1);
+            (vector.squaredLength != 1 && vector.squaredLength) && (vector.length = 1);
 
-            return vec;
+            return vector;
         }
 
         /**
          * Determine if two vectors have equal components
-         * @param vec The vector to compare to
+         * @param vector The vector to compare to
          * @returns Whether or not the two vectors have the same components
          */
-        equals(vec: Point3D) {
-            return this.#x == vec.x && this.#y == vec.y;
+        equals(vector: Point3D) {
+            return this.#x == vector.x && this.#y == vector.y;
         }
 
         /**
          * Adds a vector to this one, either mutating this one or returning a new vector that's the result of the operation.
-         * @param vec The vector to add. This is never modified.
+         * @param vector The vector to add. This is never modified.
          * @param mutate Whether or not to mutate this vector
          */
-        plus(vec: Point3D, mutate?: boolean) {
+        plus(vector: Point3D, mutate?: boolean) {
             if (mutate) {
-                this.#x += vec.x;
-                this.#y += vec.y;
-                this.#z += vec.z;
+                this.#x += vector.x;
+                this.#y += vector.y;
+                this.#z += vector.z;
                 return this;
             }
 
-            return new Vector3D(this.#x + vec.x, this.#y + vec.y, this.#z + vec.z);
+            return new Vector3D(this.#x + vector.x, this.#y + vector.y, this.#z + vector.z);
         }
 
         /**
          * Subtracts a vector from this vector, either mutating this one or returning a new vector that's the result of the operation.
-         * @param vec The vector to subtract from this one. This is never modified.
+         * @param vector The vector to subtract from this one. This is never modified.
          * @param mutate Whether or not to mutate this vector
          */
-        minus(vec: Point3D, mutate?: boolean) {
+        minus(vector: Point3D, mutate?: boolean) {
             if (mutate) {
-                this.#x -= vec.x;
-                this.#y -= vec.y;
-                this.#z -= vec.z;
+                this.#x -= vector.x;
+                this.#y -= vector.y;
+                this.#z -= vector.z;
                 return this;
             }
 
-            return new Vector3D(this.#x - vec.x, this.#y - vec.y, this.#z - vec.z);
+            return new Vector3D(this.#x - vector.x, this.#y - vector.y, this.#z - vector.z);
         }
 
         /**
@@ -1579,7 +1668,9 @@ namespace srvsdbx_Geometry {
          * @param mutate Whether or not to mutate this vector or return a new one
          */
         scale(scale: number, mutate?: boolean) {
-            return mutate ? (this.length *= scale, this) : new Vector3D(scale * this.#x, scale * this.#y, scale * this.#z);
+            return mutate
+                ? (this.length *= scale, this)
+                : new Vector3D(scale * this.#x, scale * this.#y, scale * this.#z);
         }
 
         /**
@@ -1587,7 +1678,9 @@ namespace srvsdbx_Geometry {
          * @param mutate Whether or not to mutate this vector or return a new one
          */
         invert(mutate?: boolean) {
-            return mutate ? (this.length *= -1, this) : new Vector3D(-this.#x, -this.#y, -this.#z);
+            return mutate
+                ? (this.length *= -1, this)
+                : new Vector3D(-this.#x, -this.#y, -this.#z);
         }
 
         /**
@@ -1602,7 +1695,7 @@ namespace srvsdbx_Geometry {
          * Returns the angle between this vector and another
          * @param vec The other vector to compare to
          */
-        angleTo(vec: Vector3D) {
+        angleBetween(vec: Vector3D) {
             return Math.acos(this.dotProduct(vec) / this.length * vec.length);
         }
 
@@ -1620,31 +1713,36 @@ namespace srvsdbx_Geometry {
          * @returns The result of performing the cross product between the two vectors
          */
         crossProduct(vec: Point3D) {
-            return new Vector3D(this.#y * vec.z - this.#z * vec.y, this.#z * vec.x - this.#x * vec.z, this.#x * vec.y - this.#y * vec.x);
+            return new Vector3D(
+                this.#y * vec.z - this.#z * vec.y,
+                this.#z * vec.x - this.#x * vec.z,
+                this.#x * vec.y - this.#y * vec.x
+            );
         }
 
         /**
          * Performs the [triple product](https://en.wikipedia.org/wiki/Triple_product) with this vector as the first one
-         * @param vecA The second vector of the triple product
-         * @param vecB The third vector of the triple product
-         * @returns The result of the triple product: if it isn't 0, the three vectors are linearly dependant, and the numerical value is the volume of the parallepiped delimited by the three vectors
+         * @param vectorA The second vector of the triple product
+         * @param vectorB The third vector of the triple product
+         * @returns The result of the triple product: if it isn't 0, the three vectors are linearly independent, and the
+         * numerical value is the volume of the parallepiped delimited by the three vectors
          */
-        tripleProduct(vecA: Vector3D, vecB: Vector3D) {
-            return this.dotProduct(vecA.crossProduct(vecB));
+        tripleProduct(vectorA: Vector3D, vectorB: Vector3D) {
+            return this.dotProduct(vectorA.crossProduct(vectorB));
         }
 
         /**
          * Linearly interpolates between this vector and another
-         * @param vec The vector to interpolate with
+         * @param vector The vector to interpolate with
          * @param t The interpolation factor. Not clamped to [0, 1]
          * @returns A new vector containing the result of the operation\
-         * `t = 0` is guaranteed to return a copy of `this`; `t = 1` is guaranteed to return a copy of `vec`.
+         * `t = 0` is guaranteed to return a copy of `this`; `t = 1` is guaranteed to return a copy of `vector`.
          */
-        lerp(vec: Point3D, t: number) {
+        linterp(vector: Point3D, t: number) {
             switch (t) {
                 case 0: return this.clone();
-                case 1: return Vector3D.fromPoint3D(vec);
-                default: return this.plus(this.minus(vec).scale(-t));
+                case 1: return Vector3D.fromPoint3D(vector);
+                default: return this.plus(this.minus(vector).scale(-t));
             }
         }
 
@@ -1690,6 +1788,455 @@ namespace srvsdbx_Geometry {
     export type LineSegment = { start: Point2D, end: Point2D; };
 
     /**
+     * Represents a box that completely contains a shape
+     *
+     * The "axis-aligned" part means that the box will never rotate
+     */
+    export class AxisAlignedBoundingBox {
+        /**
+         * The top-left corner of this bounding box
+         */
+        readonly #min = {
+            x: Infinity,
+            y: Infinity
+        };
+        /**
+         * The top-left corner of this bounding box
+         */
+        get min() { return this.#min; }
+
+        /**
+         * The top-right corner of this bounding box
+         */
+        readonly #max = {
+            x: -Infinity,
+            y: -Infinity
+        };
+        /**
+         * The top-right corner of this bounding box
+         */
+        get max() { return this.#max; }
+
+        /**
+         * Creates a new bounding box from a shape
+         * @param shape Either an array of points corresponding to this shape's
+         * vertices (no check as to whether the set of points actually forms a polygon is done)
+         * or data about a circle
+         */
+        static from(shape: Point2D[] | { center: Point2D, radius: number; }) {
+            const AABB = new AxisAlignedBoundingBox();
+
+            if (Array.isArray(shape)) { // polygon
+                for (const vertex of shape) {
+                    AABB.#min.x > vertex.x && (AABB.#min.x = vertex.x);
+                    AABB.#max.x < vertex.x && (AABB.#max.x = vertex.x);
+                    AABB.#min.y > vertex.y && (AABB.#min.y = vertex.y);
+                    AABB.#max.y < vertex.y && (AABB.#max.y = vertex.y);
+                }
+            } else { // circle
+                AABB.#min.x = shape.center.x - shape.radius;
+                AABB.#max.x = shape.center.x + shape.radius;
+                AABB.#min.y = shape.center.y - shape.radius;
+                AABB.#max.y = shape.center.y + shape.radius;
+            }
+
+            return AABB;
+        }
+
+        /**
+         * Checks to see if this bounding box intersects another
+         * @param aabb The bounding box to check against
+         */
+        intersects(aabb: AxisAlignedBoundingBox) {
+            return this.#min.x <= aabb.#max.x && this.#max.x >= aabb.#min.x
+                && this.#max.y >= aabb.#min.y && this.#min.y <= aabb.#max.y;
+        }
+
+        /**
+         * Checks to see if this bounding box completely contains another
+         * (but **not** if this box is contained by another!)
+         * @param aabb The bounding box to check against
+         */
+        contains(aabb: AxisAlignedBoundingBox) {
+            return this.#min.x <= aabb.#min.x && this.#max.x >= aabb.#max.x
+                && this.#min.y <= aabb.#min.y && this.#max.y >= aabb.#max.y;
+        }
+    }
+
+    /**
+     * Represents a shape of some kind
+     */
+    interface BaseShape<T extends BaseShape<T>> {
+        /**
+         * This shape's axis-aligned bounding box
+         */
+        readonly aabb: AxisAlignedBoundingBox;
+        /**
+         * A string used to easily recognize this shape
+         */
+        readonly type: string;
+        /**
+         * Where this shape lies in the world
+         */
+        readonly origin: Point2D;
+        /**
+         * Moves this shape by the specified amount
+         * @param translation The amount by which to translate this shape
+         */
+        translate(translation: Point2D): void;
+        /**
+         * Moves this shape to the specified location
+         * @param newPoint The point to move this shape to
+         */
+        moveTo(newPoint: Point2D): void;
+        /**
+         * Scales this shapes relative to its origin by a certain amount
+         * @param factor The scale factor to apply.
+         */
+        scale(factor: number): void;
+        /**
+         * Essentially a setter for `angle`, rotates this body
+         * @param amount The angle to set this shape at
+         */
+        setAngle(amount: number): void;
+        /**
+         * Creates a copy of this shape
+         */
+        clone(): T;
+    }
+
+    /**
+     * Represents a rectangle
+     */
+    export class Rectangle implements BaseShape<Rectangle> {
+        /**
+         * This shape's axis-aligned bounding box
+         */
+        #aabb!: AxisAlignedBoundingBox;
+        get aabb() { return this.#aabb; }
+
+        /**
+         * This rectangle's width
+         */
+        #width: number;
+        /**
+         * This rectangle's width
+         */
+        get width() { return this.#width; }
+        set width(v: number) {
+            if (Number.isNaN(v)) return;
+
+            this.#width = v;
+            this.#regenerateVerticesAndAABB();
+        }
+
+        /**
+         * This rectangle's height
+         */
+        #height: number;
+        /**
+         * This rectangle's height
+         */
+        get height() { return this.#height; }
+        set height(v: number) {
+            if (Number.isNaN(v)) return;
+
+            this.#height = v;
+            this.#regenerateVerticesAndAABB();
+        }
+
+        /**
+         * The position of this rectangle's top-left corner
+         */
+        #origin: Point2D;
+        /**
+         * The position of this rectangle's top-left corner
+         */
+        get origin() { return this.#origin; }
+        translate(translation: Point2D) {
+            this.moveTo({
+                x: this.#origin.x + translation.x,
+                y: this.#origin.y + translation.y
+            });
+        }
+        moveTo(newPoint: Point2D) {
+            this.#origin.x = newPoint.x;
+            this.#origin.y = newPoint.y;
+
+            this.#regenerateVerticesAndAABB();
+        }
+
+        /**
+         * A string used to easily recognize this shape
+         */
+        readonly #type = this.constructor.name;
+        get type() { return this.#type; }
+
+        /**
+         * This rectangle's four corners
+         */
+        #vertices!: Point2D[];
+        /**
+         * Returns *a copy* of this rectangle's four corners
+         */
+        get vertices() { return this.#vertices.map(srvsdbx_Geometry.Vector2D.clone) as srvsdbx_Geometry.Point2D[]; }
+
+        /**
+         * The amount by which this shape has been rotated
+         *
+         * Rotations do not affect width nor height
+         */
+        #angle = 0;
+        /**
+         * The amount by which this shape has been rotated
+         *
+         * Rotations do not affect width nor height
+         */
+        get angle() { return this.#angle; }
+
+        /**
+         * `* It's a constructor. It constructs.`
+         *
+         * Creates a new rectangle
+         * @param origin The position of this rectangle's center
+         * @param width This rectangle's width
+         * @param height This rectangle's height
+         */
+        constructor(origin: Point2D, width: number, height: number) {
+            this.#width = width;
+            this.#height = height;
+            this.#origin = origin;
+
+            this.#regenerateVerticesAndAABB();
+        }
+
+        #regenerateVerticesAndAABB() {
+            const [halfWidth, halfHeight] = [this.#width / 2, this.#height / 2],
+
+                vertices = [
+                    new srvsdbx_Geometry.Vector2D(-halfWidth, -halfHeight),
+                    new srvsdbx_Geometry.Vector2D(+halfWidth, -halfHeight),
+                    new srvsdbx_Geometry.Vector2D(+halfWidth, +halfHeight),
+                    new srvsdbx_Geometry.Vector2D(-halfWidth, +halfHeight)
+                ]
+                    .map(vec => (vec.direction += this.#angle, vec))
+                    .map(vec => vec.plus(this.#origin, true).toPoint2D());
+
+            /*
+                Optimization for right-angles: because this
+                is a box, we can ensure that the top/bottom
+                edges' vertices have the same y component and
+                that the left/right edges' vertices have the same
+                x component
+
+                This helps reduce the impact of floating-point
+                inaccuracies
+            */
+            if (this.#angle % Math.PI == 0) {
+                const [
+                    topLeft,
+                    topRight,
+                    bottomRight,
+                    bottomLeft
+                ] = vertices;
+
+                if (topLeft.x != bottomLeft.x)
+                    topLeft.x = bottomLeft.x = srvsdbx_Math.mean([topLeft.x, bottomLeft.x]);
+
+                if (topRight.x != bottomRight.x)
+                    topRight.x = bottomRight.x = srvsdbx_Math.mean([topRight.x, bottomRight.x]);
+
+                if (topLeft.y != topRight.y)
+                    topLeft.y = topRight.y = srvsdbx_Math.mean([topLeft.y, topRight.y]);
+
+                if (bottomLeft.y != bottomRight.y)
+                    bottomLeft.y = bottomRight.y = srvsdbx_Math.mean([bottomLeft.y, bottomRight.y]);
+
+                this.#vertices = [topLeft, topRight, bottomRight, bottomLeft];
+            } else this.#vertices = vertices;
+
+            this.#aabb = AxisAlignedBoundingBox.from(this.#vertices);
+        }
+
+        #getSides() {
+            return this.#vertices
+                .map((vertex, index, vertices) => ({ start: vertex, end: vertices[(index + 1) % vertices.length] })) as LineSegment[];
+        }
+
+        setAngle(amount: number) {
+            this.#angle = amount;
+            this.#regenerateVerticesAndAABB();
+        }
+
+        scale(factor: number) {
+            if (Number.isNaN(factor)) return;
+
+            this.#width *= factor;
+            this.#height *= factor;
+
+            this.#regenerateVerticesAndAABB();
+        }
+
+        /**
+         * Tests for collisions between this shape and another
+         * @param shape The shape against which to test
+         * @returns An array of intersection points, along with the side they lie on
+         *
+         * If one shape contains another, the empty array (`[]`) will be returned. If the
+         * two shapes are completely separate, `null` will be returned.
+         */
+        collides(shape: Shape): srvsdbx_ErrorHandling.Maybe<[Point2D[], LineSegment][]> {
+            if (
+                shape == this
+                || !this.#aabb.intersects(shape.aabb)
+            ) return srvsdbx_ErrorHandling.Nothing;
+
+            const fallback = this.#aabb.contains(shape.aabb) || shape.aabb.contains(this.#aabb)
+                ? []
+                : srvsdbx_ErrorHandling.Nothing;
+
+            if (shape instanceof Rectangle) {
+                const otherSides = shape.#getSides(),
+                    hits = this.#getSides()
+                        .map(side => [
+                            otherSides
+                                .map(s => collisionFunctions.segmentSegment(s, side))
+                                .filter(srvsdbx_ErrorHandling.assertIsPresent),
+                            side
+                        ] as [Point2D[], LineSegment])
+                        .filter(([hits]) => hits.length);
+
+                return srvsdbx_ErrorHandling.createIf(hits.length != 0, hits) ?? fallback;
+            }
+
+            const hits = this.#getSides()
+                .map(side => [collisionFunctions.segmentCircle(side, shape), side] as [ReturnType<typeof collisionFunctions["segmentCircle"]>, LineSegment])
+                .filter(([collision]) => srvsdbx_ErrorHandling.assertIsPresent(collision)) as [ReturnType<typeof collisionFunctions["segmentCircle"]> & {}, LineSegment][];
+
+            return srvsdbx_ErrorHandling.createIf(hits.length != 0, hits) ?? fallback;
+        }
+
+        clone() {
+            return new Rectangle(srvsdbx_Geometry.Vector2D.clone(this.#origin), this.#width, this.#height);
+        }
+    }
+
+    /**
+     * Represents a circle
+     */
+    export class Circle implements BaseShape<Circle> {
+        /**
+         * This shape's axis-aligned bounding box
+         */
+        #aabb!: AxisAlignedBoundingBox;
+        get aabb() { return this.#aabb; }
+
+        /**
+         * This circle's radius
+         */
+        #radius: number;
+        /**
+         * This circle's radius
+         */
+        get radius() { return this.#radius; }
+        set radius(v) {
+            if (Number.isNaN(v)) return;
+
+            this.#radius = v;
+            this.#regenerateAABB();
+        }
+
+        /**
+         * The position of this circle's center
+         */
+        #origin: Point2D;
+        /**
+         * The position of this circle's center
+         */
+        get origin() { return this.#origin; }
+        translate(translation: Point2D) {
+            this.moveTo({
+                x: this.#origin.x + translation.x,
+                y: this.#origin.y + translation.y
+            });
+        }
+        moveTo(newPoint: Point2D) {
+            this.#origin.x = newPoint.x;
+            this.#origin.y = newPoint.y;
+
+            this.#regenerateAABB();
+        }
+
+        /**
+         * A string used to easily recognize this shape
+         */
+        readonly #type = this.constructor.name;
+        get type() { return this.#type; }
+
+        /**
+         * `* It's a constructor. It constructs.`
+         *
+         * Creates a new circle
+         * @param origin The position of this circle's center
+         * @param radius This circle's radius
+         */
+        constructor(origin: Point2D, radius: number) {
+            this.#radius = radius;
+            this.#origin = origin;
+
+            this.#regenerateAABB();
+        }
+
+        #regenerateAABB() {
+            this.#aabb = AxisAlignedBoundingBox.from({
+                center: this.#origin,
+                radius: this.#radius
+            });
+        }
+
+        scale(factor: number) {
+            if (Number.isNaN(factor)) return;
+
+            this.#radius *= factor;
+            this.#regenerateAABB();
+        }
+
+        // Included for compatibility, this method does nothing
+        setAngle(amount: number) { }
+
+        /**
+         * Tests for collisions between this shape and another
+         * @param shape The shape against which to test
+         * @returns An array of intersection points, along with the side they lie on
+         *
+         * If one shape contains another, the empty array (`[]`) will be returned. If the
+         * two shapes are completely separate, `null` will be returned.
+         */
+        collides(shape: Shape): srvsdbx_ErrorHandling.Maybe<[Point2D[], LineSegment][] | [Point2D] | [Point2D, Point2D]> {
+            if (
+                shape == this
+                || !this.#aabb.intersects(shape.aabb)
+            ) return srvsdbx_ErrorHandling.Nothing;
+
+            const fallback = this.#aabb.contains(shape.aabb) || shape.aabb.contains(this.#aabb) ? [] : srvsdbx_ErrorHandling.Nothing;
+
+            if (shape instanceof Rectangle)
+                return shape.collides(this) ?? fallback;
+
+            return collisionFunctions.circleCircle(this, shape) ?? fallback;
+        }
+
+        clone() {
+            return new Circle(srvsdbx_Geometry.Vector2D.clone(this.#origin), this.#radius);
+        }
+    }
+
+    /**
+     * Represents the types of shapes supported by the sandbox
+     */
+    export type Shape = Circle | Rectangle;
+
+    /**
      * matter.js (un)helpfully doesn't provide intersection points for collisions, so I'm stuck doing it
      */
     export const collisionFunctions = {
@@ -1731,75 +2278,199 @@ namespace srvsdbx_Geometry {
          * - `null` if no intersection points exist
          * - An array containing the point(s) of intersection
          */
-        segmentCircle(segment: LineSegment, circle: { origin: Point2D, radius: number; }): srvsdbx_ErrorHandling.Maybe<readonly [Point2D] | readonly [Point2D, Point2D]> {
+        segmentCircle(segment: LineSegment, circle: { origin: Point2D, radius: number; }): srvsdbx_ErrorHandling.Maybe<[Point2D] | [Point2D, Point2D]> {
             // Based on https://www.desmos.com/calculator/r9w38kskse
-            const slope = (segment.end.y - segment.start.y) / (segment.end.x - segment.start.x);
+            const [
+                minX,
+                maxX,
+                minY,
+                maxY
+            ] = [
+                    Math.min(segment.start.x, segment.end.x),
+                    Math.max(segment.start.x, segment.end.x),
+                    Math.min(segment.start.y, segment.end.y),
+                    Math.max(segment.start.y, segment.end.y)
+                ];
 
-            switch (slope) {
-                case Infinity:
-                case -Infinity: { // Vertical line
+            // Bounds check
+            if (
+                maxX < circle.origin.x - circle.radius ||
+                minX > circle.origin.x + circle.radius ||
+                maxY < circle.origin.y - circle.radius ||
+                minY > circle.origin.y + circle.radius
+            ) return srvsdbx_ErrorHandling.Nothing;
+
+            function validate<T extends Point2D[]>(points: T) {
+                const hits = points.filter(point =>
+                    srvsdbx_Math.checkBounds(point.x, minX, maxX)
+                    && srvsdbx_Math.checkBounds(point.y, minY, maxY)
+                ) as T;
+
+                return srvsdbx_ErrorHandling.createIf(hits.length != 0, hits);
+            }
+
+            switch (true) {
+                case (segment.start.x == segment.end.x): { // Vertical line
                     const dx = segment.start.x - circle.origin.x,
-                        discrim = circle.radius * circle.radius - dx * dx;
+                        discriminant = circle.radius * circle.radius - dx * dx;
 
-                    switch (Math.sign(discrim)) {
+                    switch (Math.sign(discriminant)) {
                         case -1: return srvsdbx_ErrorHandling.Nothing;
-                        case 0: return [{ x: segment.start.x, y: circle.origin.y }] as const;
+                        case 0: return validate<[Point2D]>([{ x: segment.start.x, y: circle.origin.y }]);
                         case 1: {
-                            const root = Math.sqrt(discrim);
+                            const root = Math.sqrt(discriminant);
 
-                            return [
+                            return validate<[Point2D, Point2D]>([
                                 { x: segment.start.x, y: circle.origin.y + root },
-                                { x: segment.start.x, y: circle.origin.y - root },
-                            ] as const;
+                                { x: segment.start.x, y: circle.origin.y - root }
+                            ]);
                         }
                     }
                 }
-                case 0: { // Horizontal line
+                case (segment.start.y == segment.end.y): { // Horizontal line
                     const dy = segment.start.y - circle.origin.y,
-                        discrim = circle.radius * circle.radius - dy * dy;
+                        discriminant = circle.radius * circle.radius - dy * dy;
 
-                    switch (Math.sign(discrim)) {
+                    switch (Math.sign(discriminant)) {
                         case -1: return srvsdbx_ErrorHandling.Nothing;
-                        case 0: return [{ x: circle.origin.x, y: segment.start.y }] as const;
+                        case 0: return validate<[Point2D]>([{ x: circle.origin.x, y: segment.start.y }]);
                         case 1: {
-                            const root = Math.sqrt(discrim);
+                            const root = Math.sqrt(discriminant);
 
-                            return [
+                            return validate<[Point2D, Point2D]>([
                                 { x: circle.origin.x + root, y: segment.start.y },
                                 { x: circle.origin.x - root, y: segment.start.y },
-                            ] as const;
+                            ]);
                         }
                     }
                 }
                 default: { // Any other line
-                    const dx = segment.start.x - circle.origin.x,
+                    const slope = (segment.end.y - segment.start.y) / (segment.end.x - segment.start.x),
+                        dx = segment.start.x - circle.origin.x,
                         dy = segment.start.y - circle.origin.y,
                         squareSlopeP1 = slope * slope + 1,
                         subDis = slope * dx - dy,
-                        discrim = squareSlopeP1 * circle.radius * circle.radius - subDis * subDis,
-                        sign = Math.sign(discrim);
+                        discriminant = squareSlopeP1 * circle.radius * circle.radius - subDis * subDis,
+                        sign = Math.sign(discriminant);
 
                     switch (sign) {
                         case -1: return srvsdbx_ErrorHandling.Nothing;
                         case 0:
                         case 1: {
                             const b = segment.start.y - slope * segment.start.x,
-                                numer = (circle.origin.x - slope * (b - circle.origin.y)),
-                                x = numer / squareSlopeP1,
+                                numerator = (circle.origin.x - slope * (b - circle.origin.y)),
+                                x = numerator / squareSlopeP1,
                                 f = (x: number) => slope * x + b;
 
-                            if (sign == 0) return [{ x: x, y: f(x) }] as const;
+                            if (sign == 0) return validate<[Point2D]>([{ x: x, y: f(x) }]);
 
-                            const root = Math.sqrt(discrim),
-                                x1 = (numer + root) / squareSlopeP1,
-                                x2 = (numer - root) / squareSlopeP1;
+                            const root = Math.sqrt(discriminant),
+                                x1 = (numerator + root) / squareSlopeP1,
+                                x2 = (numerator - root) / squareSlopeP1;
 
-                            return [
+                            return validate<[Point2D, Point2D]>([
                                 { x: x1, y: f(x1) },
                                 { x: x2, y: f(x2) }
-                            ] as const;
+                            ]);
                         }
                     }
+                }
+            };
+        },
+        /**
+         * Returns the intersection between two given circles
+         * @param circleA The first circle
+         * @param circleB The second circle
+         * @returns An array of intersection points
+         * - If the circle do not intersect at all, `null` is returned.
+         * - If one circle is inside the other, an empty array (`[]`) is returned
+         */
+        circleCircle(circleA: { origin: Point2D, radius: number; }, circleB: { origin: Point2D, radius: number; }): srvsdbx_ErrorHandling.Maybe<[] | [Point2D] | [Point2D, Point2D]> {
+            // Based on https://www.desmos.com/calculator/c3l5vrystu
+
+            const distanceBetweenCircles = Vector2D.distanceBetweenPts(circleA.origin, circleB.origin);
+
+            if (distanceBetweenCircles == 0) return srvsdbx_ErrorHandling.Nothing;
+            if (distanceBetweenCircles > circleA.radius + circleB.radius) return srvsdbx_ErrorHandling.Nothing;
+            if (distanceBetweenCircles < Math.max(circleA.radius, circleB.radius) - Math.min(circleA.radius, circleB.radius)) return [];
+
+            /*
+                Here, "i" means independent and "d" means dependent
+
+                This is done because in the case of dy = 0, it's necessary to swap x and y's places
+                Rather than have confusing x/y swaps, we name them dependent and independent
+
+                A "d" as the first letter means "difference", like in calculus
+            */
+            const { x: x0, y: y0 } = circleA.origin,
+                { x: x1, y: y1 } = circleB.origin,
+                [r0, r1] = [circleA.radius, circleB.radius],
+                [dx, dy] = [
+                    x0 - x1,
+                    y0 - y1
+                ],
+                [dx2, dy2, dr2] = [
+                    x1 ** 2 - x0 ** 2,
+                    y1 ** 2 - y0 ** 2,
+                    r1 ** 2 - r0 ** 2
+                ],
+                sameY = dy == 0,
+
+                [dd, di, dd2, di2] = sameY
+                    ? [dx, dy, dx2, dy2]
+                    : [dy, dx, dy2, dx2],
+
+                d_dri2 = dr2 - di2,
+                d0 = sameY ? y0 : x0,
+
+                [a, b, c] = [
+                    1 + (di / dd) ** 2,
+                    -(2 * d0 + di * (d_dri2 / (dd ** 2) - 1)),
+                    ((d_dri2 - dd ** 2) / (2 * dd)) ** 2 + d0 ** 2 - r0 ** 2
+                ],
+                discriminant = b ** 2 - 4 * a * c,
+                sign = Math.sign(discriminant);
+
+            const f = (xs: number) => (dr2 - di2 - dd2 - 2 * xs * di) / (2 * dd);
+
+            switch (sign) {
+                case -1: return srvsdbx_ErrorHandling.Nothing;
+                case 0:
+                case 1: {
+                    /*
+                        The name refers to the fact that normally, this'd be
+                        a solution to a quadratic in x
+
+                        However, as previously noted, it's possible for us to be
+                        solving a quadratic in y, so we name it so instead
+                    */
+                    const dependantBase = -b / (2 * a);
+
+                    if (sign == 0) {
+                        return [
+                            sameY ? {
+                                x: f(dependantBase),
+                                y: dependantBase
+                            } : {
+                                x: dependantBase,
+                                y: f(dependantBase)
+                            }
+                        ];
+                    }
+
+                    const root = Math.sqrt(discriminant) / (2 * a),
+                        [sx0, sx1] = [
+                            dependantBase + root,
+                            dependantBase - root,
+                        ];
+
+                    return sameY ? [
+                        { x: f(sx0), y: sx0 },
+                        { x: f(sx1), y: sx1 }
+                    ] : [
+                        { x: sx0, y: f(sx0) },
+                        { x: sx1, y: f(sx1) }
+                    ];
                 }
             }
         },
@@ -1821,8 +2492,14 @@ namespace srvsdbx_Geometry {
                 let ln: { slope: number, intercept: number; };
 
                 switch (true) {
-                    case sx == ex: ln = { slope: Infinity, intercept: sx };
-                    case sy == ey: ln = { slope: 0, intercept: sy };
+                    case sx == ex: {
+                        ln = { slope: Infinity, intercept: sx };
+                        break;
+                    }
+                    case sy == ey: {
+                        ln = { slope: 0, intercept: sy };
+                        break;
+                    }
                     default: {
                         const slope = (ey - sy) / (ex - sx);
 
@@ -1879,13 +2556,14 @@ namespace srvsdbx_Geometry {
                     */
                     const y = diagonal.slope * vertical.intercept + diagonal.intercept;
 
-                    return srvsdbx_Math.checkBounds(
-                        y,
-                        Math.min(vertical.start.y, vertical.end.y),
-                        Math.max(vertical.start.y, vertical.end.y)
-                    )
-                        ? { x: vertical.intercept, y: y }
-                        : srvsdbx_ErrorHandling.Nothing;
+                    return srvsdbx_ErrorHandling.createIf(
+                        srvsdbx_Math.checkBounds(
+                            y,
+                            Math.min(vertical.start.y, vertical.end.y),
+                            Math.max(vertical.start.y, vertical.end.y)
+                        ),
+                        { x: vertical.intercept, y: y }
+                    );
                 }
                 default: { // Two non-vertical lines
                     const minA = Math.min(lineA.start.x, lineA.end.x),
@@ -1913,10 +2591,10 @@ namespace srvsdbx_Geometry {
                         Check that this point is indeed on both lines by checking that its
                         x component is within the range of both lines
                     */
-                    return srvsdbx_Math.checkBounds(x, minA, maxA)
-                        && srvsdbx_Math.checkBounds(x, minB, maxB)
-                        ? point
-                        : srvsdbx_ErrorHandling.Nothing;
+                    return srvsdbx_ErrorHandling.createIf(
+                        srvsdbx_Math.checkBounds(x, minA, maxA) && srvsdbx_Math.checkBounds(x, minB, maxB),
+                        point
+                    );
                 }
             }
         },
@@ -1925,19 +2603,66 @@ namespace srvsdbx_Geometry {
          * @param segment The line segment
          * @param polygonVertices The polygon, represented as an array of vertices.
          * No check as to whether this set of vertices really forms a polygon is done.
+         * @returns An array of pairs, with each pair's first element being an intersection point and each pair's second element
+         * being the segment of the polygon said intersection point lies on.
          */
-        segmentPolygon(segment: LineSegment, polygonVertices: Point2D[]) {
+        segmentPolygon(segment: LineSegment, polygonVertices: Point2D[]): srvsdbx_ErrorHandling.Maybe<[Point2D, LineSegment][]> {
             // Garbage
-            return polygonVertices
-                .map((pt, i, arr) => ({ start: pt, end: arr[(i + 1) % arr.length] } as LineSegment))                           // Convert each pair into an edge
-                .map(ln => [this.segmentSegment(segment, ln), ln] as const)                                                    // Run detection on those edges
-                .filter<[Point2D, LineSegment]>((pt): pt is [Point2D, LineSegment] => pt[0] != srvsdbx_ErrorHandling.Nothing); // Filter out the misses
-        }
+            const hits = polygonVertices
+                .map((pt, i, arr) => ({ start: pt, end: arr[(i + 1) % arr.length] } as LineSegment))      // Convert each pair into an edge
+                .map(ln => [this.segmentSegment(segment, ln), ln] as const)                               // Run detection on those edges
+                .filter(([pt]) => srvsdbx_ErrorHandling.assertIsPresent(pt)) as [Point2D, LineSegment][]; // Filter out the misses
+
+            return srvsdbx_ErrorHandling.createIf(hits.length != 0, hits);
+        },
+        /**
+         * Runs a "one-to-many" collision query, where collisions are tested between one shape and a variety of others
+         * @param shape The "main" shape to test collisions against
+         * @param shapes An array of shapes against which collisions will be tested
+         * @returns An array of pairs whose first elements are collision points and whose second elements are the shapes the
+         * aforementioned points originated from
+         */
+        shapeShapes: (() => {
+            type A = [Point2D[], LineSegment][] | [Point2D] | [Point2D, Point2D];
+            type T = [A, Rectangle | Circle];
+            type M<T> = srvsdbx_ErrorHandling.Maybe<T>;
+
+            return (shape: (Rectangle | Circle), shapes: (Rectangle | Circle)[]): M<[[Point2D[], LineSegment][] | [Point2D] | [Point2D, Point2D], Rectangle | Circle][]> => {
+                const hits = shapes.map(s => [shape.collides(s), s] as [M<A>, Rectangle | Circle])
+                    .filter(([pt]) => srvsdbx_ErrorHandling.assertIsPresent(pt)) as T[];
+
+                return srvsdbx_ErrorHandling.createIf(hits.length != 0, hits);
+            };
+        })(),
+        /**
+         * Runs a "one-to-many" collision query between a line segment and a collection of shapes
+         * @param line The line segment to test
+         * @param shapes The shapes to test against
+         * @returns An array of pairs whose first elements are collision points and whose second elements are the shapes the
+         * aforementioned points originated from
+         */
+        segmentShapes: (() => {
+            type A = [Point2D] | [Point2D, Point2D] | [Point2D, LineSegment];
+            type T = [A, Rectangle | Circle];
+            type M<T> = srvsdbx_ErrorHandling.Maybe<T>;
+
+            return (line: LineSegment, shapes: (Rectangle | Circle)[]): M<[[Point2D] | [Point2D, Point2D] | [Point2D, LineSegment], Rectangle | Circle][]> => {
+                const hits = (shapes.map(s => [
+                    s instanceof Rectangle
+                        ? collisionFunctions.segmentPolygon(line, s.vertices)
+                        : collisionFunctions.segmentCircle(line, s),
+                    s
+                ]) as [srvsdbx_ErrorHandling.Maybe<A>, Rectangle | Circle][])
+                    .filter(([pt]) => srvsdbx_ErrorHandling.assertIsPresent(pt)) as T[];
+
+                return srvsdbx_ErrorHandling.createIf(hits.length != 0, hits);
+            };
+        })()
     };
 }
 
 /**
- * For a given function, creates a new function whose results will be cached, along with the arguments that created them; this allows for subsequent calls to be instant.
+ * For a given function, creates a new function whose results will be cached, along with the arguments that created them; this allows for subsequent calls to be very fast.
  *
  * For the cache to be sensible and work, a function must be [*pure*](https://en.wikipedia.org/wiki/Pure_function):
  * that is to say, for a given input, it must always return the same output, and must neither rely on nor modify any external objects.
@@ -1945,6 +2670,10 @@ namespace srvsdbx_Geometry {
  * It is generally useful caching expensive functions that are called often, and therefore have an increased likelihood of being called with the same arguments. For example,
  * the trigonometric functions are quite slow, and very commonly used—it's therefore a good idea to cache them (and to add lookup tables). Inversely, something like `floor`
  * is not very taxing, and isn't very likely to be called with the same arguments multiple times.
+ *
+ * That being said, native functions (like `Math.sin`) shouldn't be cached, because runtimes usually provide implementations that are extremely fast—way faster than any
+ * user-defined function could ever be. Caching these functions is therefore counter-productive, simply because the runtime's versions are so fast that the recalculation costs
+ * less than a cache hit.
  *
  * Remember that a cache trades increased speed for increased memory: if a function is called with a new set of arguments virtually every call, the cache will hardly ever
  * be hit, and it will always be added to as misses are converted to entries; this leads to increased memory usage with no performance gain. It's therefore not a good idea
@@ -1979,6 +2708,9 @@ namespace srvsdbx_Geometry {
  * objA === objB; // true
  * objA.foo = 5;
  * fn().foo; // 5
+ * @template P The arguments to the function
+ * @template R The return type
+ * @template B A boolean type on whether or not to add diagnostics
  * @param fn The function to be cached
  * @param config An object with properties to adjust this function's behavior
  * @returns A function with the same signature as the original that will perform a cache test. If a cache miss occurs, the original function is
@@ -1996,6 +2728,9 @@ function cachify<P extends any[] = never[], R = never, B extends boolean = false
          *
          * This is done mostly to resolve equality between objects; since using `===` compares references, we need another way to check if two
          * objects are identical.
+         *
+         * This function shouldn't rely on external state, and it should be associative (if a == b, then b == a) as well as transitive
+         * (if a == b and b == c, then a == c)
          * @param a One set of arguments
          * @param b Another set of arguments
          * @returns Whether or not the two sets of arguments are the same.
@@ -2032,7 +2767,7 @@ function cachify<P extends any[] = never[], R = never, B extends boolean = false
     /**
      * Diagnostics about this cached function
      */
-    diagnostics: {
+    readonly diagnostics: {
         /**
          * The total amount of times this function has been called
          */
@@ -2057,86 +2792,157 @@ function cachify<P extends any[] = never[], R = never, B extends boolean = false
 } : {}) & ((...args: P) => R) {
     const equalityFunction = config.equalityFunction ?? ((a: P, b: P) => a.length == b.length && a.every((v, i) => v === b[i])),
         cache = new Map<P, R>(config.initialEntries ?? []),
-        doDiag = !!config.diagnostics;
+        doDiagnostics = !!config.diagnostics;
 
     let hits = 0,
         misses = 0;
 
-    const entries = [...cache.entries()],
-        func = function(...args: P) {
-            const cacheEntry = entries.find(([key]) => equalityFunction(key, args));
-            if (cacheEntry) return (doDiag && ++hits), cacheEntry[1];
+    type Result<B extends boolean> = ReturnType<typeof cachify<P, R, B>>;
 
-            (doDiag && ++misses);
+    const entries = [...cache.entries()],
+        proxy = function(...args: P) {
+            const cacheEntry = entries.find(([key]) => equalityFunction(key, args));
+            if (cacheEntry) return (doDiagnostics && ++hits), cacheEntry[1];
+
+            (doDiagnostics && ++misses);
             const result = fn(...args);
             cache.set(args, result);
             entries.push([args, result]);
 
             return result;
-        } as ReturnType<typeof cachify<P, R, B>>;
+        } as Result<B>;
 
-    if (doDiag) {
-        (func as ReturnType<typeof cachify<P, R, true>>).diagnostics = {
+    if (doDiagnostics)
+        (proxy as { -readonly [K in keyof Result<true>]: Result<true>[K] }).diagnostics = {
             get calls() { return hits + misses; },
             get cacheSize() { return cache.size; },
             get cacheHits() { return hits; },
             get cacheMisses() { return misses; },
             get cacheHitRate() { return hits / this.calls; },
         };
-    }
 
-    return func;
+    return proxy;
 }
 
 /**
- * Takes a class as an argument and returns a version of that class that can only be instantiated once
- * @param cls The class to make a singleton of
- * @returns The [singleton](https://en.wikipedia.org/wiki/Singleton_pattern) object
+ * A variety of functions related to object-oriented programming
+ *
+ * Java go brr
  */
-function createSingleton<T extends new (...args: any[]) => object>(cls: T) {
-    let initialized = false;
+namespace srvsdbx_OOP {
+    /**
+     * Takes a class as an argument and returns a version of that class that can only be instantiated once
+     * @template T The class from which a singleton will be made
+     * @param cls The class to make a singleton of
+     * @returns The [singleton](https://en.wikipedia.org/wiki/Singleton_pattern) object
+     */
+    export function createSingleton<T extends new (...args: any[]) => object>(cls: T) {
+        let initialized = false;
 
-    return new Proxy(cls, {
-        construct(target, args) {
-            if (initialized) throw new Error(`Error: class '${cls.name}' already initialized.`);
+        return new Proxy(cls, {
+            construct(target, args) {
+                if (initialized) throw new Error(`Error: class '${cls.name}' already initialized.`);
 
-            initialized = true;
-            return new target(...args);
-        },
-    });
+                initialized = true;
+                return new target(...args);
+            },
+        });
+    }
+
+    /**
+     * Makes a class [abstract](https://en.wikipedia.org/wiki/Abstract_type), meaning that it cannot be
+     * instantiated directly; the only way to instantiate an abstract class is by way of a sub-class that is
+     * itself not abstract ("concrete").
+     * @param cls The class to make abstract
+     * @returns An abstract class whose constructor will throw a `TypeError` if called directly
+     */
+    export function makeAbstract<T extends abstract new (...args: any[]) => object>(cls: T) {
+        let skip = false;
+
+        const proxy = new Proxy(
+            cls,
+            {
+                construct(_, args, newTarget) {
+                    if (newTarget == proxy) {
+                        //@ts-expect-error
+                        if (skip) return new cls(...args);
+                        else throw new TypeError(`Cannot instantiate abstract class '${cls.name}'`);
+                    } else skip = true;
+
+                    //@ts-expect-error
+                    const obj = new cls(...args);
+                    Object.setPrototypeOf(obj, newTarget.prototype);
+                    skip = false;
+
+                    return obj;
+                }
+            }
+        );
+
+        return proxy;
+    }
+
+    /**
+     * Makes a class final, meaning that it cannot be extended; any attempt ot do so throws an error
+     * @param cls The class to make final
+     * @returns A final class whose constructor will throw a `TypeError` if called indirectly (through a subclass)
+     */
+    export function makeFinal<T extends new (...args: any[]) => object>(cls: T) {
+        const proxy = new Proxy(
+            cls,
+            {
+                construct(_, args, newTarget) {
+                    if (newTarget != proxy)
+                        throw new TypeError(`Cannot instantiate final class '${cls.name}' through a subclass ('${newTarget.name}')`);
+
+                    return new cls(...args);
+                }
+            }
+        );
+
+        return proxy;
+    }
 }
 
 /**
  * Represents an event listener
+ * @template E The event map this listener belongs to
+ * @template K The type of event this listener is bound to
  */
 interface Listener<E extends SandboxEventMap, K extends keyof E & string = keyof E & string> {
     /**
      * The event type this listener is attached to
      */
-    event: any,
+    readonly event: string,
     /**
      * The function to be invoked when the event is fired
      * @param event The event dispatched
      * @param args Any additional argument
      */
-    callback: (event: E[K]["event"], ...args: E[K]["args"]) => void,
+    callback(event: Event, ...args: E[K]): void,
     /**
      * The listener's name
      */
-    name: string,
+    readonly name: string,
     /**
      * Whether the listener should only be run once and then removed
      */
-    once?: boolean;
+    readonly once?: boolean;
 };
 
 /**
  * A map of events and arguments passed to their respective callbacks
  */
-type SandboxEventMap = Record<string, { event: Event, args: unknown[]; }>;
+type SandboxEventMap = Record<string, unknown[]>;
 
 /**
- * A custom implementation of EventTarget
+ * Extracts the event types from a `SandboxEventTarget`
+ */
+type ExtractEvents<E extends SandboxEventTarget<any>> = E extends SandboxEventTarget<infer F> ? F : never;
+
+/**
+ * A custom implementation of `EventTarget`
+ * @template E A map of events and arguments passed to their respective callbacks
  */
 class SandboxEventTarget<E extends SandboxEventMap> {
     /**
@@ -2159,43 +2965,47 @@ class SandboxEventTarget<E extends SandboxEventMap> {
 
     /**
      * Appends an event listener to a specified channel
+     * @template K The channel name
      * @param event The event type, or channel, to which this listener should be attached
      * @param callback A function that will be invoked with the event target as `this` when the event `event` is fired.
      * @returns This event target object
      */
     on<K extends keyof E & string>(event: K, callback: Listener<E, K>["callback"]) { // node.js style
         this.#listenerCount++;
-        this.#listeners.push({ event: event, name: callback.name, callback: callback, once: false });
+        this.#listeners.push({ event: event, name: callback.name, callback: callback as any, once: false });
         return this;
     }
     /**
      * Appends a "once" listener to a specified channel; "once" listeners are only invoked once and subsequent events don't trigger it
+     * @template K The channel name
      * @param event The event type, or channel, to which this listener should be attached
-     * @param callback A function that will be invoked when the event is fired. Only the first invocation following this listener's registration will be honored: the listener is dumped afterwards
+     * @param callback A function that will be invoked when the event is fired. Only the first invocation following this listener's registration
+     * will be honored: the listener is dumped afterwards
      * @returns This event target object
      */
-    once<K extends keyof E & string>(event: K, callback: Listener<E, K>["callback"]) {
+    once<K extends keyof E & string>(event: K, callback: Listener<E, K & keyof E & string>["callback"]) {
         this.#listenerCount++;
-        this.#listeners.push({ event: event, name: callback.name, callback: callback, once: true });
+        this.#listeners.push({ event: event, name: callback.name, callback: callback as any, once: true });
         return this;
     }
 
     /**
      * Removes a given listener from a channel
+     * @template K The channel name
      * @param event The event type, or channel, from which the specified listener should be removed
      * @param selector Either the name of a callback or the callback itself.
      *
-     * If the name is passed, the last callback with the specified name is removed. Callbacks which are anonymous functions can therefore be removed by passing the empty string.
+     * If the name is passed, the last callback with the specified name is removed. Callbacks which are anonymous functions
+     * can therefore be removed by passing the empty string.
      *
-     * If a function is passed, the last callback which equal to the function (using `==`) is removed
+     * If a function is passed, the last callback which equals to the function (using `==`) is removed
      * @returns Whether or not a listener was removed
      */
     removeListener<K extends keyof E & string>(event: K, selector: string | Listener<E, K>["callback"]) {
         const index = this.#listeners.findLastIndex(
-            l => l.event == event && (typeof selector == "string" ? l.name == selector : l.callback == selector)
+            listener => listener.event == event && (typeof selector == "string" ? listener.name == selector : listener.callback == selector)
         );
 
-        // If multiple callbacks have the same name, the one added last is removed (hence the .reverse())
         if (index != -1) {
             this.#listeners.splice(index, 1);
             this.#listenerCount--;
@@ -2206,9 +3016,11 @@ class SandboxEventTarget<E extends SandboxEventMap> {
 
     /**
      * Emulates the DOM-style of event listeners, but functions identically to `on` and `once`
+     * @template K The channel name
      * @param event The channel to which this listener should be appended
      * @param callback The function to be invoked when the event is fired
-     * @param options An object containing a single boolean field, `once`, which dictates whether the event listener should be cleared after its first invocation. Defaults to false
+     * @param options An object containing a single boolean field, `once`, which dictates whether the event listener should be cleared after
+     * its first invocation. Defaults to `false`
      * @returns This event target object
      */
     addEventListener<K extends keyof E & string>(event: K, callback: Listener<E, K>["callback"], options: { once: boolean; } = { once: false }): this { // DOM style
@@ -2219,7 +3031,7 @@ class SandboxEventTarget<E extends SandboxEventMap> {
      * Removes all listeners from a certain event type, or channel
      * @param event The channel to remove listeners from
      */
-    removeListenersByType(event: keyof E) { this.#listenerCount = (this.#listeners = this.#listeners.filter(l => l.event != event)).length; }
+    removeListenersByType(event: keyof E) { this.#listenerCount = (this.#listeners = this.#listeners.filter(listener => listener.event != event)).length; }
 
     /**
      * Removes every single listener on this event target
@@ -2228,22 +3040,28 @@ class SandboxEventTarget<E extends SandboxEventMap> {
 
     /**
      * Dispatches an event through a certain channel, triggering any listeners attached to it
+     * @template K The channel name
      * @param event The channel name
      * @param args Arguments to pass to the callback function
      * @returns Whether the dispatched event was cancelled (by calling `event.preventDefault()`)
      */
-    dispatchEvent<K extends keyof E & string>(event: K | E[K]["event"], ...args: E[K]["args"]) {
+    dispatchEvent<K extends keyof E & string>(event: K, ...args: E[K]) {
         if (this.#listenerCount) {
-            const ev = event instanceof Event ? event : new Event(event.toString()),
-                name = ev.type;
+            const ev = new Event(event),
+                name = ev.type,
+                once = this.#listeners.filter(listener => listener.event == name && listener.once);
 
-            for (let i = 0, length = this.#listeners.length; i < length; i++) {
-                const l = this.#listeners[i];
+            /*
+                Imagine some once listener `l`, attached to event `e`. If `l` fires the `e` event,
+                we'd expect for `l` not to be called again, since it's a once listener
 
-                l.event == name && l.callback.call(void 0, ev, ...args);
-            }
+                If the filtration step occurs after the calling though, `l` will be re-called
+                Thus, we do filtration first
+            */
+            this.#listeners = this.#listeners.filter(listener => listener.event != name || !listener.once);
 
-            this.#listeners = this.#listeners.filter(l => l.event != name || !l.once);
+            for (const listener of this.#listeners.concat(once))
+                listener.event == name && listener.callback(ev, ...args);
 
             this.#listenerCount = this.#listeners.length;
             return ev.defaultPrevented;
@@ -2254,36 +3072,29 @@ class SandboxEventTarget<E extends SandboxEventMap> {
 }
 
 /**
- * An event representing a collision between two game objects
- */
-class CollisionEvent extends Event {
-    /**
-     * The matter.js `Collision` object containing information about the collision
-     */
-    readonly #collisionData: Matter.Collision;
-    /**
-     * The matter.js `Collision` object containing information about the collision
-     */
-    get collisionData() { return this.#collisionData; }
-
-    readonly #intersectionPoints: srvsdbx_Geometry.Point2D[];
-    get intersectionPoints() { return this.#intersectionPoints; }
-
-    /**
-     * `* It's a constructor. It constructs.`
-     */
-    constructor(data: Matter.Collision, intersectionsPoints: srvsdbx_Geometry.Point2D[] = []) {
-        super("collision");
-
-        this.#collisionData = data;
-        this.#intersectionPoints = intersectionsPoints;
-    }
-}
-
-/**
  * A namespace containing various mathematical functions
  */
 namespace srvsdbx_Math {
+    /**
+     * Returns the mean of a given set of values
+     * @param values The values to take the mean of
+     * @returns The mean of the given values
+     */
+    export function mean(values: number[]) {
+        return values.reduce((acc, cur) => acc + cur, 0) / values.length;
+    }
+
+    /**
+     * Calculates the [standard deviation](https://en.wikipedia.org/wiki/Standard_deviation) of a given set of values
+     * @param values The values to take the standard deviation of
+     * @returns The standard deviation of the given values
+     */
+    export function standardDeviation(values: number[]) {
+        const average = mean(values);
+
+        return Math.sqrt(mean(values.map(value => (value - average) ** 2)));
+    }
+
     /**
      * Converts an angle measure to radians
      * @param angle The angle measure
@@ -2316,8 +3127,7 @@ namespace srvsdbx_Math {
      * Returns the amount of decimal places in a number
      * @param n The number
      */
-    export function getDecimalPlaces(n: number | Decimal) {
-        if (n instanceof Decimal) { return n.decimalPlaces(); }
+    export function getDecimalPlaces(n: number) {
         const str = n.toString();
         return +!!str.match(/\./) && str.length - (str.indexOf(".") + 1);
     }
@@ -2328,7 +3138,7 @@ namespace srvsdbx_Math {
      * @param decimalPlaces How many decimal places are desired
      * @returns The new number
      */
-    export function sliceToDecimalPlaces(number: number | Decimal, decimalPlaces: number) {
+    export function sliceToDecimalPlaces(number: number, decimalPlaces: number) {
         return +number
             .toString()
             .split(".")
@@ -2348,7 +3158,7 @@ namespace srvsdbx_Math {
      * @param a The first number
      * @param b The second number
      */
-    export function sigFigIshMult(a: number, b: number) {
+    export function sigFigIshMultiplication(a: number, b: number) {
         return sliceToDecimalPlaces(a * b, getDecimalPlaces(a) + getDecimalPlaces(b));
     }
 
@@ -2381,7 +3191,7 @@ namespace srvsdbx_Math {
         return (lowerBound == -Infinity && upperBound == Infinity) ||
             (lowerBound < value || (inclusion!.lower! && lowerBound == value))
             && (value < upperBound || (inclusion!.upper! && upperBound == value));
-    };
+    }
 
     /**
      * Normalizes an angle to within a certain range, removing redundancy (ex: 540º => 180º, -3π / 2 => π / 2)
@@ -2421,7 +3231,9 @@ namespace srvsdbx_Math {
      * @returns A number in the range `[lower, upper[`
      */
     export function bounds_random(lower: number, upper: number) {
-        return lower + Math.random() * (upper - lower);
+        return lower == upper
+            ? lower
+            : lower + Math.random() * (upper - lower);
     }
 
     /**
@@ -2435,10 +3247,12 @@ namespace srvsdbx_Math {
      * Retrieves the set of coefficients for the powers of `x` in the expression `(1 + x) ^ n` for some `n`\
      * [Reference](https://en.wikipedia.org/wiki/Binomial_coefficient)
      * @param order The exponent `n` in the above-mentioned definition.
-     * @returns An array with the coefficients. The first coefficient corresponds to the largest power of `x`, so `x ^ 3 + 3x ^ 2 + 3x + 1` would return `[1, 3, 3, 1]`\
+     * @returns An array with the coefficients. The first coefficient corresponds to the largest power of `x`,
+     * so `x ^ 3 + 3x ^ 2 + 3x + 1` would return `[1, 3, 3, 1]`
+     * @throws {RangeError} If `order` is not a positive integer
      */
     export function getBinomialCoefficients(order: number): srvsdbx_ErrorHandling.Result<number[] | bigint[], RangeError> {
-        if (order % 0 || order < 0) return { err: new RangeError(`'order' must be a positive integer; received ${order}.`) };
+        if (order % 1 || order < 0) return { err: new RangeError(`'order' must be a positive integer; received ${order}.`) };
 
         const useBigInt = order >= 50;
 
@@ -2462,7 +3276,7 @@ namespace srvsdbx_Math {
                         const array: number[] = [];
 
                         return new Array<number>(order + 1).fill(0).map(() => {
-                            const coeff = array.reduce<number | bigint>(
+                            const coefficient = array.reduce<number | bigint>(
                                 (acc, _, j) =>
                                     useBigInt
                                         ? BigInt(acc) * (BigInt(order) - BigInt(j)) / (BigInt(j) + 1n)
@@ -2479,7 +3293,7 @@ namespace srvsdbx_Math {
                             */
                             array.push(0);
 
-                            return coeff;
+                            return coefficient;
                         }) as number[] | bigint[];
                     }
                 }
@@ -2488,362 +3302,25 @@ namespace srvsdbx_Math {
     }
 }
 
-/**
- * Returns a cosmetic decorator
- *
- * **Decorators aren't supported by any browser, and since these ones are purely cosmetic,
- * having Typescript transpile them isn't worth it; for that reason, they've been commented until
- * further notice**
- */
-function generateCosmeticDecorator() {
-    //                                                                              cuz tsc kept whining
-    return function <T extends (...args: any[]) => unknown>(value: T, context: any/* ClassMethodDecoratorContext | ClassGetterDecoratorContext | ClassSetterDecoratorContext */) { };
-}
+// /**
+//  * Returns a cosmetic decorator
+//  *
+//  * **Decorators aren't supported by any browser, and since these ones are purely cosmetic,
+//  * having Typescript transpile them isn't worth it; for that reason, they've been commented until
+//  * further notice**
+//  */
+// function generateCosmeticDecorator() {
+//     //                                                                              cuz tsc kept whining
+//     return function <T extends (...args: any[]) => unknown>(value: T, context: any/* ClassMethodDecoratorContext | ClassGetterDecoratorContext | ClassSetterDecoratorContext */) { };
+// }
 
-/**
- * A purely cosmetic decorator, indicating that a method may throw certain types of errors
- * @param errors The types of errors this method may throw
- */
-function Throws(...errors: ErrorConstructor[]) {
-    return generateCosmeticDecorator();
-}
-
-/**
- * Extracts the key type from an EventMap type
- */
-type EventMapKey<T> = T extends EventMap<infer K, any> ? K : never;
-
-/**
- * Extracts the value type from an EventMap type
- */
-type EventMapValue<T> = T extends EventMap<any, infer V> ? V : never;
-
-/**
- * A class that allows one to listen to the operations performed on a map
- */
-const EventMap = (() => {
-    /**
-     * A purely cosmetic decorator, meant to convey that a method can be cancelled
-     */
-    const Cancellable = generateCosmeticDecorator();
-
-    return class EventMap<K, V> extends SandboxEventTarget<
-        {
-            get: {
-                event: Event,
-                args: [K];
-            },
-            set: {
-                event: Event,
-                args: [K, V];
-            },
-            delete: {
-                event: Event,
-                args: [K, V | undefined];
-            },
-            clear: {
-                event: Event,
-                args: [];
-            };
-        }
-    > implements Map<K, V> {
-        /**
-         * The internal map
-         */
-        #internal = new Map<K, V>;
-
-        /**
-         * The internal map's size
-         */
-        get size() { return this.#internal.size; }
-
-        /**
-         * `* It's a constructor. It constructs.`
-         */
-        constructor() {
-            super();
-        }
-
-        /**
-         * Returns the iterator of the internal map
-        */
-        [Symbol.iterator]() { return this.#internal[Symbol.iterator](); }
-
-        /**
-         * Returns the toStringTag of the internal map
-         */
-        [Symbol.toStringTag] = this.#internal[Symbol.toStringTag];
-
-        /**
-         * Calls any listeners attached to the `get` event, before calling the original method\
-         * This event cannot be cancelled
-         * @param key The key to search the map for
-         */
-        get(key: K) {
-            this.dispatchEvent("get", key);
-
-            return this.#internal.get(key);
-        }
-
-        /**
-         * Calls any listeners attached to the `set` event, before calling the original method
-         * @param key The key at which to insert the value
-         * @param value The value to insert there
-         *
-         * - `@Cancellable`: Calling `Event.preventDefault()` will prevent the set operation
-         */
-        //! @Cancellable
-        set(key: K, value: V) {
-            if (!this.dispatchEvent("set", key, value)) {
-                this.#internal.set(key, value);
-            }
-
-            return this;
-        }
-
-        /**
-         * Calls any listeners attached to the `delete` event, before calling the original method
-         * @param key The key to delete
-         *
-         * - `@Cancellable`: Calling `Event.preventDefault()` will prevent the set operation
-         */
-        //! @Cancellable
-        delete(key: K) {
-            if (!this.dispatchEvent("delete", key, this.#internal.get(key))) {
-                return this.#internal.delete(key);
-            }
-
-            return false;
-        }
-
-        /**
-         * Calls any listeners attached to the `clear` event, before calling the original method
-         *
-         * - `@Cancellable`: Calling `Event.preventDefault()` will prevent the set operation
-         */
-        //! @Cancellable
-        clear() {
-            if (!this.dispatchEvent("clear")) {
-                this.#internal.clear();
-            }
-        }
-
-        /**
-         * Directly calls the equivalent method on the internal map
-         * @param callbackfn A function to execute for each key/value pair in the map
-         * @param thisArg The `this` argument to invoke each callback with
-         */
-        forEach(callbackfn: (value: V, key: K, map: Map<K, V>) => void, thisArg?: any) {
-            return this.#internal.forEach(callbackfn, thisArg);
-        }
-
-        /**
-         * Directly calls the internal map's `has` method
-         * @param key The key to check for
-         */
-        has(key: K) {
-            return this.#internal.has(key);
-        }
-
-        /**
-         * Directly calls the internal map's `entries`
-         */
-        entries() {
-            return this.#internal.entries();
-        }
-
-        /**
-         * Directly calls the internal map's `keys`
-         */
-        keys() {
-            return this.#internal.keys();
-        }
-
-        /**
-         * Directly calls the internal map's `values`
-         */
-        values() {
-            return this.#internal.values();
-        }
-    };
-})();
-type EventMap<K, V> = InstanceType<typeof EventMap<K, V>>;
-
-/**
- * A lot of maps are used in the place of regular values in the goal of
- * separating sources from one another—for example, velocities: an object
- * only has one velocity, but it can be made up of many others; maybe the
- * wind is acting on it, and so is a water current, or another object.
- *
- * It's best to keep these sources separate so they can manage themselves
- * and not step on each other's toes, but in order to do any physics, we
- * must reduce them down to a single, "net" value. This is done by calling
- * `[...map.values()].reduce`, and doing whatever reduction operation (adding,
- * multiplying, etc)
- *
- * This calculation can be quite expensive, and is quite unnecessary if the map
- * doesn't change. This class serves to alleviate that problem by caching the
- * result, only recalculating it when the map is mutated
- *
- * @template K The type of the keys used in this map
- * @template V The type of the values used in this map
- * @template R The type of the reduction used in this map. `V` by default
- */
-class ReducibleMap<K, V, R = V> implements Map<K, V> {
-    /**
-     * An internal `Map`, whose operations will trigger recalculations
-     */
-    readonly #internal = new Map<K, V>();
-
-    /**
-     * A function that will be called on each element of the map in order to
-     * accumulate the map's values into a single result
-     *
-     * @param accumulator The value of the accumulated result. If a default value is provided, it'll be that.
-     * If not, the first entry's value is used. If the map is empty and there is no default value, an error is thrown.
-     * After all the elements have been queried, the value of `accumulator` is returned.
-     * @param currentValue The current value; if there is no default value, the first call will have the second value
-     * here and the first value already in `accumulator`
-     * @param currentKey The current key; if there is no default value, the first call will have the second key
-     * here
-     * @param map The map currently being iterated through
-     */
-    #reducer: (accumulator: R, currentValue: V, currentKey: K, map: ReducibleMap<K, V, R>) => R;
-
-    /**
-     * A value the accumulator should start at. If the map is empty, this is returned. If the map is empty and
-     * there is no default value, an error is thrown.
-     */
-    readonly #defaultValue: R | undefined;
-
-    /**
-     * A cached result of the reduction operation. Invalidated (and then recalculated) whenever the map is mutated
-     */
-    #cachedValue: R | undefined;
-    /**
-     * The result of the reduction operation applied over this map's contents
-     * @throws {TypeError} If the map is empty and no default value was specified
-     */
-    //! @Throws(TypeError)
-    get reduced() {
-        this.#cachedValue ?? this.#performReduction();
-
-        return this.#cachedValue!;
-    }
-
-    get size() { return this.#internal.size; }
-
-    [Symbol.iterator]() { return this.#internal[Symbol.iterator](); }
-    [Symbol.toStringTag] = this.#internal[Symbol.toStringTag];
-
-    /**
-     * `It's a constructor. It constructs`
-     * @param reducer The function that will be used to reduce this map; identical in role to `Array.prototype.reduce`
-     * @param defaultValue Optionally specify a value that will start as the accumulated value; if the map is empty
-     * and no default value specified, an error is thrown
-     */
-    constructor(
-        reducer: (accumulator: R, currentValue: V, currentKey: K, map: ReducibleMap<K, V, R>) => R,
-        defaultValue?: R
-    ) {
-        this.#reducer = reducer;
-        this.#defaultValue = defaultValue;
-
-        try {
-            this.#performReduction();
-        } catch (_) {
-            // If the map is empty and has no default value, we'll nevertheless let it slide
-            // It's quite uncommon for a map to be populated on creation, and perhaps the user
-            // knows that when the map will be reduced, it's guaranteed to be populated
-        }
-    }
-
-    /**
-     * Performs the actual reduction operation
-     *
-     * @throws {TypeError} If the map is empty and no default value has been specified
-     */
-    //! @Throws(TypeError)
-    #performReduction() {
-        if (this.size) {
-            const entries = [...this.entries()];
-
-            if (this.#defaultValue !== void 0) {
-                this.#cachedValue = entries.reduce<R>(
-                    (acc, cur) => this.#reducer(acc, cur[1], cur[0], this),
-                    this.#defaultValue
-                );
-            } else {
-                // R = V, therefore, any cast between the two is safe
-                this.#cachedValue = entries.slice(1).reduce<V>(
-                    (acc, cur) => this.#reducer(acc as unknown as R, cur[1], cur[0], this) as unknown as V,
-                    entries[0][1]
-                ) as unknown as R;
-            }
-        } else {
-            if (this.#defaultValue !== void 0)
-                this.#cachedValue = this.#defaultValue!;
-            else {
-                this.#cachedValue = void 0;
-                throw new TypeError("Reduction on an empty map with no default value");
-            }
-        }
-    }
-
-    /**
-     * Clears the internal map
-     */
-    clear() {
-        this.#internal.clear();
-
-        // See the comment in .delete
-        try {
-            this.#performReduction();
-        } catch (_) { }
-    }
-
-    delete(key: K) {
-        const b = this.#internal.delete(key);
-
-        /*
-            It's okay for the reduction to fail here
-
-            Pretty much the only time the reduction's failure isn't okay
-            is when the value is fetched for use; here, we're just trying
-            to be ahead of the curve by adjusting it in advance, but
-            if that doesn't work, then we can defer that
-            calculation to later.
-        */
-        try {
-            this.#performReduction();
-        } catch (_) { }
-
-        return b;
-    }
-
-    /**
-     * Adds a new element with a specified key and value to the Map.
-     * If an element with the same key already exists, the element will be updated.
-     * @param key The key to insert the element at
-     * @param value The value to insert at the specified key
-     * @returns This `ReducibleMap` instance
-     * @throws {TypeError} If the map is empty and no default value has been specified
-     */
-    //! @Throws(TypeError)
-    set(key: K, value: V) {
-        this.#internal.set(key, value);
-
-        this.#performReduction();
-        return this;
-    }
-
-    get(key: K) { return this.#internal.get(key); }
-    has(key: K) { return this.#internal.has(key); }
-    forEach(callbackfn: (value: V, key: K, map: Map<K, V>) => void, thisArg?: any) { this.#internal.forEach(callbackfn, thisArg); }
-    entries() { return this.#internal.entries(); }
-    keys() { return this.#internal.keys(); }
-    values() { return this.#internal.values(); }
-}
+// /**
+//  * A purely cosmetic decorator, indicating that a method may throw certain types of errors
+//  * @param errors The types of errors this method may throw
+//  */
+// function Throws(...errors: ErrorConstructor[]) {
+//     return generateCosmeticDecorator();
+// }
 
 /**
  * Cancels a timer if it is present. Works with `setInterval` and `setTimeout`.

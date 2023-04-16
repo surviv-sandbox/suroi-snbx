@@ -15,8 +15,8 @@ export default {
             width: 0.15,
             height: 30
         },
-        obstacleMult: 5,
-        headshotMult: 1.5,
+        obstacleMultiplier: 5,
+        headshotMultiplier: 1.5,
         firstShotAccuracy: {
             enabled: false,
             rechargeTime: 1e10

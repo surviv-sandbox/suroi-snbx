@@ -12,7 +12,7 @@ interface SimpleStatusEffect<S extends { [key: string]: unknown; }> extends Simp
      * A function that may be specified in order to run code whenever this status effect is renewed
      *
      * It will *not* be called on the initial infliction (`init` will).
-     * 
+     *
      * @param state The state of this status effect
      */
     renew?: (state: S) => void;
@@ -52,8 +52,8 @@ class StatusEffectPrototype<S extends { [key: string]: unknown; }> extends Impor
      * @param obj The `SimpleStatusEffect` object to parse
      * @returns A new `StatusEffectPrototype`
      */
-    static async from<S extends { [key: string]: unknown; }>(obj: SimpleStatusEffect<S>): Promise<srvsdbx_ErrorHandling.Result<StatusEffectPrototype<S>, SandboxError[]>> {
-        const errors: SandboxError[] = [],
+    static async from<S extends { [key: string]: unknown; }>(obj: SimpleStatusEffect<S>): Promise<srvsdbx_ErrorHandling.Result<StatusEffectPrototype<S>, srvsdbx_Errors.SandboxError[]>> {
+        const errors: srvsdbx_Errors.SandboxError[] = [],
             HPDeco = obj.healthBarDecoration ? srvsdbx_ErrorHandling.handleResult(
                 await srvsdbx_AssetManagement.loadingFunctions.loadImageAsync(`${obj.includePath}/${obj.healthBarDecoration}`),
                 srvsdbx_ErrorHandling.identity,
@@ -142,18 +142,18 @@ class StatusEffectPrototype<S extends { [key: string]: unknown; }> extends Impor
      * `* It's a constructor. It constructs.`
      */
     constructor(
-        name: typeof ImportedObject.prototype.name,
-        displayName: typeof ImportedObject.prototype.displayName,
-        objectType: typeof ImportedObject.prototype.objectType,
-        targetVersion: typeof ImportedObject.prototype.targetVersion,
-        namespace: typeof ImportedObject.prototype.namespace,
-        includePath: typeof ImportedObject.prototype.includePath,
-        init: typeof StatusEffectPrototype.prototype.init,
-        renew: typeof StatusEffectPrototype.prototype.renew,
-        update: typeof StatusEffectPrototype.prototype.update,
-        tearDown: typeof StatusEffectPrototype.prototype.tearDown,
-        decay: typeof StatusEffectPrototype.prototype.decay,
-        healthBarDecoration: typeof StatusEffectPrototype.prototype.healthBarDecoration,
+        name: ImportedObject["name"],
+        displayName: ImportedObject["displayName"],
+        objectType: ImportedObject["objectType"],
+        targetVersion: ImportedObject["targetVersion"],
+        namespace: ImportedObject["namespace"],
+        includePath: ImportedObject["includePath"],
+        init: StatusEffectPrototype<S>["init"],
+        renew: StatusEffectPrototype<S>["renew"],
+        update: StatusEffectPrototype<S>["update"],
+        tearDown: StatusEffectPrototype<S>["tearDown"],
+        decay: StatusEffectPrototype<S>["decay"],
+        healthBarDecoration: StatusEffectPrototype<S>["healthBarDecoration"],
     ) {
         super(name, displayName, objectType, targetVersion, namespace, includePath);
 
@@ -163,6 +163,18 @@ class StatusEffectPrototype<S extends { [key: string]: unknown; }> extends Impor
         this.#tearDown = tearDown;
         this.#decay = decay;
         this.#healthBarDecoration = healthBarDecoration;
+    }
+
+    /**
+     * Creates a new `StatusEffect` based on this prototype
+     * @param target The target to apply this status effect to
+     * @returns The newly created status effect
+     */
+    create(target: PlayerLike) {
+        return new StatusEffect<S>(
+            this,
+            target
+        );
     }
 }
 
@@ -240,9 +252,18 @@ class StatusEffect<S extends { [key: string]: unknown; }> implements Destroyable
     }
 
     /**
+     * Sets this status effect's affliction time to the current time, effectively renewing it if it has a limited lifespan
+    */
+    renew() {
+        this.#afflictionTime = gamespace.currentUpdate;
+        this.#prototype.renew?.(this.#state);
+    }
+
+    /**
      * Clears this object's non-primitive fields to try and coax the GC into cleaning up
      */
     destroy() {
+        if (this.#destroyed) return;
         this.#prototype.tearDown?.(this.#target, this.#state);
         this.#target.statusEffects.delete(this as unknown as StatusEffect<{}>);
 
@@ -250,13 +271,5 @@ class StatusEffect<S extends { [key: string]: unknown; }> implements Destroyable
 
         //@ts-expect-error
         this.#prototype = this.#state = this.#target = void 0;
-    }
-
-    /**
-     * Sets this status effect's affliction time to the current time, effectively renewing it if it has a limited lifespan
-     */
-    renew() {
-        this.#afflictionTime = gamespace.currentUpdate;
-        this.#prototype.renew?.(this.#state);
     }
 }

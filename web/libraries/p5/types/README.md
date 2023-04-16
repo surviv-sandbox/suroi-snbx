@@ -8,9 +8,9 @@ This package contains type definitions for p5 (https://github.com/processing/p5.
 Files were exported from https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/p5.
 
 ### Additional Details
- * Last updated: Mon, 28 Feb 2022 02:01:42 GMT
+ * Last updated: Mon, 27 Mar 2023 18:33:55 GMT
  * Dependencies: none
  * Global values: none
 
 # Credits
-These definitions were written by [p5-types](https://github.com/p5-types), [Pierre Krafft](https://github.com/Zalastax), [Rahul V](https://github.com/rahulv4667), and [Gareth Williams](https://github.com/gaweph).
+These definitions were written by [p5-types](https://github.com/p5-types).

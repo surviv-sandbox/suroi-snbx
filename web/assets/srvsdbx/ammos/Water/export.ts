@@ -1,5 +1,5 @@
 export default {
-    name: "Water",
+    name: "water",
     targetVersion: "0.10.0",
     tints: {
         normal: "#3771FA",
@@ -19,7 +19,7 @@ export default {
         type: "explosive",
         images: ["./tracer.svg"],
         explodeOnContact: true,
-        explosionType: "srvsdbx::explosion_water"
+        explosionType: "srvsdbx::water"
     },
-    casing: "srvsdbx::casing_water"
+    casing: "srvsdbx::casingWater"
 } satisfies ExportInterface<SimpleAmmo>;

@@ -45,7 +45,9 @@ declare const _default: {
             perp: number;
         };
     };
-    obstacleMult: number;
+    obstacleMultiplier: number;
+    stonePiercing: false;
+    armorPiercing: true;
     useDelay: number;
     animations: {
         idle: "none";

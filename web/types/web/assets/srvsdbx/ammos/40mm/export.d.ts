@@ -20,7 +20,7 @@ declare const _default: {
         explosionType: string;
         images: string[];
         spinVel: number;
-        heightPeak: number;
+        scale(t: number): number;
         explodeOnContact: true;
     };
     casing: string;

@@ -2,7 +2,7 @@ declare const _default: {
     name: string;
     targetVersion: string;
     damage: number;
-    obstacleMult: number;
+    obstacleMultiplier: number;
     radii: {
         min: number;
         max: number;

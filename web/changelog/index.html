@@ -16,6 +16,68 @@
     <main id="main-cont">
         <div class="update nightly">
             <div class="header">
+                <h2>v0.10.0 beta 3</h2>
+                <h3>April 15<sup>th</sup> 2023</h3>
+            </div>
+            <div class="content">
+                <ul>
+                    <li>Stack changes
+                        <ul>
+                            <li>Electron (23.1.0 -> 23.2.3)</li>
+                            <li>p5 (1.5.0 -> 1.6.0)</li>
+                            <li>matterjs (0.18.0 -> NA)</li>
+                            <li>poly-decomp (0.3.0 -> NA)</li>
+                            <li>decimaljs (10.4.0 -> NA)</li>
+                        </ul>
+                    </li>
+                    <li>Added equipments; vests, helmets and backpacks</li>
+                    <li>Added some basic obstacles:<ul>
+                            <li>Rocks</li>
+                            <li>Bushes</li>
+                            <li>Trees</li>
+                            <li>Barrels</li>
+                            <li>Crates</li>
+                        </ul>
+                    </li>
+                    <li>Added weapons:<ul>
+                            <li>Flare Gun and Dual Flare Gun</li>
+                            <li>SIX12; credit to Sylven_Ryth#7691</li>
+                            <li>De Lisle; credit to Crayons#4388</li>
+                        </ul>
+                    </li>
+                    <li>Inverted the keybinds for <code>Next item</code> and <code>Previous item</code></li>
+                    <li>Pressing <code>G</code> gives the user a new set of random weapons</li>
+                    <li>Pressing <code>P</code> toggles the HUD</li>
+                    <li>Bug fixes:
+                        <ul>
+                            <li>Fixed the HP bar decoration for status effects not updating</li>
+                            <li>Added a missing HP bar decoration for the Burn effect</li>
+                            <li>Fixed some broken links on the attributions page (thanks SquareCube)</li>
+                            <li>Movement penalties for using items are now correctly applied for all items</li>
+                            <li>Corrected some movement speed penalty logic</li>
+                            <li>Corrected the MP220's switch delay (from 900 to 300)</li>
+                            <li>Corrected the Mosin-Nagant's switch delay (from 1 to 1.5)</li>
+                            <li>Toned down the speed at which the AK-47 ejects its casings</li>
+                            <li>Circular jitter now works more accurately, spreading bullets in an area rather than on
+                                its edge</li>
+                            <li>Adjusted switching logic to allow overclock (thanks Stark and Draco)</li>
+                            <li>Bullets now shrink when reaching their end-of-life</li>
+                            <li>Collisions involving an uncollidable object are no longer processed</li>
+                            <li>Fixed particles always having the same starting/ending scale</li>
+                            <li>The ammo counter is now correctly hidden when the user has no weapons (previously, the
+                                counter would be blank if the player started the level with no guns)</li>
+                        </ul>
+                    </li>
+                    <li>Adjusted some SVG's</li>
+                    <li>Adjusted some colors on the attributions page</li>
+                    <li>Internally corrected some animation-related systems</li>
+                    <li>The range for melee weapons is now shown between an interval starting when the melee weapon
+                        deals damage and ending 100ms later</li>
+                </ul>
+            </div>
+        </div>
+        <div class="update nightly">
+            <div class="header">
                 <h2>v0.10.0 beta 2</h2>
                 <h3>February 23<sup>rd</sup> 2023</h3>
             </div>
@@ -50,7 +112,7 @@
                     </li>
                     <li>(Technical) An object's orientation is no longer locked to its parent's when following</li>
                     <li>(Technical) Object ID's now use <code>BigInteger</code>s</li>
-                    <li>The Pan no longer reflects bullets while attackning</li>
+                    <li>The Pan no longer reflects bullets while attacking</li>
                     <li>Adjusted the rate at which targets grow when hit with the Spud Gun</li>
                     <li>Reduced the opacity of the Potato Cannon and Spud Gun's trails</li>
                     <li>Corrected the M134's size and position</li>
@@ -538,7 +600,7 @@
                                     href="https://github.com/surviv-underclock/docs">this paper on the subject</a>
                         </ul>
                     <li>Made hand outlines slightly thicker
-                    <li>Fixed a bug that prevented firing while reloading single-shot realoding weapons like the M870
+                    <li>Fixed a bug that prevented firing while reloading single-shot reloading weapons like the M870
                     <li>Minor weapon adjustments (mostly cosmetic)
                     <li>Binded <code>slot0</code>, <code>slot1</code>, <code>last_item</code>, <code>next_item</code>
                         and

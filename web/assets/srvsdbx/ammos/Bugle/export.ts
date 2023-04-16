@@ -1,5 +1,5 @@
 export default {
-    name: "Bugle",
+    name: "bugle",
     targetVersion: "0.10.0",
     tints: {
         normal: "#FFF0",
@@ -19,5 +19,5 @@ export default {
         type: "bullet",
         images: "none",
     },
-    casing: "srvsdbx::casing_bugle"
+    casing: "srvsdbx::casingBugle"
 } satisfies ExportInterface<SimpleAmmo>;

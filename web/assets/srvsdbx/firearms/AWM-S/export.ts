@@ -15,8 +15,8 @@ export default {
             width: 0.25,
             height: 200 / 9
         },
-        obstacleMult: 1.5,
-        headshotMult: 1,
+        obstacleMultiplier: 1.5,
+        headshotMultiplier: 1,
         firstShotAccuracy: {
             enabled: false,
             rechargeTime: 1e10
@@ -25,7 +25,7 @@ export default {
         projectiles: 1
     },
     suppressed: true,
-    caliber: "srvsdbx::.308 Subsonic",
+    caliber: "srvsdbx::.308subsonic",
     useDelay: 1500,
     deployGroup: 0,
     accuracy: {

@@ -16,8 +16,8 @@ export default {
             height: 20
         },
         effectsOnHit: ["srvsdbx::wet"],
-        obstacleMult: 1,
-        headshotMult: 2,
+        obstacleMultiplier: 1,
+        headshotMultiplier: 2,
         firstShotAccuracy: {
             enabled: false,
             rechargeTime: 1e10
@@ -26,7 +26,7 @@ export default {
         projectiles: 1
     },
     suppressed: false,
-    caliber: "srvsdbx::Water",
+    caliber: "srvsdbx::water",
     useDelay: srvsdbx_Math.toMS(600, "RPM"),
     deployGroup: 0,
     accuracy: {

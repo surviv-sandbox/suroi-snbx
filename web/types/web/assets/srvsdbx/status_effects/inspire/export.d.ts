@@ -1,11 +1,5 @@
 type InspireInfoMap = {
-    /**
-     * The last time a particle was spawned
-     */
     lastParticleTick: number;
-    /**
-     * When the next particle will be spawned
-     */
     nextParticleSpawn: number;
 };
 declare const _default: {

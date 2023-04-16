@@ -15,8 +15,8 @@ export default {
             width: 0.2,
             height: 9
         },
-        obstacleMult: 1,
-        headshotMult: 1.5,
+        obstacleMultiplier: 1,
+        headshotMultiplier: 1.5,
         firstShotAccuracy: {
             enabled: true,
             rechargeTime: 500
@@ -25,7 +25,7 @@ export default {
         projectiles: 1
     },
     suppressed: false,
-    caliber: "srvsdbx::Lasr ammo",
+    caliber: "srvsdbx::lasr",
     useDelay: 120,
     deployGroup: 0,
     accuracy: {

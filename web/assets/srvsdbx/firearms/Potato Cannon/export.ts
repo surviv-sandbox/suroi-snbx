@@ -14,6 +14,8 @@ export default {
         tracer: {
             width: "auto",
             height: 1.2,
+            forceMaximumLength: true,
+            noShrink: true,
             trail: {
                 image: "./tracer.svg",
                 width: 0.6,
@@ -25,8 +27,8 @@ export default {
                 }
             }
         },
-        obstacleMult: 1.3,
-        headshotMult: 1,
+        obstacleMultiplier: 1.3,
+        headshotMultiplier: 1,
         firstShotAccuracy: {
             enabled: false,
             rechargeTime: 1e10
@@ -35,7 +37,7 @@ export default {
         projectiles: 1
     },
     suppressed: false,
-    caliber: "srvsdbx::Potato Explosive",
+    caliber: "srvsdbx::potato",
     useDelay: srvsdbx_Math.toMS(1.2, "s"),
     deployGroup: 3,
     accuracy: {

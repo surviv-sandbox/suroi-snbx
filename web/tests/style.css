@@ -1,0 +1,114 @@
+:root {
+    --hue: 240;
+}
+
+body {
+    margin: 0;
+}
+
+html {
+    background-color: hsl(var(--hue), 15%, 10%);
+}
+
+div {
+    padding: 5px 10px;
+    box-sizing: border-box;
+    overflow-wrap: break-word;
+}
+
+div.test {
+    background-color: hsl(var(--hue), 15%, 20%);
+    border: 5px solid hsl(var(--hue), 15%, 25%);
+    font-family: roboto, arial, monospace;
+    color: hsl(var(--hue), 15%, 95%);
+}
+
+div.test-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+div.test-result {
+    margin: 15px 0;
+    border-radius: 3px;
+    border-width: 3px;
+    border-style: solid;
+    font-family: Menlo, monospace;
+}
+
+div.test-group {
+    margin: 15px 0;
+    background-color: hsl(var(--hue), 20%, 20%);
+    border: 5px solid hsl(var(--hue), 20%, 25%);
+    font-family: roboto, arial, monospace;
+    color: hsl(var(--hue), 15%, 95%);
+}
+
+div.test-description {
+    margin: 30px 0 15px 0;
+    border-radius: 3px;
+    border-width: 3px;
+    border-style: solid;
+    font-family: Menlo, monospace;
+    background-color: hsl(240, 55%, 30%);
+    border-color: hsl(240, 55%, 35%);
+}
+
+div.test-result.test-pass {
+    background-color: hsl(120, 55%, 30%);
+    border-color: hsl(120, 55%, 35%);
+}
+
+div.test-result.test-fail {
+    background-color: hsl(0, 55%, 30%);
+    border-color: hsl(0, 55%, 35%);
+}
+
+div.test-aggregate {
+    margin: 15px 0;
+    padding: 0 10px;
+    background-color: hsl(var(--hue), 20%, 25%);
+    border: 5px solid hsl(var(--hue), 20%, 30%);
+}
+
+div.test-aggregate.aggregate-pass {
+    background-color: hsl(120, 25%, 30%);
+    border: 5px solid hsl(120, 25%, 35%);
+}
+
+div.test-aggregate.aggregate-fail {
+    background-color: hsl(0, 25%, 30%);
+    border: 5px solid hsl(0, 25%, 35%);
+}
+
+div.test-group>div.test-header,
+div.test-aggregate>div.test-header {
+    margin-top: 5px;
+}
+
+div.test-group>div.test-header {
+    cursor: pointer;
+}
+
+div.test-group>div.test-header h2,
+div.test-group>div.test-header h3,
+div.test-aggregate>div.test-header h2,
+div.test-aggregate>div.test-header h3 {
+    margin: 0;
+}
+
+@font-face {
+    font-family: roboto;
+    src: url("../global_assets/RobotoCondensed-Regular.ttf");
+}
+
+@font-face {
+    font-family: "roboto bold";
+    src: url("../global_assets/RobotoCondensed-Bold.ttf");
+}
+
+@font-face {
+    font-family: jura;
+    src: url("../global_assets/Jura-Bold.ttf");
+}

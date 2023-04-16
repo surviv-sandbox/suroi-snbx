@@ -15,8 +15,8 @@ export default {
             width: 0.15,
             height: 20
         },
-        obstacleMult: 1,
-        headshotMult: 2,
+        obstacleMultiplier: 1,
+        headshotMultiplier: 2,
         firstShotAccuracy: {
             enabled: false,
             rechargeTime: 1e10
@@ -76,8 +76,8 @@ export default {
             perp: 0
         },
         velocity: {
-            parr: () => srvsdbx_Math.meanDevPM_random(-0.9, 0.3, true),
-            perp: () => srvsdbx_Math.meanDevPM_random(-2, 1.7, true)
+            parr: () => srvsdbx_Math.meanDevPM_random(-0.5, 0.3, true),
+            perp: () => srvsdbx_Math.meanDevPM_random(-2, 0.6, true)
         },
         spawnOn: "fire",
         spawnDelay: 0

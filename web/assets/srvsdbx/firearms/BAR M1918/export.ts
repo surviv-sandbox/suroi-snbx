@@ -15,8 +15,8 @@ export default {
             width: 0.15,
             height: 20
         },
-        obstacleMult: 1.75,
-        headshotMult: 2,
+        obstacleMultiplier: 1.75,
+        headshotMultiplier: 2,
         firstShotAccuracy: {
             enabled: false,
             rechargeTime: 1e10
@@ -25,7 +25,7 @@ export default {
         projectiles: 1
     },
     suppressed: false,
-    caliber: "srvsdbx::7.62x51mm",
+    caliber: "srvsdbx::.30-06",
     useDelay: 120,
     deployGroup: 0,
     accuracy: {

@@ -9,16 +9,17 @@ interface UIElement {
     /**
      * A function that'll be called to create this element in the DOM
      * @param uiContainer The `HTMLDivElement` containing the other UI elements
-     */
-    readonly create?: (uiContainer: HTMLDivElement) => void;
+    */
+    create?(uiContainer: HTMLDivElement): void;
     /**
-     * A function that'll be called to update this UI element
+     * A function that will be called to update this UI element
+     * @param uiContainer The `HTMLDivElement` containing the other UI elements
      *
      * _It is recommended to first check that an update is actually required before
      * making any DOM operations; for example, a health bar only needs to be updated
      * when the user's health changes_
      */
-    readonly update?: () => void;
+    update?(uiContainer: HTMLDivElement): void;
     /**
      * A method that will be invoked in order to remove this UI element
      */
@@ -32,7 +33,7 @@ interface UIElement {
 /**
  * An object for managing UI elements
  */
-const UIManager = new (createSingleton(class UIManager {
+const UIManager = new (srvsdbx_OOP.createSingleton(class UIManager {
     /**
      * The `HTMLDivElement` containing the UI
      */
@@ -43,17 +44,13 @@ const UIManager = new (createSingleton(class UIManager {
             className: "ui"
         }
     );
-    /**
-     * The `HTMLDivElement` containing the UI
-     */
-    get container() { return this.#container; }
 
     /**
      * A Map whose values correspond to this manager's elements and whose keys are their corresponding names
      */
     #elements: Map<string, UIElement> = new Map;
     /**
-     * A Map whose valuess correspond to this manager's elements and whose keys are their corresponding names
+     * A Map whose values correspond to this manager's elements and whose keys are their corresponding names
      */
     get elements() { return this.#elements; }
 
@@ -61,6 +58,15 @@ const UIManager = new (createSingleton(class UIManager {
      * UI elements marked as `core` won't be cleared when calling `UIManager.clear()` unless `force` is set to `true`.
      */
     get core() { return [...this.#elements.values()].filter(e => e.core); }
+
+    /**
+     * Whether or not the HUD is currently being hidden
+     */
+    #hidden = false;
+    /**
+     * Whether or not the HUD is currently being hidden
+     */
+    get hidden() { return this.#hidden; }
 
     /**
      * Adds UI elements to the manager
@@ -109,8 +115,11 @@ const UIManager = new (createSingleton(class UIManager {
 
         document.body.appendChild(this.#container);
 
-        for (const [_, ele] of this.#elements)
-            ele.create?.(this.#container);
+        for (const [, element] of this.#elements)
+            element.create?.(this.#container);
+
+        if (this.#hidden)
+            this.#container.style.display = "none";
     }
 
     /**
@@ -119,10 +128,33 @@ const UIManager = new (createSingleton(class UIManager {
      * This method does nothing if there is no `Player` present
      */
     update() {
-        if (!gamespace.player) return;
+        if (!gamespace.player || this.#hidden) return;
 
-        for (const [_, ele] of this.#elements)
-            ele.update?.();
+        for (const [, element] of this.#elements)
+            element.update?.(this.#container);
+    }
+
+    /**
+     * Shows HUD elements that haven't otherwise been hidden
+     */
+    show() {
+        this.#hidden = false;
+        this.#container.style.display = "";
+    }
+
+    /**
+     * Hides every HUD element from view
+    */
+    hide() {
+        this.#hidden = true;
+        this.#container.style.display = "none";
+    }
+
+    /**
+     * Shows the HUD if it is currently hidden and hides it otherwise
+     */
+    toggle() {
+        (this.#hidden = !this.#hidden) ? this.hide() : this.show();
     }
 }));
 
@@ -146,29 +178,33 @@ const UIManager = new (createSingleton(class UIManager {
                         "div",
                         {
                             id: "ui-ammo-counter-main",
-                            className: "ui ammo"
+                            className: "ui ammo",
+                            style: {
+                                display: "none"
+                            }
                         }
                     ),
                     ui.reserve = makeElement(
                         "div",
                         {
                             id: "ui-ammo-counter-res",
-                            className: "ui ammo"
+                            className: "ui ammo",
+                            style: {
+                                display: "none"
+                            }
                         }
                     )
                 ]
             );
 
-            let count: srvsdbx_ErrorHandling.Maybe<number>;
+            let count: number | undefined;
 
             return {
                 name: "ammo",
-                create(cont) {
-                    cont.appendChild(ui.container);
-                },
+                create(container) { container.appendChild(ui.container); },
                 update() {
                     const activeItem = gamespace.player?.activeItem,
-                        ammo: srvsdbx_ErrorHandling.Maybe<number> = (activeItem as Gun)?.ammo ?? srvsdbx_ErrorHandling.Nothing;
+                        ammo = (activeItem as srvsdbx_ErrorHandling.Maybe<Gun>)?.ammo;
 
                     if (ammo === count) return;
 
@@ -234,14 +270,12 @@ const UIManager = new (createSingleton(class UIManager {
                 ]
             );
 
-            let health: srvsdbx_ErrorHandling.Maybe<number> = srvsdbx_ErrorHandling.Nothing,
+            let health: number | undefined,
                 effectLength = 0;
 
             return {
                 name: "HP",
-                create(cont) {
-                    cont.appendChild(ui.container);
-                },
+                create(container) { container.appendChild(ui.container); },
                 update() {
                     const player = gamespace.player!,
                         percent = player.health == Infinity ? 100 : Math.max(0, 100 * player.health / player.maxHealth);
@@ -265,30 +299,30 @@ const UIManager = new (createSingleton(class UIManager {
                         }
                     }
 
-                    const effects = [...player.statusEffects.values()].filter(s => s.prototype.healthBarDecoration);
+                    const effects = [...player.statusEffects.values()].filter(s => s.prototype.healthBarDecoration),
+                        diff = effects.length != effectLength;
 
-                    if (effects.length != effectLength) {
-                        effectLength = effects.length;
+                    if (effects.length) {
+                        // Display the first effect, because… there's not really an
+                        // alternative. surviv never envisioned having multiple
+                        // status effects at once
+                        const effect = effects[0],
+                            prototype = effect.prototype,
+                            interp = 100 * (1 - (gamespace.currentUpdate - effect.afflictionTime) / (prototype.decay ?? Infinity));
 
-                        if (effects.length) {
-                            // Display the first effect, because… there's not really an
-                            // alternative. surviv never envisioned having multiple
-                            // status effects at once
-                            const effect = effects[0],
-                                prototype = effect.prototype,
-                                interp = 100 * (1 - (gamespace.currentUpdate - effect.afflictionTime) / (prototype.decay ?? Infinity));
+                        ui.background.style.clipPath = `polygon(0 0, ${interp}% 0, ${interp}% 100%, 0 100%)`;
+
+                        if (diff) {
+                            effectLength = effects.length;
 
                             ui.background.style.display = "block";
 
-                            if (ui.background.src != prototype.healthBarDecoration!.src) {
+                            if (ui.background.src != prototype.healthBarDecoration!.src)
                                 ui.background.src = prototype.healthBarDecoration!.src;
-                            }
-
-                            ui.background.style.clipPath = `polygon(0 0, ${interp}% 0, ${interp}% 100%, 0 100%)`;
-                        } else {
-                            ui.background.style.display = "";
-                            ui.background.src = "";
                         }
+                    } else if (diff) {
+                        ui.background.style.display = "";
+                        ui.background.src = "";
                     }
                 },
                 destroy() { ui.container.remove(); },
@@ -333,14 +367,14 @@ const UIManager = new (createSingleton(class UIManager {
 
             return {
                 name: "reloading",
-                update() {
-                    const p = gamespace.player,
-                        item = p?.activeItem as Gun,
-                        duration = item?.determineReloadType?.()?.duration * (p?.modifiers?.ergonomics?.reduced ?? 1);
+                update(container) {
+                    const player = gamespace.player,
+                        item = player?.activeItem as Gun,
+                        duration = item?.determineReloadType?.()?.duration * (player?.modifiers?.ergonomics?.reduced ?? 1);
 
-                    if (p?.state?.reloading) {
-                        if (!UIManager.container.contains(ui.container))
-                            UIManager.container.appendChild(ui.container);
+                    if (player?.state?.reloading) {
+                        if (!container.contains(ui.container))
+                            container.appendChild(ui.container);
 
                         ctx.clearRect(0, 0, 850, 850);
 
@@ -352,7 +386,7 @@ const UIManager = new (createSingleton(class UIManager {
                         ctx.beginPath();
                         ctx.lineWidth = 70;
                         ctx.strokeStyle = "#FFF";
-                        ctx.arc(425, 425, 390, -Math.PI / 2, ((gamespace.currentUpdate - p.state.reloading) / duration) * 2 * Math.PI - Math.PI / 2);
+                        ctx.arc(425, 425, 390, -Math.PI / 2, ((gamespace.currentUpdate - player.state.reloading) / duration) * 2 * Math.PI - Math.PI / 2);
                         ctx.stroke();
 
                         ctx.beginPath();
@@ -363,11 +397,11 @@ const UIManager = new (createSingleton(class UIManager {
                         ctx.strokeStyle = "#000";
                         ctx.fillStyle = "#FFF";
 
-                        const t = Math.round((duration - gamespace.currentUpdate + p.state.reloading) / 100) / 10,
-                            s = t % 1 ? `${t}` : `${t}.0`;
+                        const time = Math.round((duration - gamespace.currentUpdate + player.state.reloading) / 100) / 10,
+                            toString = time % 1 ? `${time}` : `${time}.0`;
 
-                        ctx.strokeText(s, 425, 600);
-                        ctx.fillText(s, 425, 600);
+                        ctx.strokeText(toString, 425, 600);
+                        ctx.fillText(toString, 425, 600);
                     } else ui.container.remove();
                 },
                 destroy() { ui.container.remove(); },
@@ -375,17 +409,14 @@ const UIManager = new (createSingleton(class UIManager {
             };
         })(),
         (() => {
-            const slots = 4,
+            const slots = Inventory.MAIN_SLOTS,
                 ui: {
                     container: HTMLDivElement,
                     [key: `slot${number}`]: ReturnType<typeof makeSlot>;
-                } = {
-                    container: void 0 as any as HTMLDivElement
-                };
+                } = { container: void 0 as any as HTMLDivElement };
 
-            for (let i = 0; i < slots; i++) {
+            for (let i = 0; i < slots; i++)
                 ui[`slot${i}`] = void 0 as any as ReturnType<typeof makeSlot>;
-            }
 
             function makeSlot(id: number) {
                 const slot = {
@@ -452,8 +483,6 @@ const UIManager = new (createSingleton(class UIManager {
                 new Array(slots).fill(0).map((_, i) => (ui[`slot${i}`] = makeSlot(i)).container)
             );
 
-            // Doing sot updates every frame is wasteful, so we'll only do
-            // them when items change
             const cache = new Array<string>(slots).fill("");
             let active: number,
                 activeChanged = false;
@@ -476,7 +505,7 @@ const UIManager = new (createSingleton(class UIManager {
 
                     for (let i = 0; i < slots; i++) {
                         const slot = ui[`slot${i}`],
-                            item = inventory.getItem(i, "Main"),
+                            item = inventory.containers.main.get(i),
                             prototype = item?.prototype!;
 
                         if (activeChanged) {
@@ -530,7 +559,7 @@ const UIManager = new (createSingleton(class UIManager {
                                 const width = prototype.images.loot.asset.width,
                                     height = prototype.images.loot.asset.height;
 
-                                slot.itemImage.style.aspectRatio = `${width / height}`;
+                                slot.itemImage.style.aspectRatio = `${width}/${height}`;
 
                                 if (aspectRatio >= 1) { // If the image is longer than it is wide, set its width to 60
                                     slot.itemImage.style.width = "calc(60vh / 9)";
@@ -559,6 +588,177 @@ const UIManager = new (createSingleton(class UIManager {
                 },
                 destroy() { ui.container.remove(); },
                 core: true
+            };
+        })(),
+        (() => {
+            const ui: {
+                container: HTMLDivElement,
+            } & Record<EquipmentTypes, ReturnType<typeof generateSlot>> = {
+                container: void 0 as any as HTMLDivElement,
+                vest: void 0 as any,
+                helmet: void 0 as any,
+                backpack: void 0 as any
+            },
+                equipments = [
+                    "helmet",
+                    "vest",
+                    "backpack"
+                ] as EquipmentTypes[];
+
+            function generateSlot(slot: EquipmentTypes) {
+                let img: HTMLImageElement,
+                    txt: HTMLParagraphElement,
+                    cont = makeElement(
+                        "div",
+                        {
+                            id: `ui-equip-slot-${slot}`,
+                            className: "ui equip equip-slot",
+                            style: {
+                                display: "none"
+                            }
+                        },
+                        [
+                            img = makeElement(
+                                "img",
+                                {
+                                    id: `ui-equip-slot-${slot}-img`,
+                                    className: "ui equip equip-img"
+                                }
+                            ),
+                            txt = makeElement(
+                                "p",
+                                {
+                                    id: `up-equip-slot-${slot}-txt`,
+                                    className: "ui equip equip-txt"
+                                }
+                            )
+                        ]
+                    );
+
+                return {
+                    cont: cont,
+                    img: img,
+                    txt: txt
+                };
+            }
+
+            ui.container = makeElement(
+                "div",
+                {
+                    id: "ui-equip-cont",
+                    className: "ui equip"
+                },
+                equipments.map(slot => ui[slot] = generateSlot(slot)).map(o => o.cont)
+            );
+
+            let cache = "";
+
+            function serialize(equipment: PlayerLike["inventory"]["containers"]["equipment"]) {
+                let result = "";
+
+                equipment.forEach(val => result += val.prototype.internalName);
+
+                return result;
+            }
+
+            return {
+                name: "equipment",
+                create(container) { container.appendChild(ui.container); },
+                update() {
+                    const player = gamespace.player!,
+                        equipment = player.inventory.containers.equipment,
+                        serialized = serialize(equipment);
+
+                    if (cache != serialized) {
+                        cache = serialized;
+
+                        equipments.forEach(slotName => {
+                            const piece = equipment.get(slotName),
+                                slot = ui[slotName];
+
+                            if (piece && !piece.prototype.noShow) {
+                                slot.cont.style.opacity = "";
+                                slot.cont.style.pointerEvents = "";
+
+                                const image = piece.prototype.images.loot;
+
+                                if (slot.img.src != image.src)
+                                    slot.img.src = image.src;
+
+                                const aspectRatio = image.asset.width / image.asset.height;
+
+                                if (aspectRatio >= 1) {
+                                    slot.img.style.width = "calc(36vh / 9)";
+                                    slot.img.style.height = "auto";
+                                } else {
+                                    slot.img.style.width = "auto";
+                                    slot.img.style.height = "calc(36vh / 9)";
+                                }
+
+                                slot.img.style.aspectRatio = `${image.asset.width}/${image.asset.height}`;
+                                slot.txt.style.color = piece.prototype.maxLevel ? "#F90" : "";
+                                slot.txt.textContent = `Lvl. ${piece.prototype.level}`;
+                            } else {
+                                slot.cont.style.opacity = "0";
+                                slot.cont.style.pointerEvents = "none";
+                                slot.img.src = "";
+                            }
+                        });
+                    }
+                },
+                destroy() { ui.container.remove(); },
+                core: true
+            };
+        })(),
+        (() => {
+            const ui = {
+                container: void 0 as any as HTMLDivElement,
+                counter: void 0 as any as HTMLParagraphElement
+            };
+
+            ui.container = makeElement(
+                "div",
+                {
+                    className: "ui debug fps-count"
+                },
+                ui.counter = makeElement(
+                    "p",
+                    {
+                        className: "fps-count-text"
+                    }
+                )
+            );
+
+            let hidden = true;
+
+            function toggleHidden() {
+                ui.container.style.opacity = (hidden = !hidden) ? "" : "0.6";
+            }
+
+            const frameRates: number[] = [];
+
+            return {
+                name: "FPS counter",
+                create(container) { container.appendChild(ui.container); },
+                update() {
+                    if (gamespace.p5) {
+                        const p5 = gamespace.p5;
+
+                        (hidden != p5.focused) && toggleHidden();
+
+                        if (p5.focused) {
+                            frameRates.push(p5.frameRate());
+
+                            if (frameRates.length >= 100)
+                                frameRates.splice(0, frameRates.length - 100);
+
+                            ui.counter.textContent = `${srvsdbx_Math.mean(frameRates).toFixed(2)} ± ${srvsdbx_Math.standardDeviation(frameRates).toFixed(2)}`;
+                        }
+                    }
+                },
+                destroy() { ui.container.remove(); },
+                core: true,
+                instantiateImmediately: true
             };
         })()
     );

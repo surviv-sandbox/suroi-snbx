@@ -16,8 +16,8 @@ declare const _default: {
             width: number;
             height: number;
         };
-        obstacleMult: number;
-        headshotMult: number;
+        obstacleMultiplier: number;
+        headshotMultiplier: number;
         firstShotAccuracy: {
             enabled: false;
             rechargeTime: number;

@@ -3,13 +3,22 @@
         "target": "ESNext",
         "declaration": true,
         "declarationDir": "./web/types",
+        "removeComments": true,
         "sourceMap": true,
         "moduleResolution": "node",
         "strict": true,
         "alwaysStrict": true,
-        "module": "ESNext"
+        "module": "ESNext",
+        "esModuleInterop": true,
+        "disableSizeLimit": true
     },
     "buildOptions": {
         "verbose": true
-    }
+    },
+    "exclude": [
+        "./tests",
+        "./web/types",
+        "./node_modules",
+        "./settings stuff"
+    ]
 }

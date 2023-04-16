@@ -26,8 +26,8 @@ declare const _default: {
             };
         };
         effectsOnHit: string[];
-        obstacleMult: number;
-        headshotMult: number;
+        obstacleMultiplier: number;
+        headshotMultiplier: number;
         firstShotAccuracy: {
             enabled: false;
             rechargeTime: number;

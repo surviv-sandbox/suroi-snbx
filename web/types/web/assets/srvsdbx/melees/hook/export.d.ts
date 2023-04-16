@@ -35,7 +35,9 @@ declare const _default: {
             radius: number;
         };
     }[];
-    obstacleMult: number;
+    obstacleMultiplier: number;
+    stonePiercing: false;
+    armorPiercing: false;
     useDelay: number;
     animations: {
         idle: "none";

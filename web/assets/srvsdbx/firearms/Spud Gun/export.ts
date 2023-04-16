@@ -25,9 +25,9 @@ export default {
                 }
             }
         },
-        effectsOnHit: ["srvsdbx::potato-smg-hit"],
-        obstacleMult: 1.25,
-        headshotMult: 2,
+        effectsOnHit: ["srvsdbx::potatoSmg"],
+        obstacleMultiplier: 1.25,
+        headshotMultiplier: 2,
         firstShotAccuracy: {
             enabled: false,
             rechargeTime: 1e10
@@ -36,7 +36,7 @@ export default {
         projectiles: 1
     },
     suppressed: false,
-    caliber: "srvsdbx::Potato Spud",
+    caliber: "srvsdbx::potatoSmg",
     useDelay: 90,
     deployGroup: 0,
     accuracy: {
